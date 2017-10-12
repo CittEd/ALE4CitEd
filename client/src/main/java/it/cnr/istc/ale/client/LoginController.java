@@ -44,7 +44,8 @@ public class LoginController implements Initializable {
     }
 
     public void login() {
-        Context.getContext().login(email.getText(), password.getText());
-        Context.getContext().getStage().close();
+        if (Context.getContext().login(email.getText(), password.getText()) != null) {
+            Context.getContext().getStage().close();
+        }
     }
 }

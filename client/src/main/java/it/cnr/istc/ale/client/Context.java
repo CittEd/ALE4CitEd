@@ -17,14 +17,28 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.api.UserAPI;
+import java.util.Collection;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class Context {
+public class Context implements UserAPI {
 
+    private static final String HOST = "localhost";
+    private static final String SERVICE_PORT = "8080";
+    private static final String REST_URI = "http://" + HOST + ":" + SERVICE_PORT;
+    private static final String MQTT_PORT = "1883";
     private static Context context;
 
     public static Context getContext() {
@@ -33,6 +47,7 @@ public class Context {
         }
         return context;
     }
+    private Client client = ClientBuilder.newClient();
     private Stage stage;
     private User user;
 
@@ -47,13 +62,64 @@ public class Context {
         this.stage = stage;
     }
 
-    public void login(String email, String password) {
-    }
-
-    public void create_new_user(String email, String password, String first_name, String last_name) {
-    }
-
     public User getUser() {
         return user;
+    }
+
+    @Override
+    public User new_user(String email, String password, String first_name, String last_name) {
+        try {
+            Form form = new Form();
+            form.param("email", email);
+            form.param("password", password);
+            form.param("first_name", first_name);
+            form.param("last_name", last_name);
+            this.user = client.target(REST_URI)
+                    .path("users")
+                    .path("new_user")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.form(form), User.class);
+        } catch (WebApplicationException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("User creation error");
+            alert.setHeaderText(e.getLocalizedMessage());
+            alert.showAndWait();
+        }
+        return user;
+    }
+
+    @Override
+    public User get_user(long id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public User login(String email, String password) {
+        try {
+            Form form = new Form();
+            form.param("email", email);
+            form.param("password", password);
+            this.user = client.target(REST_URI)
+                    .path("users")
+                    .path("login")
+                    .request(MediaType.APPLICATION_JSON)
+                    .post(Entity.form(form), User.class);
+        } catch (WebApplicationException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Login error");
+            alert.setHeaderText(e.getLocalizedMessage());
+            alert.showAndWait();
+        }
+        return user;
+    }
+
+    @Override
+    public Collection<User> get_followed_users(long id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<User> get_followed_by_users(long id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

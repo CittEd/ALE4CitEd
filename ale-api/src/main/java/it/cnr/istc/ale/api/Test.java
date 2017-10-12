@@ -16,21 +16,20 @@
  */
 package it.cnr.istc.ale.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class User {
+public class Test {
 
-    private final long id;
-    private final String first_name;
-    private final String last_name;
+    private long id;
+    private String first_name;
+    private String last_name;
 
-    @JsonCreator
-    public User(@JsonProperty("id") long id, @JsonProperty("first_name") String first_name, @JsonProperty("last_name") String last_name) {
+    public Test() {
+    }
+
+    public Test(long id, String first_name, String last_name) {
         this.id = id;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -40,11 +39,11 @@ public class User {
         return id;
     }
 
-    public String getFirstName() {
+    public String getFirst_name() {
         return first_name;
     }
 
-    public String getLastName() {
+    public String getLast_name() {
         return last_name;
     }
 }

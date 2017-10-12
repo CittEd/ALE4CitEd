@@ -24,7 +24,7 @@ import java.util.Collection;
  */
 public interface UserAPI {
 
-    public User new_user(String first_name, String last_name, String email, String password);
+    public User new_user(String email, String password, String first_name, String last_name);
 
     public User get_user(long id);
 

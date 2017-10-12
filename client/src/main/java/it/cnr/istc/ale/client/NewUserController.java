@@ -48,7 +48,8 @@ public class NewUserController implements Initializable {
     }
 
     public void create_new_user() {
-        Context.getContext().create_new_user(email.getText(), password.getText(), first_name.getText(), last_name.getText());
-        Context.getContext().getStage().close();
+        if (Context.getContext().new_user(email.getText(), password.getText(), first_name.getText(), last_name.getText()) != null) {
+            Context.getContext().getStage().close();
+        }
     }
 }
