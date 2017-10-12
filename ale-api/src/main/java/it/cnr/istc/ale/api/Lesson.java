@@ -16,13 +16,15 @@
  */
 package it.cnr.istc.ale.api;
 
+import java.util.Map;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class User {
+public class Lesson {
 
     private long id;
-    private String first_name;
-    private String last_name;
+    private String name;
+    private Map<String, User> roles;
 }

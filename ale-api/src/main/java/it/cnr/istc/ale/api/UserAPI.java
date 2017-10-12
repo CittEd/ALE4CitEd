@@ -16,13 +16,21 @@
  */
 package it.cnr.istc.ale.api;
 
+import java.util.Collection;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class User {
+public interface UserAPI {
 
-    private long id;
-    private String first_name;
-    private String last_name;
+    public User new_user(String first_name, String last_name, String email, String password);
+
+    public User get_user(long id);
+
+    public User login(String email, String password);
+
+    public Collection<User> get_followed_users(long id);
+
+    public Collection<User> get_followed_by_users(long id);
 }

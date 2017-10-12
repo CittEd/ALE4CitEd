@@ -14,15 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.messages;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class User {
+public class NewConnection extends Message {
 
-    private long id;
-    private String first_name;
-    private String last_name;
+    private long user_id;
+    private long followed_user_id;
 }

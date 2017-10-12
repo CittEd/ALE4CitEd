@@ -16,13 +16,27 @@
  */
 package it.cnr.istc.ale.api;
 
+import it.cnr.istc.ale.api.model.LessonModel;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class User {
+public interface LessonAPI {
 
-    private long id;
-    private String first_name;
-    private String last_name;
+    public Lesson new_lesson(long user_id, String lesson_name, LessonModel model, Map<String, Long> roles);
+
+    public Collection<Lesson> get_lessons(long user_id);
+
+    public Collection<Lesson> get_followed_lessons(long user_id);
+
+    public void start_lesson(long lesson_id);
+
+    public void pause_lesson(long lesson_id);
+
+    public void stop_lesson(long lesson_id);
+
+    public void go_at(long lesson_id, long timestamp);
 }
