@@ -14,19 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
-
-import java.util.Collection;
+package it.cnr.istc.ale.api.messages;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class LessonModel {
+public abstract class Event extends Message {
 
-    private String name;
-    private Collection<String> roles;
-    private Collection<Event> model;
-    private Collection<String> events;
-    private Collection<Relation> relations;
+    private long id;
 }

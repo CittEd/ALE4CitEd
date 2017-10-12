@@ -14,24 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
-
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+package it.cnr.istc.ale.api.messages;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "type")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = AndCondition.class, name = "and")
-    ,@JsonSubTypes.Type(value = OrCondition.class, name = "or")
-    ,@JsonSubTypes.Type(value = NotCondition.class, name = "not")
-    ,@JsonSubTypes.Type(value = NumericCondition.class, name = "numeric")
-    ,@JsonSubTypes.Type(value = NominalCondition.class, name = "nominal")})
-public abstract class Condition {
+public class TextEvent extends Event {
+
+    private String content;
 }

@@ -14,30 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
-
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import java.util.Collection;
+package it.cnr.istc.ale.api.messages;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "type")
-@JsonSubTypes({
-    @Type(value = TextEvent.class, name = "text")
-    ,@Type(value = QuestionEvent.class, name = "question")})
-public abstract class Event {
-
-    private String name;
-    private String role;
-    private Collection<Condition> tr_conditions;
-    private Collection<Condition> ex_conditions;
-    private Collection<String> events;
-    private Collection<Relation> relations;
+public abstract class Message {
 }

@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.messages;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class QuestionEvent extends Event {
+public class EventUpdate extends Message {
 
-    private String question;
+    private long id;
+    private long time;
 }

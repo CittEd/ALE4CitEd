@@ -14,13 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.model;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class TextEvent extends Event {
+public class NumericCondition extends Condition {
 
-    private String content;
+    private ConditionType type;
+    private String variable;
+    private double value;
+
+    public enum ConditionType {
+        GEq, Eq, LEq
+    }
 }

@@ -14,19 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.model;
+
+import java.util.Collection;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class NumericCondition extends Condition {
+public class QuestionEvent extends Event {
 
-    private ConditionType type;
-    private String variable;
-    private double value;
+    private String question;
+    private Collection<Answer> answers;
 
-    public enum ConditionType {
-        GEq, Eq, LEq
+    public class Answer {
+
+        private String answer;
+        private String event;
     }
 }

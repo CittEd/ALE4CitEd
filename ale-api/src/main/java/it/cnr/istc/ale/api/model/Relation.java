@@ -14,14 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.model;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class NominalCondition extends Condition {
+public class Relation {
 
-    private String variable;
-    private String value;
+    private String from;
+    private String to;
+    private long lb;
+    private long ub;
+    private TimeUnit unit;
 }

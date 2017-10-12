@@ -14,19 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.messages;
 
-import java.util.concurrent.TimeUnit;
+import java.util.Collection;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class Relation {
+public class QuestionEvent extends Event {
 
-    private String from;
-    private String to;
-    private long lb;
-    private long ub;
-    private TimeUnit unit;
+    private String question;
+    private Collection<String> answers;
 }

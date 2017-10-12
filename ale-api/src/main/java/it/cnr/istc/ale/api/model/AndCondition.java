@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.model;
 
 import java.util.Collection;
 
@@ -22,7 +22,7 @@ import java.util.Collection;
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class OrCondition extends Condition {
+public class AndCondition {
 
     private Collection<Condition> conditions;
 }

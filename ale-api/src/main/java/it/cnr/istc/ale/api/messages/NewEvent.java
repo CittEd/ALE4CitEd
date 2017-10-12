@@ -14,13 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.messages;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class NotCondition extends Condition {
+public class NewEvent extends Message {
 
-    private Condition condition;
+    private long id;
+    private long cause;
+    private long time;
+    private String ref_event;
 }
