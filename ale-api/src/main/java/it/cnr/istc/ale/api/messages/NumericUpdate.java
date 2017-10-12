@@ -16,21 +16,12 @@
  */
 package it.cnr.istc.ale.api.messages;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "event-type")
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = TextEvent.class, name = "text-event")
-    ,@JsonSubTypes.Type(value = QuestionEvent.class, name = "question-event")})
-public abstract class Event extends Message {
+public class NumericUpdate extends Message {
 
-    private long id;
+    private String variable;
+    private double value;
 }
