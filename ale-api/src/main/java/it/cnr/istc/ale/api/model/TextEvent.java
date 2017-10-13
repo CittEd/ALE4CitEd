@@ -16,11 +16,25 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collection;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class TextEvent extends Event {
 
-    private String content;
+    private final String content;
+
+    @JsonCreator
+    public TextEvent(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("trConditions") Collection<Condition> trConditions, @JsonProperty("exConditions") Collection<Condition> exConditions, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("content") String content) {
+        super(name, role, trConditions, exConditions, events, relations);
+        this.content = content;
+    }
+
+    public String getContent() {
+        return content;
+    }
 }

@@ -16,15 +16,37 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class NumericCondition extends Condition {
 
-    private ConditionType type;
-    private String variable;
-    private double value;
+    private final ConditionType type;
+    private final String variable;
+    private final double value;
+
+    @JsonCreator
+    public NumericCondition(@JsonProperty("type") ConditionType type, @JsonProperty("variable") String variable, @JsonProperty("value") double value) {
+        this.type = type;
+        this.variable = variable;
+        this.value = value;
+    }
+
+    public ConditionType getType() {
+        return type;
+    }
+
+    public String getVariable() {
+        return variable;
+    }
+
+    public double getValue() {
+        return value;
+    }
 
     public enum ConditionType {
         GEq, Eq, LEq

@@ -16,11 +16,24 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class TextEvent extends Event {
 
-    private String content;
+    private final String content;
+
+    @JsonCreator
+    public TextEvent(@JsonProperty("id") long id, @JsonProperty("content") String content) {
+        super(id);
+        this.content = content;
+    }
+
+    public String getContent() {
+        return content;
+    }
 }

@@ -16,7 +16,9 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -24,5 +26,13 @@ import java.util.Collection;
  */
 public class OrCondition extends Condition {
 
-    private Collection<Condition> conditions;
+    private final Collection<Condition> conditions;
+
+    public OrCondition(@JsonProperty("conditions") Collection<Condition> conditions) {
+        this.conditions = conditions;
+    }
+
+    public Collection<Condition> getConditions() {
+        return Collections.unmodifiableCollection(conditions);
+    }
 }

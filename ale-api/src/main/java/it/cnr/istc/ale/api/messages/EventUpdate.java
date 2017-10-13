@@ -16,12 +16,29 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class EventUpdate extends Message {
 
-    private long id;
-    private long time;
+    private final long id;
+    private final long time;
+
+    @JsonCreator
+    public EventUpdate(@JsonProperty("id") long id, @JsonProperty("time") long time) {
+        this.id = id;
+        this.time = time;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public long getTime() {
+        return time;
+    }
 }

@@ -16,11 +16,23 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class NotCondition extends Condition {
 
-    private Condition condition;
+    private final Condition condition;
+
+    @JsonCreator
+    public NotCondition(@JsonProperty("condition") Condition condition) {
+        this.condition = condition;
+    }
+
+    public Condition getCondition() {
+        return condition;
+    }
 }

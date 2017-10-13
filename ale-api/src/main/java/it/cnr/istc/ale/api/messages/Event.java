@@ -16,6 +16,8 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -32,5 +34,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     ,@JsonSubTypes.Type(value = QuestionEvent.class, name = "question-event")})
 public abstract class Event extends Message {
 
-    private long id;
+    private final long id;
+
+    @JsonCreator
+    public Event(@JsonProperty("id") long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
+    }
 }

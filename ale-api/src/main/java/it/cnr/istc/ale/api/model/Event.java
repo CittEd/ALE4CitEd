@@ -16,10 +16,13 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -34,10 +37,44 @@ import java.util.Collection;
     ,@Type(value = QuestionEvent.class, name = "question")})
 public abstract class Event {
 
-    private String name;
-    private String role;
-    private Collection<Condition> tr_conditions;
-    private Collection<Condition> ex_conditions;
-    private Collection<String> events;
-    private Collection<Relation> relations;
+    private final String name;
+    private final String role;
+    private final Collection<Condition> trConditions;
+    private final Collection<Condition> exConditions;
+    private final Collection<String> events;
+    private final Collection<Relation> relations;
+
+    @JsonCreator
+    public Event(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("trConditions") Collection<Condition> trConditions, @JsonProperty("exConditions") Collection<Condition> exConditions, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
+        this.name = name;
+        this.role = role;
+        this.trConditions = trConditions;
+        this.exConditions = exConditions;
+        this.events = events;
+        this.relations = relations;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public Collection<Condition> getTrConditions() {
+        return Collections.unmodifiableCollection(trConditions);
+    }
+
+    public Collection<Condition> getExConditions() {
+        return Collections.unmodifiableCollection(exConditions);
+    }
+
+    public Collection<String> getEvents() {
+        return Collections.unmodifiableCollection(events);
+    }
+
+    public Collection<Relation> getRelations() {
+        return Collections.unmodifiableCollection(relations);
+    }
 }

@@ -16,7 +16,10 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -24,5 +27,14 @@ import java.util.Collection;
  */
 public class AndCondition {
 
-    private Collection<Condition> conditions;
+    private final Collection<Condition> conditions;
+
+    @JsonCreator
+    public AndCondition(@JsonProperty("conditions") Collection<Condition> conditions) {
+        this.conditions = conditions;
+    }
+
+    public Collection<Condition> getConditions() {
+        return Collections.unmodifiableCollection(conditions);
+    }
 }

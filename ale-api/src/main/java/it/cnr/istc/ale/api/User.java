@@ -26,14 +26,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User {
 
     private final long id;
-    private final String first_name;
-    private final String last_name;
+    private final String firstName;
+    private final String lastName;
 
     @JsonCreator
-    public User(@JsonProperty("id") long id, @JsonProperty("first_name") String first_name, @JsonProperty("last_name") String last_name) {
+    public User(@JsonProperty("id") long id, @JsonProperty("firstName") String firstName, @JsonProperty("lastName") String lastName) {
         this.id = id;
-        this.first_name = first_name;
-        this.last_name = last_name;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     public long getId() {
@@ -41,10 +41,10 @@ public class User {
     }
 
     public String getFirstName() {
-        return first_name;
+        return firstName;
     }
 
     public String getLastName() {
-        return last_name;
+        return lastName;
     }
 }

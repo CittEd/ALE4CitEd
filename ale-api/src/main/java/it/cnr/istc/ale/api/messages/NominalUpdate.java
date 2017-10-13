@@ -16,12 +16,29 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class NominalUpdate extends Message {
 
-    private String variable;
-    private String value;
+    private final String variable;
+    private final String value;
+
+    @JsonCreator
+    public NominalUpdate(@JsonProperty("variable") String variable, @JsonProperty("value") String value) {
+        this.variable = variable;
+        this.value = value;
+    }
+
+    public String getVariable() {
+        return variable;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

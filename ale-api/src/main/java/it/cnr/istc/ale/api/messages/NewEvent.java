@@ -16,14 +16,41 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class NewEvent extends Message {
 
-    private long id;
-    private long cause;
-    private long time;
-    private String ref_event;
+    private final long id;
+    private final long cause;
+    private final long time;
+    private final String refEvent;
+
+    @JsonCreator
+    public NewEvent(@JsonProperty("id") long id, @JsonProperty("cause") long cause, @JsonProperty("time") long time, @JsonProperty("refEvent") String refEvent) {
+        this.id = id;
+        this.cause = cause;
+        this.time = time;
+        this.refEvent = refEvent;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public long getCause() {
+        return cause;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public String getRefEvent() {
+        return refEvent;
+    }
 }

@@ -16,12 +16,29 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class NewConnection extends Message {
 
-    private long user_id;
-    private long followed_user_id;
+    private final long userId;
+    private final long followedUserId;
+
+    @JsonCreator
+    public NewConnection(@JsonProperty("userId") long userId, @JsonProperty("followedUserId") long followedUserId) {
+        this.userId = userId;
+        this.followedUserId = followedUserId;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public long getFollowedUserId() {
+        return followedUserId;
+    }
 }

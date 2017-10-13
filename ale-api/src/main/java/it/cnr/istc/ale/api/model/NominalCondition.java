@@ -16,12 +16,29 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class NominalCondition extends Condition {
 
-    private String variable;
-    private String value;
+    private final String variable;
+    private final String value;
+
+    @JsonCreator
+    public NominalCondition(@JsonProperty("variable") String variable, @JsonProperty("value") String value) {
+        this.variable = variable;
+        this.value = value;
+    }
+
+    public String getVariable() {
+        return variable;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

@@ -16,12 +16,29 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
 public class Answer extends Message {
 
-    private long question_id;
-    private int answer;
+    private final long questionId;
+    private final int answer;
+
+    @JsonCreator
+    public Answer(@JsonProperty("questionId") long questionId, @JsonProperty("answer") int answer) {
+        this.questionId = questionId;
+        this.answer = answer;
+    }
+
+    public long getQuestionId() {
+        return questionId;
+    }
+
+    public int getAnswer() {
+        return answer;
+    }
 }

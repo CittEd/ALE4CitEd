@@ -16,7 +16,10 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -24,6 +27,21 @@ import java.util.Collection;
  */
 public class QuestionEvent extends Event {
 
-    private String question;
-    private Collection<String> answers;
+    private final String question;
+    private final Collection<String> answers;
+
+    @JsonCreator
+    public QuestionEvent(@JsonProperty("id") long id, @JsonProperty("question") String question, @JsonProperty("answers") Collection<String> answers) {
+        super(id);
+        this.question = question;
+        this.answers = answers;
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public Collection<String> getAnswers() {
+        return Collections.unmodifiableCollection(answers);
+    }
 }

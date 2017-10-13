@@ -16,7 +16,10 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -24,9 +27,38 @@ import java.util.Collection;
  */
 public class LessonModel {
 
-    private String name;
-    private Collection<String> roles;
-    private Collection<Event> model;
-    private Collection<String> events;
-    private Collection<Relation> relations;
+    private final String name;
+    private final Collection<String> roles;
+    private final Collection<Event> model;
+    private final Collection<String> events;
+    private final Collection<Relation> relations;
+
+    @JsonCreator
+    public LessonModel(@JsonProperty("name") String name, @JsonProperty("roles") Collection<String> roles, @JsonProperty("model") Collection<Event> model, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
+        this.name = name;
+        this.roles = roles;
+        this.model = model;
+        this.events = events;
+        this.relations = relations;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Collection<String> getRoles() {
+        return Collections.unmodifiableCollection(roles);
+    }
+
+    public Collection<Event> getModel() {
+        return Collections.unmodifiableCollection(model);
+    }
+
+    public Collection<String> getEvents() {
+        return Collections.unmodifiableCollection(events);
+    }
+
+    public Collection<Relation> getRelations() {
+        return Collections.unmodifiableCollection(relations);
+    }
 }

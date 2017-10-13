@@ -16,7 +16,10 @@
  */
 package it.cnr.istc.ale.api.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  *
@@ -24,12 +27,41 @@ import java.util.Collection;
  */
 public class QuestionEvent extends Event {
 
-    private String question;
-    private Collection<Answer> answers;
+    private final String question;
+    private final Collection<Answer> answers;
+
+    @JsonCreator
+    public QuestionEvent(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("trConditions") Collection<Condition> trConditions, @JsonProperty("exConditions") Collection<Condition> exConditions, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("question") String question, @JsonProperty("answers") Collection<Answer> answers) {
+        super(name, role, trConditions, exConditions, events, relations);
+        this.question = question;
+        this.answers = answers;
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    public Collection<Answer> getAnswers() {
+        return Collections.unmodifiableCollection(answers);
+    }
 
     public class Answer {
 
-        private String answer;
-        private String event;
+        private final String answer;
+        private final String event;
+
+        @JsonCreator
+        public Answer(@JsonProperty("answer") String answer, @JsonProperty("event") String event) {
+            this.answer = answer;
+            this.event = event;
+        }
+
+        public String getAnswer() {
+            return answer;
+        }
+
+        public String getEvent() {
+            return event;
+        }
     }
 }
