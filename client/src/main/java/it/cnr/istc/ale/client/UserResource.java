@@ -91,10 +91,10 @@ public class UserResource implements UserAPI {
     public void remove_teacher(long user_id, long teacher_id) {
         Form form = new Form();
         form.param("user_id", Long.toString(user_id));
-        form.param("remove_teacher", Long.toString(teacher_id));
+        form.param("teacher_id", Long.toString(teacher_id));
         client.target(REST_URI)
                 .path("users")
-                .path("add_teacher")
+                .path("remove_teacher")
                 .request(MediaType.APPLICATION_JSON)
                 .put(Entity.form(form));
     }

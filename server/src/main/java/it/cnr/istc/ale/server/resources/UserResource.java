@@ -20,7 +20,6 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
 import it.cnr.istc.ale.server.App;
 import it.cnr.istc.ale.server.db.UserEntity;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +76,7 @@ public class UserResource implements UserAPI {
     @Path("find")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> find_users(@QueryParam("search_string") String search_string) {
+        LOG.log(Level.INFO, "find: {0}", search_string);
         EntityManager em = App.emf.createEntityManager();
         TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.first_name LIKE :search_string OR u.last_name LIKE :search_string", UserEntity.class);
         query.setParameter("search_string", search_string);

@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.ale.server;
 
+import it.cnr.istc.ale.server.resources.LessonResource;
 import it.cnr.istc.ale.server.resources.UserResource;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -43,7 +44,7 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + HOST + ":" + SERVICE_PORT).build(), new ResourceConfig(UserResource.class));
+        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + HOST + ":" + SERVICE_PORT).build(), new ResourceConfig(UserResource.class, LessonResource.class));
 
         BrokerService broker = new BrokerService();
         broker.addConnector(UriBuilder.fromUri("mqtt://" + HOST + ":" + MQTT_PORT).build());

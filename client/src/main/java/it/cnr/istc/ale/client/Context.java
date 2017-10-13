@@ -16,7 +16,10 @@
  */
 package it.cnr.istc.ale.client;
 
+import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.api.messages.Event;
+import java.util.Comparator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -45,9 +48,13 @@ public class Context {
     }
     private final Client client = ClientBuilder.newClient();
     private final UserResource ur = new UserResource(client);
+    private final LessonResource lr = new LessonResource(client);
     private Stage stage;
     private final ObjectProperty<User> user = new SimpleObjectProperty<>();
+    private final ObservableList<Event> events = FXCollections.observableArrayList();
+    private final ObservableList<Lesson> following_lessons = FXCollections.observableArrayList();
     private final ObservableList<User> teachers = FXCollections.observableArrayList();
+    private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
     private final ObservableList<User> students = FXCollections.observableArrayList();
 
     private Context() {
@@ -73,8 +80,20 @@ public class Context {
         return user;
     }
 
+    public ObservableList<Event> getEvents() {
+        return events;
+    }
+
+    public ObservableList<Lesson> getFollowingLessons() {
+        return following_lessons;
+    }
+
     public ObservableList<User> getTeachers() {
         return teachers;
+    }
+
+    public ObservableList<Lesson> getLessons() {
+        return lessons;
     }
 
     public ObservableList<User> getStudents() {
@@ -96,11 +115,25 @@ public class Context {
     private void set_user(User u) {
         user.set(u);
         if (u != null) {
+            following_lessons.addAll(lr.get_followed_lessons(u.getId()));
             teachers.addAll(ur.get_teachers(u.getId()));
+            lessons.addAll(lr.get_lessons(u.getId()));
             students.addAll(ur.get_students(u.getId()));
         } else {
+            following_lessons.clear();
             teachers.clear();
+            lessons.clear();
             students.clear();
         }
+    }
+
+    public void add_teacher(User teacher) {
+        ur.add_teacher(user.get().getId(), teacher.getId());
+        teachers.add(teacher);
+    }
+
+    public void remove_teacher(User teacher) {
+        ur.remove_teacher(user.get().getId(), teacher.getId());
+        teachers.remove(teacher);
     }
 }

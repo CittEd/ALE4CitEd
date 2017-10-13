@@ -16,13 +16,16 @@
  */
 package it.cnr.istc.ale.client;
 
+import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.api.messages.Event;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -30,6 +33,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Modality;
@@ -49,7 +55,25 @@ public class MainController implements Initializable {
     @FXML
     private MenuItem new_user;
     @FXML
+    private Accordion learn_accord;
+    @FXML
+    private ListView<Event> events;
+    @FXML
+    private ListView<Lesson> following_lessons;
+    @FXML
     private ListView<User> teachers;
+    @FXML
+    private Button add_teachers_button;
+    @FXML
+    private Button remove_teachers_button;
+    @FXML
+    private Accordion teach_accord;
+    @FXML
+    private ListView<Lesson> lessons;
+    @FXML
+    private Button add_lesson_button;
+    @FXML
+    private Button remove_lesson_button;
     @FXML
     private ListView<User> students;
 
@@ -58,19 +82,51 @@ public class MainController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        Stage stage = Context.getContext().getStage();
+
         ObjectProperty<User> user = Context.getContext().getUser();
+        user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
+            if (newValue != null) {
+                stage.setTitle("Active Learning Environment - " + newValue.getFirstName());
+            } else {
+                stage.setTitle("Active Learning Environment");
+            }
+        });
+
         login.disableProperty().bind(user.isNotNull());
         new_user.disableProperty().bind(user.isNotNull());
         logout.disableProperty().bind(user.isNull());
-        user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
-            if (newValue != null) {
-                Context.getContext().getStage().setTitle("Active Learning Environment - " + newValue.getFirstName());
-            } else {
-                Context.getContext().getStage().setTitle("Active Learning Environment");
+
+        learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
+        events.setItems(Context.getContext().getEvents());
+        following_lessons.setItems(Context.getContext().getFollowingLessons());
+        teachers.setItems(Context.getContext().getTeachers());
+        teachers.setCellFactory((ListView<User> param) -> new ListCell<User>() {
+            @Override
+            protected void updateItem(User user, boolean empty) {
+                super.updateItem(user, empty);
+                if (!empty) {
+                    setText(user.getLastName() + " " + user.getFirstName());
+                }
             }
         });
-        teachers.setItems(Context.getContext().getTeachers());
+        add_teachers_button.disableProperty().bind(user.isNull());
+        remove_teachers_button.disableProperty().bind(Bindings.isEmpty(teachers.selectionModelProperty().get().getSelectedItems()));
+
+        teach_accord.setExpandedPane(teach_accord.getPanes().get(0));
+        lessons.setItems(Context.getContext().getLessons());
+        add_lesson_button.disableProperty().bind(user.isNull());
+        remove_lesson_button.disableProperty().bind(Bindings.isEmpty(lessons.selectionModelProperty().get().getSelectedItems()));
         students.setItems(Context.getContext().getStudents());
+        students.setCellFactory((ListView<User> param) -> new ListCell<User>() {
+            @Override
+            protected void updateItem(User user, boolean empty) {
+                super.updateItem(user, empty);
+                if (!empty) {
+                    setText(user.getLastName() + " " + user.getFirstName());
+                }
+            }
+        });
     }
 
     public void login() {
@@ -125,5 +181,40 @@ public class MainController implements Initializable {
 
     public void exit() {
         Platform.exit();
+    }
+
+    public void add_teachers() {
+        try {
+            Stage tmp_stage = Context.getContext().getStage();
+
+            Stage login_stage = new Stage();
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/AddTeachers.fxml"));
+
+            Scene scene = new Scene(root);
+
+            login_stage.setTitle("Add teachers");
+            login_stage.setScene(scene);
+            login_stage.initOwner(tmp_stage);
+            login_stage.initModality(Modality.APPLICATION_MODAL);
+            login_stage.setResizable(false);
+            Context.getContext().setStage(login_stage);
+            login_stage.showAndWait();
+
+            Context.getContext().setStage(tmp_stage);
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void remove_selected_teachers() {
+        for (User user : teachers.selectionModelProperty().get().getSelectedItems()) {
+            Context.getContext().remove_teacher(user);
+        }
+    }
+
+    public void add_lesson() {
+    }
+
+    public void remove_selected_lessons() {
     }
 }
