@@ -20,6 +20,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
@@ -44,8 +46,15 @@ public class LoginController implements Initializable {
     }
 
     public void login() {
-        if (Context.getContext().login(email.getText(), password.getText()) != null) {
+        try {
+            Context.getContext().login(email.getText(), password.getText());
             Context.getContext().getStage().close();
+        } catch (Exception e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Login");
+            alert.setContentText(e.getLocalizedMessage());
+
+            alert.showAndWait();
         }
     }
 }

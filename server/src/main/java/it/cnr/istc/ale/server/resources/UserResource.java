@@ -20,17 +20,22 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
 import it.cnr.istc.ale.server.App;
 import it.cnr.istc.ale.server.db.UserEntity;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -63,14 +68,19 @@ public class UserResource implements UserAPI {
             return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
         } catch (RollbackException e) {
             LOG.log(Level.INFO, "new user", e);
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
+            throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.FORBIDDEN);
         }
     }
 
     @Override
-    public User get_user(long id) {
-        LOG.log(Level.INFO, "get user: {0}", id);
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    @GET
+    @Path("find")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<User> find_users(@QueryParam("search_string") String search_string) {
+        EntityManager em = App.emf.createEntityManager();
+        TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.first_name LIKE :search_string OR u.last_name LIKE :search_string", UserEntity.class);
+        query.setParameter("search_string", search_string);
+        return query.getResultList().stream().map(usr -> new User(usr.getId(), usr.getFirstName(), usr.getLastName())).collect(Collectors.toList());
     }
 
     @Override
@@ -87,17 +97,59 @@ public class UserResource implements UserAPI {
             UserEntity ue = query.getSingleResult();
             return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
         } catch (NoResultException e) {
-            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+            throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.UNAUTHORIZED);
         }
     }
 
     @Override
-    public Collection<User> get_followed_users(long id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    @PUT
+    @Path("add_teacher")
+    public void add_teacher(@FormParam("user_id") long user_id, @FormParam("teacher_id") long teacher_id) {
+        EntityManager em = App.emf.createEntityManager();
+        em.getTransaction().begin();
+        UserEntity student = em.find(UserEntity.class, user_id);
+        UserEntity teacher = em.find(UserEntity.class, teacher_id);
+        student.addTeacher(teacher);
+        teacher.addStudent(student);
+        em.persist(student);
+        em.getTransaction().commit();
     }
 
     @Override
-    public Collection<User> get_followed_by_users(long id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    @PUT
+    @Path("remove_teacher")
+    public void remove_teacher(@FormParam("user_id") long user_id, @FormParam("teacher_id") long teacher_id) {
+        EntityManager em = App.emf.createEntityManager();
+        em.getTransaction().begin();
+        UserEntity student = em.find(UserEntity.class, user_id);
+        UserEntity teacher = em.find(UserEntity.class, teacher_id);
+        student.removeTeacher(teacher);
+        teacher.removeStudent(student);
+        em.persist(student);
+        em.getTransaction().commit();
+    }
+
+    @Override
+    @GET
+    @Path("get_students")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<User> get_students(@QueryParam("user_id") long user_id) {
+        try {
+            return App.emf.createEntityManager().find(UserEntity.class, user_id).getStudents().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
+        } catch (NoResultException e) {
+            throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.NOT_FOUND);
+        }
+    }
+
+    @Override
+    @GET
+    @Path("get_teachers")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<User> get_teachers(@QueryParam("user_id") long user_id) {
+        try {
+            return App.emf.createEntityManager().find(UserEntity.class, user_id).getTeachers().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
+        } catch (NoResultException e) {
+            throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.NOT_FOUND);
+        }
     }
 }

@@ -17,28 +17,24 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.User;
-import it.cnr.istc.ale.api.UserAPI;
-import java.util.Collection;
-import javafx.scene.control.Alert;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.stage.Stage;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class Context implements UserAPI {
+public class Context {
 
-    private static final String HOST = "localhost";
-    private static final String SERVICE_PORT = "8080";
-    private static final String REST_URI = "http://" + HOST + ":" + SERVICE_PORT;
-    private static final String MQTT_PORT = "1883";
+    public static final String HOST = "localhost";
+    public static final String SERVICE_PORT = "8080";
+    public static final String REST_URI = "http://" + HOST + ":" + SERVICE_PORT;
+    public static final String MQTT_PORT = "1883";
     private static Context context;
 
     public static Context getContext() {
@@ -47,11 +43,22 @@ public class Context implements UserAPI {
         }
         return context;
     }
-    private Client client = ClientBuilder.newClient();
+    private final Client client = ClientBuilder.newClient();
+    private final UserResource ur = new UserResource(client);
     private Stage stage;
-    private User user;
+    private final ObjectProperty<User> user = new SimpleObjectProperty<>();
+    private final ObservableList<User> teachers = FXCollections.observableArrayList();
+    private final ObservableList<User> students = FXCollections.observableArrayList();
 
     private Context() {
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public UserResource getUserResource() {
+        return ur;
     }
 
     public Stage getStage() {
@@ -62,64 +69,38 @@ public class Context implements UserAPI {
         this.stage = stage;
     }
 
-    public User getUser() {
+    public ObjectProperty<User> getUser() {
         return user;
     }
 
-    @Override
-    public User new_user(String email, String password, String first_name, String last_name) {
-        try {
-            Form form = new Form();
-            form.param("email", email);
-            form.param("password", password);
-            form.param("first_name", first_name);
-            form.param("last_name", last_name);
-            this.user = client.target(REST_URI)
-                    .path("users")
-                    .path("new_user")
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.form(form), User.class);
-        } catch (WebApplicationException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("User creation error");
-            alert.setHeaderText(e.getLocalizedMessage());
-            alert.showAndWait();
+    public ObservableList<User> getTeachers() {
+        return teachers;
+    }
+
+    public ObservableList<User> getStudents() {
+        return students;
+    }
+
+    public void login(String email, String password) {
+        set_user(ur.login(email, password));
+    }
+
+    public void new_user(String email, String password, String first_name, String last_name) {
+        set_user(ur.new_user(email, password, first_name, last_name));
+    }
+
+    public void logout() {
+        set_user(null);
+    }
+
+    private void set_user(User u) {
+        user.set(u);
+        if (u != null) {
+            teachers.addAll(ur.get_teachers(u.getId()));
+            students.addAll(ur.get_students(u.getId()));
+        } else {
+            teachers.clear();
+            students.clear();
         }
-        return user;
-    }
-
-    @Override
-    public User get_user(long id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public User login(String email, String password) {
-        try {
-            Form form = new Form();
-            form.param("email", email);
-            form.param("password", password);
-            this.user = client.target(REST_URI)
-                    .path("users")
-                    .path("login")
-                    .request(MediaType.APPLICATION_JSON)
-                    .post(Entity.form(form), User.class);
-        } catch (WebApplicationException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Login error");
-            alert.setHeaderText(e.getLocalizedMessage());
-            alert.showAndWait();
-        }
-        return user;
-    }
-
-    @Override
-    public Collection<User> get_followed_users(long id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<User> get_followed_by_users(long id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

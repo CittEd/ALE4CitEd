@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
@@ -48,8 +49,15 @@ public class NewUserController implements Initializable {
     }
 
     public void create_new_user() {
-        if (Context.getContext().new_user(email.getText(), password.getText(), first_name.getText(), last_name.getText()) != null) {
+        try {
+            Context.getContext().new_user(email.getText(), password.getText(), first_name.getText(), last_name.getText());
             Context.getContext().getStage().close();
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("New user");
+            alert.setContentText(e.getLocalizedMessage());
+
+            alert.showAndWait();
         }
     }
 }

@@ -26,11 +26,15 @@ public interface UserAPI {
 
     public User new_user(String email, String password, String first_name, String last_name);
 
-    public User get_user(long id);
+    public Collection<User> find_users(String search_string);
 
     public User login(String email, String password);
 
-    public Collection<User> get_followed_users(long id);
+    public void add_teacher(long user_id, long teacher_id);
 
-    public Collection<User> get_followed_by_users(long id);
+    public void remove_teacher(long user_id, long teacher_id);
+
+    public Collection<User> get_teachers(long user_id);
+
+    public Collection<User> get_students(long user_id);
 }

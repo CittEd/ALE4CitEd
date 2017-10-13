@@ -16,17 +16,21 @@
  */
 package it.cnr.istc.ale.client;
 
+import it.cnr.istc.ale.api.User;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -41,13 +45,32 @@ public class MainController implements Initializable {
     @FXML
     private MenuItem login;
     @FXML
+    private MenuItem logout;
+    @FXML
     private MenuItem new_user;
+    @FXML
+    private ListView<User> teachers;
+    @FXML
+    private ListView<User> students;
 
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        ObjectProperty<User> user = Context.getContext().getUser();
+        login.disableProperty().bind(user.isNotNull());
+        new_user.disableProperty().bind(user.isNotNull());
+        logout.disableProperty().bind(user.isNull());
+        user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
+            if (newValue != null) {
+                Context.getContext().getStage().setTitle("Active Learning Environment - " + newValue.getFirstName());
+            } else {
+                Context.getContext().getStage().setTitle("Active Learning Environment");
+            }
+        });
+        teachers.setItems(Context.getContext().getTeachers());
+        students.setItems(Context.getContext().getStudents());
     }
 
     public void login() {
@@ -68,14 +91,13 @@ public class MainController implements Initializable {
             login_stage.showAndWait();
 
             Context.getContext().setStage(tmp_stage);
-
-            if (Context.getContext().getUser() != null) {
-                login.setDisable(true);
-                new_user.setDisable(true);
-            }
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void logout() {
+        Context.getContext().logout();
     }
 
     public void new_user() {
@@ -96,11 +118,6 @@ public class MainController implements Initializable {
             login_stage.showAndWait();
 
             Context.getContext().setStage(tmp_stage);
-
-            if (Context.getContext().getUser() != null) {
-                login.setDisable(true);
-                new_user.setDisable(true);
-            }
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         }

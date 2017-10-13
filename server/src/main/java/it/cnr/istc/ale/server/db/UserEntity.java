@@ -17,11 +17,15 @@
 package it.cnr.istc.ale.server.db;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 /**
  *
@@ -39,6 +43,10 @@ public class UserEntity implements Serializable {
     private String password;
     private String first_name;
     private String last_name;
+    @ManyToMany
+    private Collection<UserEntity> teachers = new ArrayList<>();
+    @ManyToMany(mappedBy = "teachers")
+    private Collection<UserEntity> students = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -74,5 +82,29 @@ public class UserEntity implements Serializable {
 
     public void setLastName(String last_name) {
         this.last_name = last_name;
+    }
+
+    public Collection<UserEntity> getTeachers() {
+        return Collections.unmodifiableCollection(teachers);
+    }
+
+    public void addTeacher(UserEntity teacher) {
+        teachers.add(teacher);
+    }
+
+    public void removeTeacher(UserEntity teacher) {
+        teachers.remove(teacher);
+    }
+
+    public Collection<UserEntity> getStudents() {
+        return Collections.unmodifiableCollection(students);
+    }
+
+    public void addStudent(UserEntity student) {
+        students.add(student);
+    }
+
+    public void removeStudent(UserEntity student) {
+        students.remove(student);
     }
 }
