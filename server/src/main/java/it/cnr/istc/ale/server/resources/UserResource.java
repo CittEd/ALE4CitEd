@@ -19,6 +19,7 @@ package it.cnr.istc.ale.server.resources;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
 import it.cnr.istc.ale.server.App;
+import it.cnr.istc.ale.server.Context;
 import it.cnr.istc.ale.server.db.UserEntity;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -73,6 +74,15 @@ public class UserResource implements UserAPI {
 
     @Override
     @GET
+    @Path("get_user")
+    @Produces(MediaType.APPLICATION_JSON)
+    public User get_user(@QueryParam("user_id") long user_id) {
+        LOG.log(Level.INFO, "get_user: {0}", user_id);
+        return App.emf.createEntityManager().find(User.class, user_id);
+    }
+
+    @Override
+    @GET
     @Path("find")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> find_users(@QueryParam("search_string") String search_string) {
@@ -113,6 +123,7 @@ public class UserResource implements UserAPI {
         teacher.addStudent(student);
         em.persist(student);
         em.getTransaction().commit();
+        Context.getContext().add_teacher(user_id, teacher_id);
     }
 
     @Override
@@ -127,6 +138,7 @@ public class UserResource implements UserAPI {
         teacher.removeStudent(student);
         em.persist(student);
         em.getTransaction().commit();
+        Context.getContext().remove_teacher(user_id, teacher_id);
     }
 
     @Override

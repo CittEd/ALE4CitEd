@@ -26,6 +26,8 @@ public interface UserAPI {
 
     public User new_user(String email, String password, String first_name, String last_name);
 
+    public User get_user(long user_id);
+
     public Collection<User> find_users(String search_string);
 
     public User login(String email, String password);

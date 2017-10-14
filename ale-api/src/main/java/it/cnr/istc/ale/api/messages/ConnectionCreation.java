@@ -23,22 +23,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class NewConnection extends Message {
+public class ConnectionCreation extends Message {
 
     private final long userId;
-    private final long followedUserId;
+    private final long teacherId;
 
     @JsonCreator
-    public NewConnection(@JsonProperty("userId") long userId, @JsonProperty("followedUserId") long followedUserId) {
+    public ConnectionCreation(@JsonProperty("userId") long userId, @JsonProperty("teacherId") long teacherId) {
         this.userId = userId;
-        this.followedUserId = followedUserId;
+        this.teacherId = teacherId;
     }
 
     public long getUserId() {
         return userId;
     }
 
-    public long getFollowedUserId() {
-        return followedUserId;
+    public long getTeacherId() {
+        return teacherId;
     }
 }

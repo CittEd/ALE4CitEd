@@ -16,6 +16,9 @@
  */
 package it.cnr.istc.ale.server;
 
+import static it.cnr.istc.ale.server.Context.HOST;
+import static it.cnr.istc.ale.server.Context.MQTT_PORT;
+import static it.cnr.istc.ale.server.Context.SERVICE_PORT;
 import it.cnr.istc.ale.server.resources.LessonResource;
 import it.cnr.istc.ale.server.resources.UserResource;
 import javax.persistence.EntityManagerFactory;
@@ -25,6 +28,8 @@ import org.apache.activemq.broker.Broker;
 import org.apache.activemq.broker.BrokerFilter;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
+import org.apache.activemq.broker.ConnectionContext;
+import org.apache.activemq.command.ConnectionInfo;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -35,9 +40,6 @@ import org.glassfish.jersey.server.ResourceConfig;
  */
 public class App {
 
-    private static final String HOST = "localhost";
-    private static final String SERVICE_PORT = "8080";
-    private static final String MQTT_PORT = "1883";
     public static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ALE_PU");
 
     /**
@@ -52,6 +54,17 @@ public class App {
             @Override
             public Broker installPlugin(Broker broker) throws Exception {
                 return new BrokerFilter(broker) {
+                    @Override
+                    public void addConnection(ConnectionContext context, ConnectionInfo info) throws Exception {
+                        Context.getContext().addConnection(info.getClientId());
+                        super.addConnection(context, info);
+                    }
+
+                    @Override
+                    public void removeConnection(ConnectionContext context, ConnectionInfo info, Throwable error) throws Exception {
+                        Context.getContext().removeConnection(info.getClientId());
+                        super.removeConnection(context, info, error);
+                    }
                 };
             }
         }});

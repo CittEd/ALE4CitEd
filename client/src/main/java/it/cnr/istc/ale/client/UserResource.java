@@ -53,6 +53,16 @@ public class UserResource implements UserAPI {
     }
 
     @Override
+    public User get_user(long user_id) {
+        return client.target(REST_URI)
+                .path("users")
+                .path("get_user")
+                .queryParam("user_id", user_id)
+                .request(MediaType.APPLICATION_JSON)
+                .get(User.class);
+    }
+
+    @Override
     public Collection<User> find_users(String search_string) {
         return client.target(REST_URI)
                 .path("users")

@@ -16,9 +16,14 @@
  */
 package it.cnr.istc.ale.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.api.messages.ConnectionCreation;
 import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.api.messages.Message;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -26,6 +31,11 @@ import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 /**
  *
@@ -33,11 +43,13 @@ import javax.ws.rs.client.ClientBuilder;
  */
 public class Context {
 
+    private static final Logger LOG = Logger.getLogger(Context.class.getName());
     public static final String HOST = "localhost";
     public static final String SERVICE_PORT = "8080";
     public static final String REST_URI = "http://" + HOST + ":" + SERVICE_PORT;
     public static final String MQTT_PORT = "1883";
     private static Context context;
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     public static Context getContext() {
         if (context == null) {
@@ -48,6 +60,7 @@ public class Context {
     private final Client client = ClientBuilder.newClient();
     private final UserResource ur = new UserResource(client);
     private final LessonResource lr = new LessonResource(client);
+    private MqttClient mqtt;
     private Stage stage;
     private final ObjectProperty<User> user = new SimpleObjectProperty<>();
     private final ObservableList<Event> events = FXCollections.observableArrayList();
@@ -118,6 +131,24 @@ public class Context {
             teachers.addAll(ur.get_teachers(u.getId()));
             lessons.addAll(lr.get_lessons(u.getId()));
             students.addAll(ur.get_students(u.getId()));
+            try {
+                mqtt = mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, String.valueOf(u.getId()), new MemoryPersistence());
+                MqttConnectOptions options = new MqttConnectOptions();
+                options.setCleanSession(false);
+                mqtt.connect(options);
+                mqtt.subscribe(String.valueOf(u.getId()) + "/input", (String topic, MqttMessage message) -> {
+                    Message m = mapper.readValue(message.getPayload(), Message.class);
+                    if (m instanceof ConnectionCreation) {
+                        ConnectionCreation cc = (ConnectionCreation) m;
+                        assert user.get().getId() == cc.getTeacherId();
+                        students.add(ur.get_user(((ConnectionCreation) m).getUserId()));
+                    } else {
+                        LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
+                    }
+                });
+            } catch (MqttException ex) {
+                throw new RuntimeException(ex.getMessage(), ex);
+            }
         } else {
             following_lessons.clear();
             teachers.clear();

@@ -25,17 +25,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class NumericUpdate extends Message {
 
-    private final String variable;
+    private final String parameter;
     private final double value;
 
     @JsonCreator
-    public NumericUpdate(@JsonProperty("variable") String variable, @JsonProperty("value") double value) {
-        this.variable = variable;
+    public NumericUpdate(@JsonProperty("parameter") String parameter, @JsonProperty("value") double value) {
+        this.parameter = parameter;
         this.value = value;
     }
 
-    public String getVariable() {
-        return variable;
+    public String getParameter() {
+        return parameter;
     }
 
     public double getValue() {

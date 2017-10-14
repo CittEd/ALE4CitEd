@@ -16,6 +16,9 @@
  */
 package it.cnr.istc.ale.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -24,7 +27,20 @@ import java.util.Map;
  */
 public class Lesson {
 
-    private long id;
-    private String name;
-    private Map<String, User> roles;
+    private final String name;
+    private final Map<String, User> roles;
+
+    @JsonCreator
+    public Lesson(@JsonProperty("name") String name, @JsonProperty("roles") Map<String, User> roles) {
+        this.name = name;
+        this.roles = roles;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Map<String, User> getRoles() {
+        return Collections.unmodifiableMap(roles);
+    }
 }
