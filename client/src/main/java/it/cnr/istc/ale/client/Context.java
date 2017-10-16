@@ -166,6 +166,7 @@ public class Context {
                 mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, String.valueOf(u.getId()), new MemoryPersistence());
                 MqttConnectOptions options = new MqttConnectOptions();
                 options.setCleanSession(false);
+                options.setAutomaticReconnect(true);
                 mqtt.connect(options);
                 mqtt.subscribe(String.valueOf(u.getId()) + "/input", (String topic, MqttMessage message) -> {
                     LOG.log(Level.INFO, "New message: {0}", message);
@@ -173,19 +174,22 @@ public class Context {
                     if (m instanceof NewConnection) {
                         NewConnection cc = (NewConnection) m;
                         assert user.get().getId() == cc.getTeacherId();
+                        online_users.put(cc.getUserId(), new SimpleBooleanProperty(ur.is_online(cc.getUserId())));
                         students.add(ur.get_user(cc.getUserId()));
                     } else if (m instanceof LostConnection) {
                         LostConnection cd = (LostConnection) m;
                         assert user.get().getId() == cd.getTeacherId();
                         students.remove(students.stream().filter(s -> s.getId() == cd.getUserId()).findAny().get());
+                        online_users.remove(cd.getUserId());
                     } else {
                         LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
                     }
                 });
                 for (User teacher : ur.get_teachers(u.getId())) {
-                    teachers.add(teacher);
                     online_users.put(teacher.getId(), new SimpleBooleanProperty(ur.is_online(teacher.getId())));
+                    teachers.add(teacher);
                     mqtt.subscribe(String.valueOf(teacher.getId()) + "/output", (String topic, MqttMessage message) -> {
+                        LOG.log(Level.INFO, "New message: {0}", message);
                         long id = Long.parseLong(topic.split("/")[0]);
                         Message m = mapper.readValue(message.getPayload(), Message.class);
                         if (m instanceof UserOnline) {
@@ -198,26 +202,30 @@ public class Context {
                     });
                 }
                 for (User student : ur.get_students(u.getId())) {
+                    online_users.put(student.getId(), new SimpleBooleanProperty(ur.is_online(student.getId())));
                     students.add(student);
                     parameter_types.put(student.getId(), new LinkedHashMap<>());
-                    for (Map.Entry<String, NewParameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
-                        parameter_types.get(student.getId()).put(par_type.getKey(), par_type.getValue());
+                    if (online_users.get(student.getId()).get()) {
+                        for (Map.Entry<String, NewParameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
+                            parameter_types.get(student.getId()).put(par_type.getKey(), par_type.getValue());
+                        }
                     }
 
                     par_values.put(student.getId(), FXCollections.observableArrayList());
                     parameter_values.put(student.getId(), new LinkedHashMap<>());
-                    for (Map.Entry<String, ParameterUpdate> par_value : ur.get_parameter_values(student.getId()).entrySet()) {
-                        parameter_values.get(student.getId()).put(par_value.getKey(), new LinkedHashMap<>());
-                        for (Map.Entry<String, String> sub_val : par_value.getValue().getValue().entrySet()) {
-                            SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
-                            parameter_values.get(student.getId()).get(par_value.getKey()).put(sub_val.getKey(), val_prop);
-                            par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), val_prop));
+                    if (online_users.get(student.getId()).get()) {
+                        for (Map.Entry<String, ParameterUpdate> par_value : ur.get_parameter_values(student.getId()).entrySet()) {
+                            parameter_values.get(student.getId()).put(par_value.getKey(), new LinkedHashMap<>());
+                            for (Map.Entry<String, String> sub_val : par_value.getValue().getValue().entrySet()) {
+                                SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
+                                parameter_values.get(student.getId()).get(par_value.getKey()).put(sub_val.getKey(), val_prop);
+                                par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), val_prop));
+                            }
                         }
                     }
 
-                    online_users.put(student.getId(), new SimpleBooleanProperty(ur.is_online(student.getId())));
-
                     mqtt.subscribe(String.valueOf(student.getId()) + "/output", (String topic, MqttMessage message) -> {
+                        LOG.log(Level.INFO, "New message: {0}", message);
                         long id = Long.parseLong(topic.split("/")[0]);
                         Message m = mapper.readValue(message.getPayload(), Message.class);
                         if (m instanceof NewParameter) {
@@ -238,6 +246,12 @@ public class Context {
                             for (Map.Entry<String, String> sub_val : pu.getValue().entrySet()) {
                                 parameter_values.get(id).get(pu.getParameter()).get(sub_val.getKey()).set(sub_val.getValue());
                             }
+                        } else if (m instanceof UserOnline) {
+                            UserOnline uo = (UserOnline) m;
+                            online_users.get(id).set(true);
+                        } else if (m instanceof UserOffline) {
+                            UserOffline uo = (UserOffline) m;
+                            online_users.get(id).set(false);
                         } else {
                             LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
                         }
@@ -249,7 +263,7 @@ public class Context {
                 for (ParType par_type : par_types) {
                     NewParameter np = new NewParameter(par_type.name, par_type.properties);
                     u_parameter_types.put(par_type.getName(), np);
-                    mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(np)));
+                    mqtt.publish(String.valueOf(u.getId()) + "/output", mapper.writeValueAsBytes(np), 2, false);
                 }
                 Map<String, Map<String, String>> par_vals = mapper.readValue(getClass().getResourceAsStream("/sensors/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
@@ -260,7 +274,7 @@ public class Context {
                         u_parameter_values.get(par_val.getKey()).put(sub_val.getKey(), val_prop);
                         u_par_values.add(new ParameterValue(par_val.getKey() + "." + sub_val.getKey(), val_prop));
                     }
-                    mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(new ParameterUpdate(par_val.getKey(), par_val.getValue()))));
+                    mqtt.publish(String.valueOf(u.getId()) + "/output", mapper.writeValueAsBytes(new ParameterUpdate(par_val.getKey(), par_val.getValue())), 2, false);
                 }
             } catch (MqttException | IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
@@ -268,6 +282,7 @@ public class Context {
         } else {
             if (user.isNotNull().get()) {
                 assert mqtt != null;
+                assert mqtt.isConnected();
                 try {
                     mqtt.unsubscribe(String.valueOf(user.get().getId()) + "/input");
                     for (User student : students) {
@@ -297,12 +312,14 @@ public class Context {
 
     public void add_teacher(User teacher) {
         ur.add_teacher(user.get().getId(), teacher.getId());
+        online_users.put(teacher.getId(), new SimpleBooleanProperty(ur.is_online(teacher.getId())));
         teachers.add(teacher);
     }
 
     public void remove_teacher(User teacher) {
         ur.remove_teacher(user.get().getId(), teacher.getId());
         teachers.remove(teacher);
+        online_users.remove(teacher.getId());
     }
 
     public void par_update(String name) {
@@ -311,7 +328,7 @@ public class Context {
             val.put(par_val.getKey(), par_val.getValue().get());
         }
         try {
-            mqtt.publish(user.get().getId() + "/output", new MqttMessage(mapper.writeValueAsBytes(new ParameterUpdate(name, val))));
+            mqtt.publish(user.get().getId() + "/output", mapper.writeValueAsBytes(new ParameterUpdate(name, val)), 2, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

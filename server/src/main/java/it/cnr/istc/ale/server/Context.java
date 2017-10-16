@@ -65,6 +65,7 @@ public class Context {
             mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, SERVER_ID, new MemoryPersistence());
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(false);
+            options.setAutomaticReconnect(true);
             mqtt.connect(options);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -79,7 +80,7 @@ public class Context {
             parameter_values.put(id, new HashMap<>());
         }
         try {
-            mqtt.publish(id + "/output", new MqttMessage(mapper.writeValueAsBytes(new UserOnline())));
+            mqtt.publish(id + "/output", mapper.writeValueAsBytes(new UserOnline()), 2, false);
             mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
                 LOG.log(Level.INFO, "New message: {0}", message);
                 Message m = mapper.readValue(message.getPayload(), Message.class);
@@ -106,8 +107,8 @@ public class Context {
         parameter_types.remove(id);
         parameter_values.remove(id);
         try {
-            mqtt.unsubscribe(Long.toString(id) + "/output");
-            mqtt.publish(id + "/output", new MqttMessage(mapper.writeValueAsBytes(new UserOffline())));
+            mqtt.unsubscribe(id + "/output");
+            mqtt.publish(id + "/output", mapper.writeValueAsBytes(new UserOffline()), 2, false);
         } catch (MqttException | JsonProcessingException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -115,7 +116,7 @@ public class Context {
 
     public void add_teacher(long user_id, long teacher_id) {
         try {
-            mqtt.publish(String.valueOf(teacher_id) + "/input", new MqttMessage(mapper.writeValueAsBytes(new NewConnection(user_id, teacher_id))));
+            mqtt.publish(String.valueOf(teacher_id) + "/input", mapper.writeValueAsBytes(new NewConnection(user_id, teacher_id)), 2, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -123,7 +124,7 @@ public class Context {
 
     public void remove_teacher(long user_id, long teacher_id) {
         try {
-            mqtt.publish(String.valueOf(teacher_id) + "/input", new MqttMessage(mapper.writeValueAsBytes(new LostConnection(user_id, teacher_id))));
+            mqtt.publish(String.valueOf(teacher_id) + "/input", mapper.writeValueAsBytes(new LostConnection(user_id, teacher_id)), 2, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

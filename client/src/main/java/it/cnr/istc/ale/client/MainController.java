@@ -21,12 +21,15 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,10 +41,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -71,6 +76,8 @@ public class MainController implements Initializable {
     @FXML
     private Button remove_teachers_button;
     @FXML
+    private HBox teach_h_box;
+    @FXML
     private Accordion teach_accord;
     @FXML
     private ListView<Lesson> lessons;
@@ -86,6 +93,7 @@ public class MainController implements Initializable {
     private TableColumn<Context.ParameterValue, String> par_names;
     @FXML
     private TableColumn<Context.ParameterValue, String> par_vals;
+    private final Map<User, Parent> student_parent = new HashMap<>();
 
     /**
      * Initializes the controller class.
@@ -118,9 +126,9 @@ public class MainController implements Initializable {
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
                     if (Context.getContext().is_online(user).get()) {
-                        setStyle("-fx-text-inner-color: black;");
+                        setStyle("-fx-text-fill: black;");
                     } else {
-                        setStyle("-fx-text-inner-color: gray;");
+                        setStyle("-fx-text-fill: gray;");
                     }
                 }
             }
@@ -140,11 +148,29 @@ public class MainController implements Initializable {
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
                     if (Context.getContext().is_online(user).get()) {
-                        setStyle("-fx-text-inner-color: black;");
+                        setStyle("-fx-text-fill: black;");
                     } else {
-                        setStyle("-fx-text-inner-color: gray;");
+                        setStyle("-fx-text-fill: gray;");
                     }
                 }
+            }
+        });
+        students.selectionModelProperty().addListener(new ChangeListener<MultipleSelectionModel<User>>() {
+            @Override
+            public void changed(ObservableValue<? extends MultipleSelectionModel<User>> observable, MultipleSelectionModel<User> oldValue, MultipleSelectionModel<User> newValue) {
+                User u = newValue.getSelectedItems().get(0);
+                if (!student_parent.containsKey(u)) {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/Student.fxml"));
+                    try {
+                        Parent root = (Parent) loader.load();
+                        StudentController sc = loader.getController();
+                        sc.setUser(u);
+                        student_parent.put(u, root);
+                    } catch (IOException ex) {
+                        Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                teach_h_box.getChildren().set(1, student_parent.get(u));
             }
         });
 

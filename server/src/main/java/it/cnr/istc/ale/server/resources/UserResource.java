@@ -24,6 +24,7 @@ import it.cnr.istc.ale.server.App;
 import it.cnr.istc.ale.server.Context;
 import it.cnr.istc.ale.server.db.UserEntity;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,7 +99,13 @@ public class UserResource implements UserAPI {
     @Path("get_parameter_types")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, NewParameter> get_parameter_types(@QueryParam("user_id") long user_id) {
-        return Context.getContext().get_parameter_types(user_id);
+        Map<String, NewParameter> par_types = Context.getContext().get_parameter_types(user_id);
+        if (par_types == null) {
+            LOG.log(Level.WARNING, "No parameter types for (offline) user {0}", user_id);
+            return Collections.emptyMap();
+        } else {
+            return par_types;
+        }
     }
 
     @Override
@@ -106,7 +113,13 @@ public class UserResource implements UserAPI {
     @Path("get_parameter_values")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, ParameterUpdate> get_parameter_values(@QueryParam("user_id") long user_id) {
-        return Context.getContext().get_parameter_values(user_id);
+        Map<String, ParameterUpdate> par_vals = Context.getContext().get_parameter_values(user_id);
+        if (par_vals == null) {
+            LOG.log(Level.WARNING, "No parameter values for (offline) user {0}", user_id);
+            return Collections.emptyMap();
+        } else {
+            return par_vals;
+        }
     }
 
     @Override
