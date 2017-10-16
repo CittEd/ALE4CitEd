@@ -178,9 +178,9 @@
                <content>
                   <VBox>
                      <children>
-                        <TableView fx:id="par_values">
+                        <TableView fx:id="par_values" editable="true">
                           <columns>
-                            <TableColumn fx:id="par_names" prefWidth="75.0" text="Name" />
+                            <TableColumn fx:id="par_names" editable="false" prefWidth="75.0" text="Name" />
                             <TableColumn fx:id="par_vals" prefWidth="75.0" text="Value" />
                           </columns>
                            <VBox.margin>

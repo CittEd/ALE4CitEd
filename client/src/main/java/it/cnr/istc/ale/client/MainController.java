@@ -41,6 +41,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -151,6 +152,12 @@ public class MainController implements Initializable {
         par_values.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         par_names.setCellValueFactory(new PropertyValueFactory("name"));
         par_vals.setCellValueFactory(new PropertyValueFactory("value"));
+        par_vals.setCellFactory(TextFieldTableCell.forTableColumn());
+        par_vals.setOnEditCommit((TableColumn.CellEditEvent<Context.ParameterValue, String> event) -> {
+            Context.ParameterValue par_val = (Context.ParameterValue) event.getTableView().getItems().get(event.getTablePosition().getRow());
+            par_val.valueProperty().set(event.getNewValue());
+            Context.getContext().par_update(par_val.nameProperty().get().split("\\.")[0]);
+        });
     }
 
     public void login() {

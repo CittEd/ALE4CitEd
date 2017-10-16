@@ -18,6 +18,7 @@ package it.cnr.istc.ale.client;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
@@ -289,6 +290,7 @@ public class Context {
             parameter_types.clear();
             parameter_values.clear();
             par_values.clear();
+            mqtt = null;
         }
         user.set(u);
     }
@@ -301,6 +303,18 @@ public class Context {
     public void remove_teacher(User teacher) {
         ur.remove_teacher(user.get().getId(), teacher.getId());
         teachers.remove(teacher);
+    }
+
+    public void par_update(String name) {
+        Map<String, String> val = new HashMap<>();
+        for (Map.Entry<String, StringProperty> par_val : u_parameter_values.get(name).entrySet()) {
+            val.put(par_val.getKey(), par_val.getValue().get());
+        }
+        try {
+            mqtt.publish(user.get().getId() + "/output", new MqttMessage(mapper.writeValueAsBytes(new ParameterUpdate(name, val))));
+        } catch (JsonProcessingException | MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     public NewParameter getParameterType(String name) {
