@@ -246,7 +246,7 @@ public class Context {
                     u_parameter_types.put(par_type.getName(), par_type);
                     mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(par_type)));
                 }
-                Map<String, Map<String, String>> par_vals = mapper.readValue(getClass().getResourceAsStream("/sensors/types.json"), new TypeReference<Map<String, Map<String, String>>>() {
+                Map<String, Map<String, String>> par_vals = mapper.readValue(getClass().getResourceAsStream("/sensors/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
                 for (Map.Entry<String, Map<String, String>> par_val : par_vals.entrySet()) {
                     u_parameter_values.put(par_val.getKey(), new HashMap<>());
