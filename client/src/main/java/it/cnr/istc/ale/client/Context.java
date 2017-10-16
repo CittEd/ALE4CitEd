@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.ale.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
@@ -28,6 +29,8 @@ import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.ParameterUpdate;
 import it.cnr.istc.ale.api.messages.UserOffline;
 import it.cnr.istc.ale.api.messages.UserOnline;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -75,6 +78,9 @@ public class Context {
     private final UserResource ur = new UserResource(client);
     private final LessonResource lr = new LessonResource(client);
     private MqttClient mqtt;
+    private final Map<String, NewParameter> u_parameter_types = new HashMap<>();
+    private final Map<String, Map<String, StringProperty>> u_parameter_values = new HashMap<>();
+    private final ObservableList<ParameterValue> u_par_values = FXCollections.observableArrayList();
     private final Map<Long, BooleanProperty> online_users = new HashMap<>();
     private final Map<Long, Map<String, NewParameter>> parameter_types = new HashMap<>();
     private final Map<Long, Map<String, Map<String, StringProperty>>> parameter_values = new HashMap<>();
@@ -233,7 +239,25 @@ public class Context {
                         }
                     });
                 }
-            } catch (MqttException ex) {
+
+                Collection<NewParameter> par_types = mapper.readValue(getClass().getResourceAsStream("/sensors/types.json"), new TypeReference<Collection<NewParameter>>() {
+                });
+                for (NewParameter par_type : par_types) {
+                    u_parameter_types.put(par_type.getName(), par_type);
+                    mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(par_type)));
+                }
+                Map<String, Map<String, String>> par_vals = mapper.readValue(getClass().getResourceAsStream("/sensors/types.json"), new TypeReference<Map<String, Map<String, String>>>() {
+                });
+                for (Map.Entry<String, Map<String, String>> par_val : par_vals.entrySet()) {
+                    u_parameter_values.put(par_val.getKey(), new HashMap<>());
+                    for (Map.Entry<String, String> sub_val : par_val.getValue().entrySet()) {
+                        SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
+                        u_parameter_values.get(par_val.getKey()).put(sub_val.getKey(), val_prop);
+                        u_par_values.add(new ParameterValue(sub_val.getKey(), val_prop));
+                    }
+                    mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(new ParameterUpdate(par_val.getKey(), par_val.getValue()))));
+                }
+            } catch (MqttException | IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         } else {
@@ -254,6 +278,13 @@ public class Context {
             teachers.clear();
             lessons.clear();
             students.clear();
+            u_parameter_types.clear();
+            u_parameter_values.clear();
+            u_par_values.clear();
+            online_users.clear();
+            parameter_types.clear();
+            parameter_values.clear();
+            par_values.clear();
         }
         user.set(u);
     }
@@ -266,6 +297,30 @@ public class Context {
     public void remove_teacher(User teacher) {
         ur.remove_teacher(user.get().getId(), teacher.getId());
         teachers.remove(teacher);
+    }
+
+    public NewParameter getParameterType(String name) {
+        return u_parameter_types.get(name);
+    }
+
+    public Map<String, StringProperty> getParameterValue(String name) {
+        return u_parameter_values.get(name);
+    }
+
+    public ObservableList<ParameterValue> getParameterValues() {
+        return u_par_values;
+    }
+
+    public NewParameter getParameterType(long user_id, String name) {
+        return parameter_types.get(user_id).get(name);
+    }
+
+    public Map<String, StringProperty> getParameterValue(long user_id, String name) {
+        return parameter_values.get(user_id).get(name);
+    }
+
+    public ObservableList<ParameterValue> getParameterValues(long user_id) {
+        return par_values.get(user_id);
     }
 
     public static class ParameterValue {
