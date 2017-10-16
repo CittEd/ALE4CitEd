@@ -10,6 +10,8 @@
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -172,6 +174,23 @@
                         </HBox>
                     </content>
                 </Tab>
+            <Tab text="Parameters">
+               <content>
+                  <VBox>
+                     <children>
+                        <TableView fx:id="par_values">
+                          <columns>
+                            <TableColumn fx:id="par_names" prefWidth="75.0" text="Name" />
+                            <TableColumn fx:id="par_vals" prefWidth="75.0" text="Value" />
+                          </columns>
+                           <VBox.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </VBox.margin>
+                        </TableView>
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
             </tabs>
         </TabPane>
     </children>

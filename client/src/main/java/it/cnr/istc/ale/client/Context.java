@@ -16,6 +16,8 @@
  */
 package it.cnr.istc.ale.client;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
@@ -31,6 +33,7 @@ import it.cnr.istc.ale.api.messages.UserOffline;
 import it.cnr.istc.ale.api.messages.UserOnline;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -240,11 +243,12 @@ public class Context {
                     });
                 }
 
-                Collection<NewParameter> par_types = mapper.readValue(getClass().getResourceAsStream("/sensors/types.json"), new TypeReference<Collection<NewParameter>>() {
+                Collection<ParType> par_types = mapper.readValue(getClass().getResourceAsStream("/sensors/types.json"), new TypeReference<Collection<ParType>>() {
                 });
-                for (NewParameter par_type : par_types) {
-                    u_parameter_types.put(par_type.getName(), par_type);
-                    mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(par_type)));
+                for (ParType par_type : par_types) {
+                    NewParameter np = new NewParameter(par_type.name, par_type.properties);
+                    u_parameter_types.put(par_type.getName(), np);
+                    mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(np)));
                 }
                 Map<String, Map<String, String>> par_vals = mapper.readValue(getClass().getResourceAsStream("/sensors/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
@@ -253,7 +257,7 @@ public class Context {
                     for (Map.Entry<String, String> sub_val : par_val.getValue().entrySet()) {
                         SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
                         u_parameter_values.get(par_val.getKey()).put(sub_val.getKey(), val_prop);
-                        u_par_values.add(new ParameterValue(sub_val.getKey(), val_prop));
+                        u_par_values.add(new ParameterValue(par_val.getKey() + "." + sub_val.getKey(), val_prop));
                     }
                     mqtt.publish(String.valueOf(u.getId()) + "/output", new MqttMessage(mapper.writeValueAsBytes(new ParameterUpdate(par_val.getKey(), par_val.getValue()))));
                 }
@@ -331,6 +335,34 @@ public class Context {
         public ParameterValue(String name, StringProperty value) {
             this.name = new SimpleStringProperty(name);
             this.value = value;
+        }
+
+        public StringProperty nameProperty() {
+            return name;
+        }
+
+        public StringProperty valueProperty() {
+            return value;
+        }
+    }
+
+    private static class ParType {
+
+        private final String name;
+        private final Map<String, String> properties;
+
+        @JsonCreator
+        public ParType(@JsonProperty("name") String name, @JsonProperty("properties") Map<String, String> properties) {
+            this.name = name;
+            this.properties = properties;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Map<String, String> getProperties() {
+            return Collections.unmodifiableMap(properties);
         }
     }
 }

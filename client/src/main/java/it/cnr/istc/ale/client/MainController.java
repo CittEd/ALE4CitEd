@@ -38,6 +38,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -76,6 +79,12 @@ public class MainController implements Initializable {
     private Button remove_lesson_button;
     @FXML
     private ListView<User> students;
+    @FXML
+    private TableView<Context.ParameterValue> par_values;
+    @FXML
+    private TableColumn<Context.ParameterValue, String> par_names;
+    @FXML
+    private TableColumn<Context.ParameterValue, String> par_vals;
 
     /**
      * Initializes the controller class.
@@ -137,6 +146,11 @@ public class MainController implements Initializable {
                 }
             }
         });
+
+        par_values.setItems(Context.getContext().getParameterValues());
+        par_values.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        par_names.setCellValueFactory(new PropertyValueFactory("name"));
+        par_vals.setCellValueFactory(new PropertyValueFactory("value"));
     }
 
     public void login() {
