@@ -18,27 +18,29 @@ package it.cnr.istc.ale.api.messages;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class ConnectionCreation extends Message {
+public class ParameterUpdate extends Message {
 
-    private final long userId;
-    private final long teacherId;
+    private final String parameter;
+    private final Map<String, String> value;
 
     @JsonCreator
-    public ConnectionCreation(@JsonProperty("userId") long userId, @JsonProperty("teacherId") long teacherId) {
-        this.userId = userId;
-        this.teacherId = teacherId;
+    public ParameterUpdate(@JsonProperty("parameter") String parameter, @JsonProperty("value") Map<String, String> value) {
+        this.parameter = parameter;
+        this.value = value;
     }
 
-    public long getUserId() {
-        return userId;
+    public String getParameter() {
+        return parameter;
     }
 
-    public long getTeacherId() {
-        return teacherId;
+    public Map<String, String> getValue() {
+        return Collections.unmodifiableMap(value);
     }
 }

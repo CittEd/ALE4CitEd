@@ -19,14 +19,27 @@ package it.cnr.istc.ale.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
-import it.cnr.istc.ale.api.messages.ConnectionCreation;
-import it.cnr.istc.ale.api.messages.ConnectionDestruction;
+import it.cnr.istc.ale.api.messages.NewConnection;
+import it.cnr.istc.ale.api.messages.LostConnection;
 import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
+import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.messages.ParameterUpdate;
+import it.cnr.istc.ale.api.messages.UserOffline;
+import it.cnr.istc.ale.api.messages.UserOnline;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
@@ -62,13 +75,17 @@ public class Context {
     private final UserResource ur = new UserResource(client);
     private final LessonResource lr = new LessonResource(client);
     private MqttClient mqtt;
+    private final Map<Long, BooleanProperty> online_users = new HashMap<>();
+    private final Map<Long, Map<String, NewParameter>> parameter_types = new HashMap<>();
+    private final Map<Long, Map<String, Map<String, StringProperty>>> parameter_values = new HashMap<>();
+    private final Map<Long, ObservableList<ParameterValue>> par_values = new HashMap<>();
     private Stage stage;
     private final ObjectProperty<User> user = new SimpleObjectProperty<>();
     private final ObservableList<Event> events = FXCollections.observableArrayList();
     private final ObservableList<Lesson> following_lessons = FXCollections.observableArrayList();
-    private final ObservableList<User> teachers = FXCollections.observableArrayList();
+    private final ObservableList<User> teachers = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
     private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
-    private final ObservableList<User> students = FXCollections.observableArrayList();
+    private final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
 
     private Context() {
     }
@@ -113,6 +130,10 @@ public class Context {
         return students;
     }
 
+    public BooleanProperty is_online(User user) {
+        return online_users.get(user.getId());
+    }
+
     public void login(String email, String password) {
         set_user(ur.login(email, password));
     }
@@ -130,40 +151,109 @@ public class Context {
             assert user.isNull().get();
             assert mqtt == null;
             following_lessons.addAll(lr.get_followed_lessons(u.getId()));
-            teachers.addAll(ur.get_teachers(u.getId()));
             lessons.addAll(lr.get_lessons(u.getId()));
-            students.addAll(ur.get_students(u.getId()));
             try {
-                mqtt = mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, String.valueOf(u.getId()), new MemoryPersistence());
+                mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, String.valueOf(u.getId()), new MemoryPersistence());
                 MqttConnectOptions options = new MqttConnectOptions();
                 options.setCleanSession(false);
                 mqtt.connect(options);
                 mqtt.subscribe(String.valueOf(u.getId()) + "/input", (String topic, MqttMessage message) -> {
                     LOG.log(Level.INFO, "New message: {0}", message);
                     Message m = mapper.readValue(message.getPayload(), Message.class);
-                    if (m instanceof ConnectionCreation) {
-                        ConnectionCreation cc = (ConnectionCreation) m;
+                    if (m instanceof NewConnection) {
+                        NewConnection cc = (NewConnection) m;
                         assert user.get().getId() == cc.getTeacherId();
                         students.add(ur.get_user(cc.getUserId()));
-                    } else if (m instanceof ConnectionDestruction) {
-                        ConnectionDestruction cd = (ConnectionDestruction) m;
+                    } else if (m instanceof LostConnection) {
+                        LostConnection cd = (LostConnection) m;
                         assert user.get().getId() == cd.getTeacherId();
                         students.remove(students.stream().filter(s -> s.getId() == cd.getUserId()).findAny().get());
                     } else {
                         LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
                     }
                 });
+                for (User teacher : ur.get_teachers(u.getId())) {
+                    teachers.add(teacher);
+                    online_users.put(teacher.getId(), new SimpleBooleanProperty(ur.is_online(teacher.getId())));
+                    mqtt.subscribe(String.valueOf(teacher.getId()) + "/output", (String topic, MqttMessage message) -> {
+                        long id = Long.parseLong(topic.split("/")[0]);
+                        Message m = mapper.readValue(message.getPayload(), Message.class);
+                        if (m instanceof UserOnline) {
+                            UserOnline uo = (UserOnline) m;
+                            online_users.get(id).set(true);
+                        } else if (m instanceof UserOffline) {
+                            UserOffline uo = (UserOffline) m;
+                            online_users.get(id).set(false);
+                        }
+                    });
+                }
+                for (User student : ur.get_students(u.getId())) {
+                    students.add(student);
+                    parameter_types.put(student.getId(), new LinkedHashMap<>());
+                    for (Map.Entry<String, NewParameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
+                        parameter_types.get(student.getId()).put(par_type.getKey(), par_type.getValue());
+                    }
+
+                    par_values.put(student.getId(), FXCollections.observableArrayList());
+                    parameter_values.put(student.getId(), new LinkedHashMap<>());
+                    for (Map.Entry<String, ParameterUpdate> par_value : ur.get_parameter_values(student.getId()).entrySet()) {
+                        parameter_values.get(student.getId()).put(par_value.getKey(), new LinkedHashMap<>());
+                        for (Map.Entry<String, String> sub_val : par_value.getValue().getValue().entrySet()) {
+                            SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
+                            parameter_values.get(student.getId()).get(par_value.getKey()).put(sub_val.getKey(), val_prop);
+                            par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), val_prop));
+                        }
+                    }
+
+                    online_users.put(student.getId(), new SimpleBooleanProperty(ur.is_online(student.getId())));
+
+                    mqtt.subscribe(String.valueOf(student.getId()) + "/output", (String topic, MqttMessage message) -> {
+                        long id = Long.parseLong(topic.split("/")[0]);
+                        Message m = mapper.readValue(message.getPayload(), Message.class);
+                        if (m instanceof NewParameter) {
+                            NewParameter np = (NewParameter) m;
+                            parameter_types.get(id).put(np.getName(), np);
+                        } else if (m instanceof LostParameter) {
+                            LostParameter lp = (LostParameter) m;
+                            parameter_types.get(id).remove(lp.getName());
+                            parameter_values.get(id).remove(lp.getName());
+                            par_values.get(id).clear();
+                            for (Map.Entry<String, Map<String, StringProperty>> par_value : parameter_values.get(id).entrySet()) {
+                                for (Map.Entry<String, StringProperty> sub_val : par_value.getValue().entrySet()) {
+                                    par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), parameter_values.get(id).get(par_value.getKey()).get(sub_val.getKey())));
+                                }
+                            }
+                        } else if (m instanceof ParameterUpdate) {
+                            ParameterUpdate pu = (ParameterUpdate) m;
+                            for (Map.Entry<String, String> sub_val : pu.getValue().entrySet()) {
+                                parameter_values.get(id).get(pu.getParameter()).get(sub_val.getKey()).set(sub_val.getValue());
+                            }
+                        } else {
+                            LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
+                        }
+                    });
+                }
             } catch (MqttException ex) {
-                throw new RuntimeException(ex.getMessage(), ex);
+                LOG.log(Level.SEVERE, null, ex);
             }
         } else {
-            assert user.isNotNull().get();
-            assert mqtt != null;
+            if (user.isNotNull().get()) {
+                assert mqtt != null;
+                try {
+                    mqtt.unsubscribe(String.valueOf(user.get().getId()) + "/input");
+                    for (User student : students) {
+                        mqtt.unsubscribe(String.valueOf(student.getId()) + "/output");
+                    }
+                    mqtt.disconnect();
+                    mqtt.close();
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+            }
             following_lessons.clear();
             teachers.clear();
             lessons.clear();
             students.clear();
-            mqtt = null;
         }
         user.set(u);
     }
@@ -178,15 +268,14 @@ public class Context {
         teachers.remove(teacher);
     }
 
-    public void close() {
-        if (user.isNotNull().get()) {
-            try {
-                mqtt.unsubscribe(String.valueOf(user.get().getId()) + "/input");
-                mqtt.disconnect();
-                mqtt.close();
-            } catch (MqttException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+    public static class ParameterValue {
+
+        private final StringProperty name;
+        private final StringProperty value;
+
+        public ParameterValue(String name, StringProperty value) {
+            this.name = new SimpleStringProperty(name);
+            this.value = value;
         }
     }
 }

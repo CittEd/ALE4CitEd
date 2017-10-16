@@ -61,7 +61,7 @@ public class App {
                     public void addConnection(ConnectionContext context, ConnectionInfo info) throws Exception {
                         LOG.log(Level.INFO, "New connection: {0}", info);
                         if (!info.getClientId().equals(Context.SERVER_ID)) {
-                            Context.getContext().addConnection(info.getClientId());
+                            Context.getContext().addConnection(Long.parseLong(info.getClientId()));
                         }
                         super.addConnection(context, info);
                     }
@@ -70,7 +70,7 @@ public class App {
                     public void removeConnection(ConnectionContext context, ConnectionInfo info, Throwable error) throws Exception {
                         LOG.log(Level.INFO, "Lost connection: {0}", info);
                         if (!info.getClientId().equals(Context.SERVER_ID)) {
-                            Context.getContext().removeConnection(info.getClientId());
+                            Context.getContext().removeConnection(Long.parseLong(info.getClientId()));
                         }
                         super.removeConnection(context, info, error);
                     }

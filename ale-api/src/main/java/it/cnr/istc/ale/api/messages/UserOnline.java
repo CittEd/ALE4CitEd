@@ -16,29 +16,9 @@
  */
 package it.cnr.istc.ale.api.messages;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class ConnectionDestruction extends Message {
-
-    private final long userId;
-    private final long teacherId;
-
-    @JsonCreator
-    public ConnectionDestruction(@JsonProperty("userId") long userId, @JsonProperty("teacherId") long teacherId) {
-        this.userId = userId;
-        this.teacherId = teacherId;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public long getTeacherId() {
-        return teacherId;
-    }
+public class UserOnline extends Message {
 }

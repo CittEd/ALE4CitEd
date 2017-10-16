@@ -16,7 +16,10 @@
  */
 package it.cnr.istc.ale.api;
 
+import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.messages.ParameterUpdate;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  *
@@ -27,6 +30,12 @@ public interface UserAPI {
     public User new_user(String email, String password, String first_name, String last_name);
 
     public User get_user(long user_id);
+
+    public boolean is_online(long user_id);
+
+    public Map<String, NewParameter> get_parameter_types(long user_id);
+
+    public Map<String, ParameterUpdate> get_parameter_values(long user_id);
 
     public Collection<User> find_users(String search_string);
 

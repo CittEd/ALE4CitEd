@@ -18,8 +18,11 @@ package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
+import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.messages.ParameterUpdate;
 import static it.cnr.istc.ale.client.Context.REST_URI;
 import java.util.Collection;
+import java.util.Map;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
@@ -60,6 +63,38 @@ public class UserResource implements UserAPI {
                 .queryParam("user_id", user_id)
                 .request(MediaType.APPLICATION_JSON)
                 .get(User.class);
+    }
+
+    @Override
+    public boolean is_online(long user_id) {
+        return client.target(REST_URI)
+                .path("users")
+                .path("is_online")
+                .queryParam("user_id", user_id)
+                .request(MediaType.APPLICATION_JSON)
+                .get(Boolean.class);
+    }
+
+    @Override
+    public Map<String, NewParameter> get_parameter_types(long user_id) {
+        return client.target(REST_URI)
+                .path("users")
+                .path("get_parameter_types")
+                .queryParam("user_id", user_id)
+                .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<Map<String, NewParameter>>() {
+                });
+    }
+
+    @Override
+    public Map<String, ParameterUpdate> get_parameter_values(long user_id) {
+        return client.target(REST_URI)
+                .path("users")
+                .path("get_parameter_values")
+                .queryParam("user_id", user_id)
+                .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<Map<String, ParameterUpdate>>() {
+                });
     }
 
     @Override

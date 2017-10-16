@@ -107,6 +107,11 @@ public class MainController implements Initializable {
                 super.updateItem(user, empty);
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
+                    if (Context.getContext().is_online(user).get()) {
+                        setStyle("-fx-text-inner-color: black;");
+                    } else {
+                        setStyle("-fx-text-inner-color: gray;");
+                    }
                 }
             }
         });
@@ -124,6 +129,11 @@ public class MainController implements Initializable {
                 super.updateItem(user, empty);
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
+                    if (Context.getContext().is_online(user).get()) {
+                        setStyle("-fx-text-inner-color: black;");
+                    } else {
+                        setStyle("-fx-text-inner-color: gray;");
+                    }
                 }
             }
         });

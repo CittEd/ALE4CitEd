@@ -14,43 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.client;
+package it.cnr.istc.ale.api.messages;
 
-import java.io.IOException;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class App extends Application {
+public class LostParameter extends Message {
 
-    @Override
-    public void start(Stage stage) throws IOException {
-        Context.getContext().setStage(stage);
+    private final String name;
 
-        Parent root = FXMLLoader.load(getClass().getResource("/fxml/Main.fxml"));
-
-        Scene scene = new Scene(root);
-
-        stage.setTitle("Active Learning Environment");
-        stage.setScene(scene);
-        stage.show();
+    @JsonCreator
+    public LostParameter(@JsonProperty("name") String name) {
+        this.name = name;
     }
 
-    @Override
-    public void stop() throws Exception {
-        Context.getContext().logout();
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        launch(args);
+    public String getName() {
+        return name;
     }
 }

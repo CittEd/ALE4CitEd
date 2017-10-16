@@ -18,9 +18,16 @@ package it.cnr.istc.ale.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.cnr.istc.ale.api.messages.ConnectionCreation;
-import it.cnr.istc.ale.api.messages.ConnectionDestruction;
+import it.cnr.istc.ale.api.messages.NewConnection;
+import it.cnr.istc.ale.api.messages.LostConnection;
+import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
+import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.messages.ParameterUpdate;
+import it.cnr.istc.ale.api.messages.UserOffline;
+import it.cnr.istc.ale.api.messages.UserOnline;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -50,6 +57,8 @@ public class Context {
         return context;
     }
     private MqttClient mqtt;
+    private final Map<Long, Map<String, NewParameter>> parameter_types = new HashMap<>();
+    private final Map<Long, Map<String, ParameterUpdate>> parameter_values = new HashMap<>();
 
     private Context() {
         try {
@@ -62,28 +71,51 @@ public class Context {
         }
     }
 
-    public void addConnection(String id) {
+    public void addConnection(long id) {
+        if (!parameter_types.containsKey(id)) {
+            parameter_types.put(id, new HashMap<>());
+        }
+        if (!parameter_values.containsKey(id)) {
+            parameter_values.put(id, new HashMap<>());
+        }
         try {
+            mqtt.publish(id + "/output", new MqttMessage(mapper.writeValueAsBytes(new UserOnline())));
             mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
                 LOG.log(Level.INFO, "New message: {0}", message);
                 Message m = mapper.readValue(message.getPayload(), Message.class);
+                if (m instanceof NewParameter) {
+                    NewParameter np = (NewParameter) m;
+                    parameter_types.get(id).put(np.getName(), np);
+                } else if (m instanceof LostParameter) {
+                    LostParameter lp = (LostParameter) m;
+                    parameter_types.get(id).remove(lp.getName());
+                    parameter_values.get(id).remove(lp.getName());
+                } else if (m instanceof ParameterUpdate) {
+                    ParameterUpdate pu = (ParameterUpdate) m;
+                    parameter_values.get(id).put(pu.getParameter(), pu);
+                } else {
+                    LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
+                }
             });
-        } catch (MqttException ex) {
+        } catch (MqttException | JsonProcessingException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    public void removeConnection(String id) {
+    public void removeConnection(long id) {
+        parameter_types.remove(id);
+        parameter_values.remove(id);
         try {
-            mqtt.unsubscribe(id);
-        } catch (MqttException ex) {
+            mqtt.unsubscribe(Long.toString(id) + "/output");
+            mqtt.publish(id + "/output", new MqttMessage(mapper.writeValueAsBytes(new UserOffline())));
+        } catch (MqttException | JsonProcessingException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
     public void add_teacher(long user_id, long teacher_id) {
         try {
-            mqtt.publish(String.valueOf(teacher_id) + "/input", new MqttMessage(mapper.writeValueAsBytes(new ConnectionCreation(user_id, teacher_id))));
+            mqtt.publish(String.valueOf(teacher_id) + "/input", new MqttMessage(mapper.writeValueAsBytes(new NewConnection(user_id, teacher_id))));
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -91,9 +123,21 @@ public class Context {
 
     public void remove_teacher(long user_id, long teacher_id) {
         try {
-            mqtt.publish(String.valueOf(teacher_id) + "/input", new MqttMessage(mapper.writeValueAsBytes(new ConnectionDestruction(user_id, teacher_id))));
+            mqtt.publish(String.valueOf(teacher_id) + "/input", new MqttMessage(mapper.writeValueAsBytes(new LostConnection(user_id, teacher_id))));
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public Map<String, NewParameter> get_parameter_types(long user_id) {
+        return parameter_types.get(user_id);
+    }
+
+    public Map<String, ParameterUpdate> get_parameter_values(long user_id) {
+        return parameter_values.get(user_id);
+    }
+
+    public boolean is_online(long user_id) {
+        return parameter_types.containsKey(user_id);
     }
 }

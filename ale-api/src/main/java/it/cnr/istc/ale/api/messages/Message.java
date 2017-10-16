@@ -31,10 +31,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = Answer.class, name = "answer")
     ,@JsonSubTypes.Type(value = Event.class, name = "event")
     ,@JsonSubTypes.Type(value = EventUpdate.class, name = "event-update")
-    ,@JsonSubTypes.Type(value = ConnectionCreation.class, name = "new-connection")
-    ,@JsonSubTypes.Type(value = ConnectionDestruction.class, name = "lost-connection")
-    ,@JsonSubTypes.Type(value = NewEvent.class, name = "new-event")
-    ,@JsonSubTypes.Type(value = NominalUpdate.class, name = "nominal-update")
-    ,@JsonSubTypes.Type(value = NumericUpdate.class, name = "numeric-update")})
+    ,@JsonSubTypes.Type(value = NewParameter.class, name = "new-parameter")
+    ,@JsonSubTypes.Type(value = LostParameter.class, name = "lost-parameter")
+    ,@JsonSubTypes.Type(value = ParameterUpdate.class, name = "parameter-update")
+    ,@JsonSubTypes.Type(value = NewConnection.class, name = "new-connection")
+    ,@JsonSubTypes.Type(value = LostConnection.class, name = "lost-connection")
+    ,@JsonSubTypes.Type(value = UserOnline.class, name = "user-online")
+    ,@JsonSubTypes.Type(value = UserOffline.class, name = "user-offline")
+    ,@JsonSubTypes.Type(value = NewEvent.class, name = "new-event")})
 public abstract class Message {
 }
