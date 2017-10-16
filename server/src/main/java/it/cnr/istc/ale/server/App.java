@@ -56,13 +56,17 @@ public class App {
                 return new BrokerFilter(broker) {
                     @Override
                     public void addConnection(ConnectionContext context, ConnectionInfo info) throws Exception {
-                        Context.getContext().addConnection(info.getClientId());
+                        if (!info.getClientId().equals(Context.SERVER_ID)) {
+                            Context.getContext().addConnection(info.getClientId());
+                        }
                         super.addConnection(context, info);
                     }
 
                     @Override
                     public void removeConnection(ConnectionContext context, ConnectionInfo info, Throwable error) throws Exception {
-                        Context.getContext().removeConnection(info.getClientId());
+                        if (!info.getClientId().equals(Context.SERVER_ID)) {
+                            Context.getContext().removeConnection(info.getClientId());
+                        }
                         super.removeConnection(context, info, error);
                     }
                 };
