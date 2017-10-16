@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.ConnectionCreation;
+import it.cnr.istc.ale.api.messages.ConnectionDestruction;
 import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.Message;
 import java.util.logging.Level;
@@ -125,8 +126,9 @@ public class Context {
     }
 
     private void set_user(User u) {
-        user.set(u);
         if (u != null) {
+            assert user.isNull().get();
+            assert mqtt == null;
             following_lessons.addAll(lr.get_followed_lessons(u.getId()));
             teachers.addAll(ur.get_teachers(u.getId()));
             lessons.addAll(lr.get_lessons(u.getId()));
@@ -137,11 +139,16 @@ public class Context {
                 options.setCleanSession(false);
                 mqtt.connect(options);
                 mqtt.subscribe(String.valueOf(u.getId()) + "/input", (String topic, MqttMessage message) -> {
+                    LOG.log(Level.INFO, "New message: {0}", message);
                     Message m = mapper.readValue(message.getPayload(), Message.class);
                     if (m instanceof ConnectionCreation) {
                         ConnectionCreation cc = (ConnectionCreation) m;
                         assert user.get().getId() == cc.getTeacherId();
-                        students.add(ur.get_user(((ConnectionCreation) m).getUserId()));
+                        students.add(ur.get_user(cc.getUserId()));
+                    } else if (m instanceof ConnectionDestruction) {
+                        ConnectionDestruction cd = (ConnectionDestruction) m;
+                        assert user.get().getId() == cd.getTeacherId();
+                        students.remove(students.stream().filter(s -> s.getId() == cd.getUserId()).findAny().get());
                     } else {
                         LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
                     }
@@ -150,11 +157,15 @@ public class Context {
                 throw new RuntimeException(ex.getMessage(), ex);
             }
         } else {
+            assert user.isNotNull().get();
+            assert mqtt != null;
             following_lessons.clear();
             teachers.clear();
             lessons.clear();
             students.clear();
+            mqtt = null;
         }
+        user.set(u);
     }
 
     public void add_teacher(User teacher) {
@@ -165,5 +176,17 @@ public class Context {
     public void remove_teacher(User teacher) {
         ur.remove_teacher(user.get().getId(), teacher.getId());
         teachers.remove(teacher);
+    }
+
+    public void close() {
+        if (user.isNotNull().get()) {
+            try {
+                mqtt.unsubscribe(String.valueOf(user.get().getId()) + "/input");
+                mqtt.disconnect();
+                mqtt.close();
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
     }
 }

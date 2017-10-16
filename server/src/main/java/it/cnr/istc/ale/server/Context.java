@@ -65,6 +65,7 @@ public class Context {
     public void addConnection(String id) {
         try {
             mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
+                LOG.log(Level.INFO, "New message: {0}", message);
                 Message m = mapper.readValue(message.getPayload(), Message.class);
             });
         } catch (MqttException ex) {

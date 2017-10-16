@@ -42,6 +42,11 @@ public class App extends Application {
         stage.show();
     }
 
+    @Override
+    public void stop() throws Exception {
+        Context.getContext().close();
+    }
+
     /**
      * @param args the command line arguments
      */

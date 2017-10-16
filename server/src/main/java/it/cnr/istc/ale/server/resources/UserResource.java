@@ -78,7 +78,8 @@ public class UserResource implements UserAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public User get_user(@QueryParam("user_id") long user_id) {
         LOG.log(Level.INFO, "get_user: {0}", user_id);
-        return App.emf.createEntityManager().find(User.class, user_id);
+        UserEntity ue = App.emf.createEntityManager().find(UserEntity.class, user_id);
+        return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
     }
 
     @Override

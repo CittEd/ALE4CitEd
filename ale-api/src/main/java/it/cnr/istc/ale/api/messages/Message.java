@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     ,@JsonSubTypes.Type(value = Event.class, name = "event")
     ,@JsonSubTypes.Type(value = EventUpdate.class, name = "event-update")
     ,@JsonSubTypes.Type(value = ConnectionCreation.class, name = "new-connection")
+    ,@JsonSubTypes.Type(value = ConnectionDestruction.class, name = "lost-connection")
     ,@JsonSubTypes.Type(value = NewEvent.class, name = "new-event")
     ,@JsonSubTypes.Type(value = NominalUpdate.class, name = "nominal-update")
     ,@JsonSubTypes.Type(value = NumericUpdate.class, name = "numeric-update")})
