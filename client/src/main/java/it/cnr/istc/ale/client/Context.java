@@ -211,7 +211,7 @@ public class Context {
                         } else {
                             SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                             u_parameter_values.get(value.getKey()).put(val.getKey(), val_prop);
-                            u_par_values.add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                            u_par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
                         }
                     }
                     mqtt.publish(u.getId() + "/output/" + value.getKey(), mapper.writeValueAsBytes(value.getValue()), 2, true);
@@ -287,7 +287,7 @@ public class Context {
                         } else {
                             SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                             parameter_values.get(student.getId()).get(par_type.getKey()).put(val.getKey(), val_prop);
-                            par_values.get(student.getId()).add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                            par_values.get(student.getId()).add(new ParameterValue(par_type.getKey() + "." + val.getKey(), val_prop));
                         }
                     }
                 });
@@ -308,7 +308,7 @@ public class Context {
                             } else {
                                 SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                                 parameter_values.get(student.getId()).get(np.getName()).put(val.getKey(), val_prop);
-                                par_values.get(student.getId()).add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                                par_values.get(student.getId()).add(new ParameterValue(np.getName() + "." + val.getKey(), val_prop));
                             }
                         }
                     });

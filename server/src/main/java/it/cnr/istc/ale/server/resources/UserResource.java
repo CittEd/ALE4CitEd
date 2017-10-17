@@ -57,7 +57,6 @@ public class UserResource implements UserAPI {
     @Path("new_user")
     @Produces(MediaType.APPLICATION_JSON)
     public User new_user(@FormParam("email") String email, @FormParam("password") String password, @FormParam("first_name") String first_name, @FormParam("last_name") String last_name) {
-        LOG.log(Level.INFO, "new user: {0} {1} {2}", new String[]{email, first_name, last_name});
         try {
             EntityManager em = App.emf.createEntityManager();
             UserEntity ue = new UserEntity();
