@@ -16,9 +16,23 @@
  */
 package it.cnr.istc.ale.api.messages;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class UserOnline extends Message {
+public class NewStudent extends Message {
+
+    private final long studentId;
+
+    @JsonCreator
+    public NewStudent(@JsonProperty("studentId") long studentId) {
+        this.studentId = studentId;
+    }
+
+    public long getStudentId() {
+        return studentId;
+    }
 }

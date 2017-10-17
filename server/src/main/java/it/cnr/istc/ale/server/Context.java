@@ -17,15 +17,14 @@
 package it.cnr.istc.ale.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.cnr.istc.ale.api.messages.NewConnection;
-import it.cnr.istc.ale.api.messages.LostConnection;
+import it.cnr.istc.ale.api.Parameter;
+import it.cnr.istc.ale.api.messages.NewStudent;
+import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.NewParameter;
-import it.cnr.istc.ale.api.messages.ParameterUpdate;
-import it.cnr.istc.ale.api.messages.UserOffline;
-import it.cnr.istc.ale.api.messages.UserOnline;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -57,8 +56,8 @@ public class Context {
         return context;
     }
     private MqttClient mqtt;
-    private final Map<Long, Map<String, NewParameter>> parameter_types = new HashMap<>();
-    private final Map<Long, Map<String, ParameterUpdate>> parameter_values = new HashMap<>();
+    private final Map<Long, Map<String, Parameter>> parameter_types = new HashMap<>();
+    private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
 
     private Context() {
         try {
@@ -80,62 +79,59 @@ public class Context {
             parameter_values.put(id, new HashMap<>());
         }
         try {
-            mqtt.publish(id + "/output", mapper.writeValueAsBytes(new UserOnline()), 2, false);
+            mqtt.publish(id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 2, true);
             mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
                 LOG.log(Level.INFO, "New message: {0}", message);
                 Message m = mapper.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
-                    parameter_types.get(id).put(np.getName(), np);
+                    parameter_types.get(id).put(np.getName(), new Parameter(np.getName(), np.getProperties()));
+                    mqtt.subscribe(id + "/output/" + np.getName(), (String par_topic, MqttMessage par_value) -> {
+                        parameter_values.get(id).put(np.getName(), mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
+                        }));
+                    });
                 } else if (m instanceof LostParameter) {
                     LostParameter lp = (LostParameter) m;
+                    mqtt.unsubscribe(id + "/output/" + lp.getName());
                     parameter_types.get(id).remove(lp.getName());
                     parameter_values.get(id).remove(lp.getName());
-                } else if (m instanceof ParameterUpdate) {
-                    ParameterUpdate pu = (ParameterUpdate) m;
-                    parameter_values.get(id).put(pu.getParameter(), pu);
-                } else {
-                    LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
                 }
             });
-        } catch (MqttException | JsonProcessingException ex) {
+        } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
     public void removeConnection(long id) {
-        parameter_types.remove(id);
-        parameter_values.remove(id);
         try {
+            for (Map.Entry<String, Parameter> par_type : parameter_types.get(id).entrySet()) {
+                mqtt.unsubscribe(id + "/output/" + par_type.getKey());
+            }
             mqtt.unsubscribe(id + "/output");
-            mqtt.publish(id + "/output", mapper.writeValueAsBytes(new UserOffline()), 2, false);
-        } catch (MqttException | JsonProcessingException ex) {
+            mqtt.publish(id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 2, true);
+        } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    public void add_teacher(long user_id, long teacher_id) {
+    public void add_teacher(long student_id, long teacher_id) {
         try {
-            mqtt.publish(String.valueOf(teacher_id) + "/input", mapper.writeValueAsBytes(new NewConnection(user_id, teacher_id)), 2, false);
+            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new NewStudent(student_id)), 2, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    public void remove_teacher(long user_id, long teacher_id) {
+    public void remove_teacher(long student_id, long teacher_id) {
         try {
-            mqtt.publish(String.valueOf(teacher_id) + "/input", mapper.writeValueAsBytes(new LostConnection(user_id, teacher_id)), 2, false);
+            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new LostStudent(student_id)), 2, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    public Map<String, NewParameter> get_parameter_types(long user_id) {
+    public Map<String, Parameter> get_parameter_types(long user_id) {
         return parameter_types.get(user_id);
-    }
-
-    public Map<String, ParameterUpdate> get_parameter_values(long user_id) {
-        return parameter_values.get(user_id);
     }
 
     public boolean is_online(long user_id) {

@@ -16,10 +16,9 @@
  */
 package it.cnr.istc.ale.client;
 
+import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
-import it.cnr.istc.ale.api.messages.NewParameter;
-import it.cnr.istc.ale.api.messages.ParameterUpdate;
 import static it.cnr.istc.ale.client.Context.REST_URI;
 import java.util.Collection;
 import java.util.Map;
@@ -66,34 +65,13 @@ public class UserResource implements UserAPI {
     }
 
     @Override
-    public boolean is_online(long user_id) {
-        return client.target(REST_URI)
-                .path("users")
-                .path("is_online")
-                .queryParam("user_id", user_id)
-                .request(MediaType.APPLICATION_JSON)
-                .get(Boolean.class);
-    }
-
-    @Override
-    public Map<String, NewParameter> get_parameter_types(long user_id) {
+    public Map<String, Parameter> get_parameter_types(long student_id) {
         return client.target(REST_URI)
                 .path("users")
                 .path("get_parameter_types")
-                .queryParam("user_id", user_id)
+                .queryParam("student_id", student_id)
                 .request(MediaType.APPLICATION_JSON)
-                .get(new GenericType<Map<String, NewParameter>>() {
-                });
-    }
-
-    @Override
-    public Map<String, ParameterUpdate> get_parameter_values(long user_id) {
-        return client.target(REST_URI)
-                .path("users")
-                .path("get_parameter_values")
-                .queryParam("user_id", user_id)
-                .request(MediaType.APPLICATION_JSON)
-                .get(new GenericType<Map<String, ParameterUpdate>>() {
+                .get(new GenericType<Map<String, Parameter>>() {
                 });
     }
 
@@ -121,9 +99,9 @@ public class UserResource implements UserAPI {
     }
 
     @Override
-    public void add_teacher(long user_id, long teacher_id) {
+    public void add_teacher(long student_id, long teacher_id) {
         Form form = new Form();
-        form.param("user_id", Long.toString(user_id));
+        form.param("student_id", Long.toString(student_id));
         form.param("teacher_id", Long.toString(teacher_id));
         client.target(REST_URI)
                 .path("users")
@@ -133,9 +111,9 @@ public class UserResource implements UserAPI {
     }
 
     @Override
-    public void remove_teacher(long user_id, long teacher_id) {
+    public void remove_teacher(long student_id, long teacher_id) {
         Form form = new Form();
-        form.param("user_id", Long.toString(user_id));
+        form.param("student_id", Long.toString(student_id));
         form.param("teacher_id", Long.toString(teacher_id));
         client.target(REST_URI)
                 .path("users")
@@ -145,22 +123,22 @@ public class UserResource implements UserAPI {
     }
 
     @Override
-    public Collection<User> get_teachers(long user_id) {
+    public Collection<User> get_teachers(long student_id) {
         return client.target(REST_URI)
                 .path("users")
                 .path("get_teachers")
-                .queryParam("user_id", Long.toString(user_id))
+                .queryParam("student_id", Long.toString(student_id))
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<User>>() {
                 });
     }
 
     @Override
-    public Collection<User> get_students(long user_id) {
+    public Collection<User> get_students(long teacher_id) {
         return client.target(REST_URI)
                 .path("users")
                 .path("get_students")
-                .queryParam("user_id", Long.toString(user_id))
+                .queryParam("teacher_id", Long.toString(teacher_id))
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<User>>() {
                 });

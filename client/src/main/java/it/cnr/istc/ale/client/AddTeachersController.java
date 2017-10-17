@@ -68,11 +68,6 @@ public class AddTeachersController implements Initializable {
                 super.updateItem(user, empty);
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
-                    if (Context.getContext().getUserResource().is_online(user.getId())) {
-                        setStyle("-fx-text-fill: black;");
-                    } else {
-                        setStyle("-fx-text-fill: gray;");
-                    }
                 }
             }
         });

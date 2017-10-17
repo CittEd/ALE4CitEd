@@ -16,10 +16,9 @@
  */
 package it.cnr.istc.ale.server.resources;
 
+import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
-import it.cnr.istc.ale.api.messages.NewParameter;
-import it.cnr.istc.ale.api.messages.ParameterUpdate;
 import it.cnr.istc.ale.server.App;
 import it.cnr.istc.ale.server.Context;
 import it.cnr.istc.ale.server.db.UserEntity;
@@ -88,37 +87,15 @@ public class UserResource implements UserAPI {
 
     @Override
     @GET
-    @Path("is_online")
-    @Produces(MediaType.APPLICATION_JSON)
-    public boolean is_online(@QueryParam("user_id") long user_id) {
-        return Context.getContext().is_online(user_id);
-    }
-
-    @Override
-    @GET
     @Path("get_parameter_types")
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, NewParameter> get_parameter_types(@QueryParam("user_id") long user_id) {
-        Map<String, NewParameter> par_types = Context.getContext().get_parameter_types(user_id);
-        if (par_types == null) {
-            LOG.log(Level.WARNING, "No parameter types for (offline) user {0}", user_id);
+    public Map<String, Parameter> get_parameter_types(@QueryParam("student_id") long student_id) {
+        Map<String, Parameter> types = Context.getContext().get_parameter_types(student_id);
+        if (types == null) {
+            LOG.log(Level.WARNING, "No parameter types for (offline) user {0}", student_id);
             return Collections.emptyMap();
         } else {
-            return par_types;
-        }
-    }
-
-    @Override
-    @GET
-    @Path("get_parameter_values")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, ParameterUpdate> get_parameter_values(@QueryParam("user_id") long user_id) {
-        Map<String, ParameterUpdate> par_vals = Context.getContext().get_parameter_values(user_id);
-        if (par_vals == null) {
-            LOG.log(Level.WARNING, "No parameter values for (offline) user {0}", user_id);
-            return Collections.emptyMap();
-        } else {
-            return par_vals;
+            return types;
         }
     }
 
@@ -155,40 +132,40 @@ public class UserResource implements UserAPI {
     @Override
     @PUT
     @Path("add_teacher")
-    public void add_teacher(@FormParam("user_id") long user_id, @FormParam("teacher_id") long teacher_id) {
+    public void add_teacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
         EntityManager em = App.emf.createEntityManager();
         em.getTransaction().begin();
-        UserEntity student = em.find(UserEntity.class, user_id);
+        UserEntity student = em.find(UserEntity.class, student_id);
         UserEntity teacher = em.find(UserEntity.class, teacher_id);
         student.addTeacher(teacher);
         teacher.addStudent(student);
         em.persist(student);
         em.getTransaction().commit();
-        Context.getContext().add_teacher(user_id, teacher_id);
+        Context.getContext().add_teacher(student_id, teacher_id);
     }
 
     @Override
     @PUT
     @Path("remove_teacher")
-    public void remove_teacher(@FormParam("user_id") long user_id, @FormParam("teacher_id") long teacher_id) {
+    public void remove_teacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
         EntityManager em = App.emf.createEntityManager();
         em.getTransaction().begin();
-        UserEntity student = em.find(UserEntity.class, user_id);
+        UserEntity student = em.find(UserEntity.class, student_id);
         UserEntity teacher = em.find(UserEntity.class, teacher_id);
         student.removeTeacher(teacher);
         teacher.removeStudent(student);
         em.persist(student);
         em.getTransaction().commit();
-        Context.getContext().remove_teacher(user_id, teacher_id);
+        Context.getContext().remove_teacher(student_id, teacher_id);
     }
 
     @Override
     @GET
-    @Path("get_students")
+    @Path("get_teachers")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<User> get_students(@QueryParam("user_id") long user_id) {
+    public Collection<User> get_teachers(@QueryParam("student_id") long student_id) {
         try {
-            return App.emf.createEntityManager().find(UserEntity.class, user_id).getStudents().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
+            return App.emf.createEntityManager().find(UserEntity.class, student_id).getTeachers().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.NOT_FOUND);
         }
@@ -196,11 +173,11 @@ public class UserResource implements UserAPI {
 
     @Override
     @GET
-    @Path("get_teachers")
+    @Path("get_students")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<User> get_teachers(@QueryParam("user_id") long user_id) {
+    public Collection<User> get_students(@QueryParam("teacher_id") long teacher_id) {
         try {
-            return App.emf.createEntityManager().find(UserEntity.class, user_id).getTeachers().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
+            return App.emf.createEntityManager().find(UserEntity.class, teacher_id).getStudents().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.NOT_FOUND);
         }

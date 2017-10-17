@@ -16,8 +16,6 @@
  */
 package it.cnr.istc.ale.api;
 
-import it.cnr.istc.ale.api.messages.NewParameter;
-import it.cnr.istc.ale.api.messages.ParameterUpdate;
 import java.util.Collection;
 import java.util.Map;
 
@@ -31,21 +29,17 @@ public interface UserAPI {
 
     public User get_user(long user_id);
 
-    public boolean is_online(long user_id);
-
-    public Map<String, NewParameter> get_parameter_types(long user_id);
-
-    public Map<String, ParameterUpdate> get_parameter_values(long user_id);
+    public Map<String, Parameter> get_parameter_types(long student_id);
 
     public Collection<User> find_users(String search_string);
 
     public User login(String email, String password);
 
-    public void add_teacher(long user_id, long teacher_id);
+    public void add_teacher(long student_id, long teacher_id);
 
-    public void remove_teacher(long user_id, long teacher_id);
+    public void remove_teacher(long student_id, long teacher_id);
 
-    public Collection<User> get_teachers(long user_id);
+    public Collection<User> get_teachers(long student_id);
 
-    public Collection<User> get_students(long user_id);
+    public Collection<User> get_students(long teacher_id);
 }

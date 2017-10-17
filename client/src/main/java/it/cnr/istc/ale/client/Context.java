@@ -16,25 +16,20 @@
  */
 package it.cnr.istc.ale.client;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
+import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
-import it.cnr.istc.ale.api.messages.NewConnection;
-import it.cnr.istc.ale.api.messages.LostConnection;
+import it.cnr.istc.ale.api.messages.NewStudent;
+import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.NewParameter;
-import it.cnr.istc.ale.api.messages.ParameterUpdate;
-import it.cnr.istc.ale.api.messages.UserOffline;
-import it.cnr.istc.ale.api.messages.UserOnline;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,7 +38,6 @@ import java.util.logging.Logger;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -82,11 +76,11 @@ public class Context {
     private final UserResource ur = new UserResource(client);
     private final LessonResource lr = new LessonResource(client);
     private MqttClient mqtt;
-    private final Map<String, NewParameter> u_parameter_types = new HashMap<>();
+    private final Map<String, Parameter> u_parameter_types = new HashMap<>();
     private final Map<String, Map<String, StringProperty>> u_parameter_values = new HashMap<>();
     private final ObservableList<ParameterValue> u_par_values = FXCollections.observableArrayList();
     private final Map<Long, BooleanProperty> online_users = new HashMap<>();
-    private final Map<Long, Map<String, NewParameter>> parameter_types = new HashMap<>();
+    private final Map<Long, Map<String, Parameter>> parameter_types = new HashMap<>();
     private final Map<Long, Map<String, Map<String, StringProperty>>> parameter_values = new HashMap<>();
     private final Map<Long, ObservableList<ParameterValue>> par_values = new HashMap<>();
     private Stage stage;
@@ -168,113 +162,38 @@ public class Context {
                 options.setCleanSession(false);
                 options.setAutomaticReconnect(true);
                 mqtt.connect(options);
-                mqtt.subscribe(String.valueOf(u.getId()) + "/input", (String topic, MqttMessage message) -> {
+                mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
                     LOG.log(Level.INFO, "New message: {0}", message);
                     Message m = mapper.readValue(message.getPayload(), Message.class);
-                    if (m instanceof NewConnection) {
-                        NewConnection cc = (NewConnection) m;
-                        assert user.get().getId() == cc.getTeacherId();
-                        online_users.put(cc.getUserId(), new SimpleBooleanProperty(ur.is_online(cc.getUserId())));
-                        students.add(ur.get_user(cc.getUserId()));
-                    } else if (m instanceof LostConnection) {
-                        LostConnection cd = (LostConnection) m;
-                        assert user.get().getId() == cd.getTeacherId();
-                        students.remove(students.stream().filter(s -> s.getId() == cd.getUserId()).findAny().get());
-                        online_users.remove(cd.getUserId());
-                    } else {
-                        LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
+                    if (m instanceof NewStudent) {
+                        add_student(ur.get_user(((NewStudent) m).getStudentId()));
+                    } else if (m instanceof LostStudent) {
+                        remove_student(students.stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get());
                     }
                 });
                 for (User teacher : ur.get_teachers(u.getId())) {
-                    online_users.put(teacher.getId(), new SimpleBooleanProperty(ur.is_online(teacher.getId())));
-                    teachers.add(teacher);
-                    mqtt.subscribe(String.valueOf(teacher.getId()) + "/output", (String topic, MqttMessage message) -> {
-                        LOG.log(Level.INFO, "New message: {0}", message);
-                        long id = Long.parseLong(topic.split("/")[0]);
-                        Message m = mapper.readValue(message.getPayload(), Message.class);
-                        if (m instanceof UserOnline) {
-                            UserOnline uo = (UserOnline) m;
-                            online_users.get(id).set(true);
-                        } else if (m instanceof UserOffline) {
-                            UserOffline uo = (UserOffline) m;
-                            online_users.get(id).set(false);
-                        }
-                    });
+                    add_teacher(teacher);
                 }
                 for (User student : ur.get_students(u.getId())) {
-                    online_users.put(student.getId(), new SimpleBooleanProperty(ur.is_online(student.getId())));
-                    students.add(student);
-                    parameter_types.put(student.getId(), new LinkedHashMap<>());
-                    if (online_users.get(student.getId()).get()) {
-                        for (Map.Entry<String, NewParameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
-                            parameter_types.get(student.getId()).put(par_type.getKey(), par_type.getValue());
-                        }
-                    }
-
-                    par_values.put(student.getId(), FXCollections.observableArrayList());
-                    parameter_values.put(student.getId(), new LinkedHashMap<>());
-                    if (online_users.get(student.getId()).get()) {
-                        for (Map.Entry<String, ParameterUpdate> par_value : ur.get_parameter_values(student.getId()).entrySet()) {
-                            parameter_values.get(student.getId()).put(par_value.getKey(), new LinkedHashMap<>());
-                            for (Map.Entry<String, String> sub_val : par_value.getValue().getValue().entrySet()) {
-                                SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
-                                parameter_values.get(student.getId()).get(par_value.getKey()).put(sub_val.getKey(), val_prop);
-                                par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), val_prop));
-                            }
-                        }
-                    }
-
-                    mqtt.subscribe(String.valueOf(student.getId()) + "/output", (String topic, MqttMessage message) -> {
-                        LOG.log(Level.INFO, "New message: {0}", message);
-                        long id = Long.parseLong(topic.split("/")[0]);
-                        Message m = mapper.readValue(message.getPayload(), Message.class);
-                        if (m instanceof NewParameter) {
-                            NewParameter np = (NewParameter) m;
-                            parameter_types.get(id).put(np.getName(), np);
-                        } else if (m instanceof LostParameter) {
-                            LostParameter lp = (LostParameter) m;
-                            parameter_types.get(id).remove(lp.getName());
-                            parameter_values.get(id).remove(lp.getName());
-                            par_values.get(id).clear();
-                            for (Map.Entry<String, Map<String, StringProperty>> par_value : parameter_values.get(id).entrySet()) {
-                                for (Map.Entry<String, StringProperty> sub_val : par_value.getValue().entrySet()) {
-                                    par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), parameter_values.get(id).get(par_value.getKey()).get(sub_val.getKey())));
-                                }
-                            }
-                        } else if (m instanceof ParameterUpdate) {
-                            ParameterUpdate pu = (ParameterUpdate) m;
-                            for (Map.Entry<String, String> sub_val : pu.getValue().entrySet()) {
-                                parameter_values.get(id).get(pu.getParameter()).get(sub_val.getKey()).set(sub_val.getValue());
-                            }
-                        } else if (m instanceof UserOnline) {
-                            UserOnline uo = (UserOnline) m;
-                            online_users.get(id).set(true);
-                        } else if (m instanceof UserOffline) {
-                            UserOffline uo = (UserOffline) m;
-                            online_users.get(id).set(false);
-                        } else {
-                            LOG.log(Level.WARNING, "Not supported yet.. {0}", new String(message.getPayload()));
-                        }
-                    });
+                    add_student(student);
                 }
 
-                Collection<ParType> par_types = mapper.readValue(getClass().getResourceAsStream("/sensors/types.json"), new TypeReference<Collection<ParType>>() {
+                Collection<Parameter> pars = mapper.readValue(getClass().getResourceAsStream("/parameters/types.json"), new TypeReference<Collection<Parameter>>() {
                 });
-                for (ParType par_type : par_types) {
-                    NewParameter np = new NewParameter(par_type.name, par_type.properties);
-                    u_parameter_types.put(par_type.getName(), np);
-                    mqtt.publish(String.valueOf(u.getId()) + "/output", mapper.writeValueAsBytes(np), 2, false);
+                for (Parameter par : pars) {
+                    u_parameter_types.put(par.getName(), par);
+                    mqtt.publish(u.getId() + "/output", mapper.writeValueAsBytes(new NewParameter(par.getName(), par.getProperties())), 2, false);
                 }
-                Map<String, Map<String, String>> par_vals = mapper.readValue(getClass().getResourceAsStream("/sensors/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
+                Map<String, Map<String, String>> vals = mapper.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
-                for (Map.Entry<String, Map<String, String>> par_val : par_vals.entrySet()) {
-                    u_parameter_values.put(par_val.getKey(), new HashMap<>());
-                    for (Map.Entry<String, String> sub_val : par_val.getValue().entrySet()) {
+                for (Map.Entry<String, Map<String, String>> val : vals.entrySet()) {
+                    u_parameter_values.put(val.getKey(), new HashMap<>());
+                    for (Map.Entry<String, String> sub_val : val.getValue().entrySet()) {
                         SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
-                        u_parameter_values.get(par_val.getKey()).put(sub_val.getKey(), val_prop);
-                        u_par_values.add(new ParameterValue(par_val.getKey() + "." + sub_val.getKey(), val_prop));
+                        u_parameter_values.get(val.getKey()).put(sub_val.getKey(), val_prop);
+                        u_par_values.add(new ParameterValue(val.getKey() + "." + sub_val.getKey(), val_prop));
                     }
-                    mqtt.publish(String.valueOf(u.getId()) + "/output", mapper.writeValueAsBytes(new ParameterUpdate(par_val.getKey(), par_val.getValue())), 2, false);
+                    mqtt.publish(u.getId() + "/output/" + val.getKey(), mapper.writeValueAsBytes(val.getValue()), 2, true);
                 }
             } catch (MqttException | IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
@@ -284,9 +203,16 @@ public class Context {
                 assert mqtt != null;
                 assert mqtt.isConnected();
                 try {
-                    mqtt.unsubscribe(String.valueOf(user.get().getId()) + "/input");
+                    mqtt.unsubscribe(user.get().getId() + "/input");
                     for (User student : students) {
-                        mqtt.unsubscribe(String.valueOf(student.getId()) + "/output");
+                        mqtt.unsubscribe(student.getId() + "/output/on-line");
+                        mqtt.unsubscribe(student.getId() + "/output");
+                        for (String par : parameter_types.get(student.getId()).keySet()) {
+                            mqtt.unsubscribe(student.getId() + "/output/" + par);
+                        }
+                    }
+                    for (User teacher : teachers) {
+                        mqtt.unsubscribe(teacher.getId() + "/output/on-line");
                     }
                     mqtt.disconnect();
                     mqtt.close();
@@ -311,15 +237,102 @@ public class Context {
     }
 
     public void add_teacher(User teacher) {
-        ur.add_teacher(user.get().getId(), teacher.getId());
-        online_users.put(teacher.getId(), new SimpleBooleanProperty(ur.is_online(teacher.getId())));
-        teachers.add(teacher);
+        try {
+            ur.add_teacher(user.get().getId(), teacher.getId());
+            mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
+                if (Boolean.parseBoolean(new String(message.getPayload()))) {
+                    online_users.get(teacher.getId()).set(true);
+                } else {
+                    online_users.get(teacher.getId()).set(false);
+                }
+            });
+            teachers.add(teacher);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     public void remove_teacher(User teacher) {
-        ur.remove_teacher(user.get().getId(), teacher.getId());
-        teachers.remove(teacher);
-        online_users.remove(teacher.getId());
+        try {
+            ur.remove_teacher(user.get().getId(), teacher.getId());
+            mqtt.unsubscribe(teacher.getId() + "/output/on-line");
+            online_users.remove(teacher.getId());
+            teachers.remove(teacher);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void add_student(User student) {
+        try {
+            mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
+                if (Boolean.parseBoolean(new String(message.getPayload()))) {
+                    online_users.get(student.getId()).set(true);
+                } else {
+                    online_users.get(student.getId()).set(false);
+                }
+            });
+            par_values.put(student.getId(), FXCollections.observableArrayList());
+            parameter_values.put(student.getId(), new LinkedHashMap<>());
+            for (Map.Entry<String, Parameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
+                mqtt.subscribe(student.getId() + "/output/" + par_type.getKey(), (String topic, MqttMessage message) -> {
+                    Map<String, String> value = mapper.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
+                    });
+                    for (Map.Entry<String, String> val : value.entrySet()) {
+                        SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                        parameter_values.get(student.getId()).get(val.getKey()).put(val.getKey(), val_prop);
+                        par_values.get(student.getId()).add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                    }
+                });
+            }
+
+            parameter_types.put(student.getId(), new LinkedHashMap<>());
+            mqtt.subscribe(student.getId() + "/output", (String topic, MqttMessage message) -> {
+                LOG.log(Level.INFO, "New message: {0}", message);
+                Message m = mapper.readValue(message.getPayload(), Message.class);
+                if (m instanceof NewParameter) {
+                    NewParameter np = (NewParameter) m;
+                    parameter_types.get(student.getId()).put(np.getName(), new Parameter(np.getName(), np.getProperties()));
+                    mqtt.subscribe(student.getId() + "/output/" + np.getName(), (String par_topic, MqttMessage par_value) -> {
+                        Map<String, String> value = mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
+                        });
+                        for (Map.Entry<String, String> val : value.entrySet()) {
+                            parameter_values.get(student.getId()).get(np.getName()).get(val.getKey()).set(val.getValue());
+                        }
+                    });
+                } else if (m instanceof LostParameter) {
+                    LostParameter lp = (LostParameter) m;
+                    mqtt.unsubscribe(student.getId() + "/output/" + lp.getName());
+                    parameter_types.get(student.getId()).remove(lp.getName());
+                    parameter_values.get(student.getId()).remove(lp.getName());
+                    par_values.get(student.getId()).clear();
+                    for (Map.Entry<String, Map<String, StringProperty>> par_value : parameter_values.get(student.getId()).entrySet()) {
+                        for (Map.Entry<String, StringProperty> sub_val : par_value.getValue().entrySet()) {
+                            par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), parameter_values.get(student.getId()).get(par_value.getKey()).get(sub_val.getKey())));
+                        }
+                    }
+                }
+            });
+            students.add(student);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void remove_student(User student) {
+        try {
+            mqtt.unsubscribe(student.getId() + "/output/on-line");
+            mqtt.unsubscribe(student.getId() + "/output");
+            for (String par : parameter_types.get(student.getId()).keySet()) {
+                mqtt.unsubscribe(student.getId() + "/output/" + par);
+            }
+            parameter_types.remove(student.getId());
+            parameter_values.remove(student.getId());
+            online_users.remove(student.getId());
+            students.remove(student);
+        } catch (MqttException ex) {
+            Logger.getLogger(Context.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void par_update(String name) {
@@ -328,13 +341,13 @@ public class Context {
             val.put(par_val.getKey(), par_val.getValue().get());
         }
         try {
-            mqtt.publish(user.get().getId() + "/output", mapper.writeValueAsBytes(new ParameterUpdate(name, val)), 2, false);
+            mqtt.publish(user.get().getId() + "/output/" + name, mapper.writeValueAsBytes(val), 2, true);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    public NewParameter getParameterType(String name) {
+    public Parameter getParameterType(String name) {
         return u_parameter_types.get(name);
     }
 
@@ -346,7 +359,7 @@ public class Context {
         return u_par_values;
     }
 
-    public NewParameter getParameterType(long user_id, String name) {
+    public Parameter getParameterType(long user_id, String name) {
         return parameter_types.get(user_id).get(name);
     }
 
@@ -374,26 +387,6 @@ public class Context {
 
         public StringProperty valueProperty() {
             return value;
-        }
-    }
-
-    private static class ParType {
-
-        private final String name;
-        private final Map<String, String> properties;
-
-        @JsonCreator
-        public ParType(@JsonProperty("name") String name, @JsonProperty("properties") Map<String, String> properties) {
-            this.name = name;
-            this.properties = properties;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Map<String, String> getProperties() {
-            return Collections.unmodifiableMap(properties);
         }
     }
 }
