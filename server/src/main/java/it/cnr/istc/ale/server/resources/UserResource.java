@@ -70,7 +70,7 @@ public class UserResource implements UserAPI {
             em.getTransaction().commit();
             return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
         } catch (RollbackException e) {
-            LOG.log(Level.INFO, "new user", e);
+            LOG.log(Level.WARNING, "new user", e);
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.FORBIDDEN);
         }
     }
@@ -80,7 +80,6 @@ public class UserResource implements UserAPI {
     @Path("get_user")
     @Produces(MediaType.APPLICATION_JSON)
     public User get_user(@QueryParam("user_id") long user_id) {
-        LOG.log(Level.INFO, "get_user: {0}", user_id);
         UserEntity ue = App.emf.createEntityManager().find(UserEntity.class, user_id);
         return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
     }
@@ -104,7 +103,6 @@ public class UserResource implements UserAPI {
     @Path("find")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> find_users(@QueryParam("search_string") String search_string) {
-        LOG.log(Level.INFO, "find: {0}", search_string);
         EntityManager em = App.emf.createEntityManager();
         TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.first_name LIKE :search_string OR u.last_name LIKE :search_string", UserEntity.class);
         query.setParameter("search_string", search_string);
@@ -116,7 +114,6 @@ public class UserResource implements UserAPI {
     @Path("login")
     @Produces(MediaType.APPLICATION_JSON)
     public User login(@FormParam("email") String email, @FormParam("password") String password) {
-        LOG.log(Level.INFO, "login: {0}", email);
         EntityManager em = App.emf.createEntityManager();
         TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.email = :email AND u.password = :password", UserEntity.class);
         query.setParameter("email", email);

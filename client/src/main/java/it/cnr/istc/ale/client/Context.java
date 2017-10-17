@@ -48,6 +48,8 @@ import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -160,12 +162,25 @@ public class Context {
             lessons.addAll(lr.get_lessons(u.getId()));
             try {
                 mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, String.valueOf(u.getId()), new MemoryPersistence());
+                mqtt.setCallback(new MqttCallback() {
+                    @Override
+                    public void connectionLost(Throwable cause) {
+                        LOG.log(Level.SEVERE, null, cause);
+                    }
+
+                    @Override
+                    public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    }
+
+                    @Override
+                    public void deliveryComplete(IMqttDeliveryToken token) {
+                    }
+                });
                 MqttConnectOptions options = new MqttConnectOptions();
                 options.setCleanSession(false);
                 options.setAutomaticReconnect(true);
                 mqtt.connect(options);
                 mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
-                    LOG.log(Level.INFO, "New message: {0}", message);
                     Message m = mapper.readValue(message.getPayload(), Message.class);
                     if (m instanceof NewStudent) {
                         add_student(ur.get_user(((NewStudent) m).getStudentId()));
@@ -186,16 +201,20 @@ public class Context {
                     u_parameter_types.put(par.getName(), par);
                     mqtt.publish(u.getId() + "/output", mapper.writeValueAsBytes(new NewParameter(par.getName(), par.getProperties())), 2, false);
                 }
-                Map<String, Map<String, String>> vals = mapper.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
+                Map<String, Map<String, String>> values = mapper.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
-                for (Map.Entry<String, Map<String, String>> val : vals.entrySet()) {
-                    u_parameter_values.put(val.getKey(), new HashMap<>());
-                    for (Map.Entry<String, String> sub_val : val.getValue().entrySet()) {
-                        SimpleStringProperty val_prop = new SimpleStringProperty(sub_val.getValue());
-                        u_parameter_values.get(val.getKey()).put(sub_val.getKey(), val_prop);
-                        u_par_values.add(new ParameterValue(val.getKey() + "." + sub_val.getKey(), val_prop));
+                for (Map.Entry<String, Map<String, String>> value : values.entrySet()) {
+                    u_parameter_values.put(value.getKey(), new HashMap<>());
+                    for (Map.Entry<String, String> val : value.getValue().entrySet()) {
+                        if (u_parameter_values.get(value.getKey()).containsKey(val.getKey())) {
+                            u_parameter_values.get(value.getKey()).get(val.getKey()).set(val.getValue());
+                        } else {
+                            SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                            u_parameter_values.get(value.getKey()).put(val.getKey(), val_prop);
+                            u_par_values.add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                        }
                     }
-                    mqtt.publish(u.getId() + "/output/" + val.getKey(), mapper.writeValueAsBytes(val.getValue()), 2, true);
+                    mqtt.publish(u.getId() + "/output/" + value.getKey(), mapper.writeValueAsBytes(value.getValue()), 2, true);
                 }
             } catch (MqttException | IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
@@ -258,20 +277,24 @@ public class Context {
             par_values.put(student.getId(), FXCollections.observableArrayList());
             parameter_values.put(student.getId(), new LinkedHashMap<>());
             for (Map.Entry<String, Parameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
+                parameter_values.get(student.getId()).put(par_type.getKey(), new HashMap<>());
                 mqtt.subscribe(student.getId() + "/output/" + par_type.getKey(), (String topic, MqttMessage message) -> {
                     Map<String, String> value = mapper.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
                     });
                     for (Map.Entry<String, String> val : value.entrySet()) {
-                        SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
-                        parameter_values.get(student.getId()).get(val.getKey()).put(val.getKey(), val_prop);
-                        par_values.get(student.getId()).add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                        if (parameter_values.get(student.getId()).get(par_type.getKey()).containsKey(val.getKey())) {
+                            parameter_values.get(student.getId()).get(par_type.getKey()).get(val.getKey()).set(val.getValue());
+                        } else {
+                            SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                            parameter_values.get(student.getId()).get(par_type.getKey()).put(val.getKey(), val_prop);
+                            par_values.get(student.getId()).add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                        }
                     }
                 });
             }
 
             parameter_types.put(student.getId(), new LinkedHashMap<>());
             mqtt.subscribe(student.getId() + "/output", (String topic, MqttMessage message) -> {
-                LOG.log(Level.INFO, "New message: {0}", message);
                 Message m = mapper.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
@@ -280,7 +303,13 @@ public class Context {
                         Map<String, String> value = mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         });
                         for (Map.Entry<String, String> val : value.entrySet()) {
-                            parameter_values.get(student.getId()).get(np.getName()).get(val.getKey()).set(val.getValue());
+                            if (parameter_values.get(student.getId()).get(np.getName()).containsKey(val.getKey())) {
+                                parameter_values.get(student.getId()).get(np.getName()).get(val.getKey()).set(val.getValue());
+                            } else {
+                                SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                                parameter_values.get(student.getId()).get(np.getName()).put(val.getKey(), val_prop);
+                                par_values.get(student.getId()).add(new ParameterValue(val.getKey() + "." + val.getKey(), val_prop));
+                            }
                         }
                     });
                 } else if (m instanceof LostParameter) {

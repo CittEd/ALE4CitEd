@@ -21,8 +21,6 @@ import static it.cnr.istc.ale.server.Context.MQTT_PORT;
 import static it.cnr.istc.ale.server.Context.SERVICE_PORT;
 import it.cnr.istc.ale.server.resources.LessonResource;
 import it.cnr.istc.ale.server.resources.UserResource;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.ws.rs.core.UriBuilder;
@@ -42,7 +40,6 @@ import org.glassfish.jersey.server.ResourceConfig;
  */
 public class App {
 
-    private static final Logger LOG = Logger.getLogger(App.class.getName());
     public static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ALE_PU");
 
     /**
@@ -59,7 +56,6 @@ public class App {
                 return new BrokerFilter(broker) {
                     @Override
                     public void addConnection(ConnectionContext context, ConnectionInfo info) throws Exception {
-                        LOG.log(Level.INFO, "New connection: {0}", info);
                         if (!info.getClientId().equals(Context.SERVER_ID)) {
                             Context.getContext().addConnection(Long.parseLong(info.getClientId()));
                         }
@@ -68,7 +64,6 @@ public class App {
 
                     @Override
                     public void removeConnection(ConnectionContext context, ConnectionInfo info, Throwable error) throws Exception {
-                        LOG.log(Level.INFO, "Lost connection: {0}", info);
                         if (!info.getClientId().equals(Context.SERVER_ID)) {
                             Context.getContext().removeConnection(Long.parseLong(info.getClientId()));
                         }

@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -62,6 +64,20 @@ public class Context {
     private Context() {
         try {
             mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, SERVER_ID, new MemoryPersistence());
+            mqtt.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+                    LOG.log(Level.SEVERE, null, cause);
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                }
+            });
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(false);
             options.setAutomaticReconnect(true);
@@ -81,7 +97,6 @@ public class Context {
         try {
             mqtt.publish(id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 2, true);
             mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
-                LOG.log(Level.INFO, "New message: {0}", message);
                 Message m = mapper.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
