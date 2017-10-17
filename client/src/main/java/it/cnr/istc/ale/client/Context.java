@@ -29,6 +29,7 @@ import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,6 +39,7 @@ import java.util.logging.Logger;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -204,15 +206,11 @@ public class Context {
                 assert mqtt.isConnected();
                 try {
                     mqtt.unsubscribe(user.get().getId() + "/input");
-                    for (User student : students) {
-                        mqtt.unsubscribe(student.getId() + "/output/on-line");
-                        mqtt.unsubscribe(student.getId() + "/output");
-                        for (String par : parameter_types.get(student.getId()).keySet()) {
-                            mqtt.unsubscribe(student.getId() + "/output/" + par);
-                        }
+                    for (User student : new ArrayList<User>(students)) {
+                        remove_student(student);
                     }
-                    for (User teacher : teachers) {
-                        mqtt.unsubscribe(teacher.getId() + "/output/on-line");
+                    for (User teacher : new ArrayList<User>(teachers)) {
+                        remove_teacher(teacher);
                     }
                     mqtt.disconnect();
                     mqtt.close();
@@ -221,16 +219,7 @@ public class Context {
                 }
             }
             following_lessons.clear();
-            teachers.clear();
             lessons.clear();
-            students.clear();
-            u_parameter_types.clear();
-            u_parameter_values.clear();
-            u_par_values.clear();
-            online_users.clear();
-            parameter_types.clear();
-            parameter_values.clear();
-            par_values.clear();
             mqtt = null;
         }
         user.set(u);
@@ -239,6 +228,7 @@ public class Context {
     public void add_teacher(User teacher) {
         try {
             ur.add_teacher(user.get().getId(), teacher.getId());
+            online_users.put(teacher.getId(), new SimpleBooleanProperty());
             mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 if (Boolean.parseBoolean(new String(message.getPayload()))) {
                     online_users.get(teacher.getId()).set(true);
@@ -265,6 +255,7 @@ public class Context {
 
     private void add_student(User student) {
         try {
+            online_users.put(student.getId(), new SimpleBooleanProperty());
             mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 if (Boolean.parseBoolean(new String(message.getPayload()))) {
                     online_users.get(student.getId()).set(true);
