@@ -225,10 +225,10 @@ public class Context {
                 assert mqtt.isConnected();
                 try {
                     mqtt.unsubscribe(user.get().getId() + "/input");
-                    for (User student : new ArrayList<User>(students)) {
+                    for (User student : new ArrayList<>(students)) {
                         remove_student(student);
                     }
-                    for (User teacher : new ArrayList<User>(teachers)) {
+                    for (User teacher : new ArrayList<>(teachers)) {
                         remove_teacher(teacher);
                     }
                     mqtt.disconnect();
