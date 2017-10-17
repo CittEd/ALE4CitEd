@@ -95,7 +95,7 @@ public class Context {
             parameter_values.put(id, new HashMap<>());
         }
         try {
-            mqtt.publish(id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 2, true);
+            mqtt.publish(id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
             mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
                 Message m = mapper.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
@@ -123,7 +123,7 @@ public class Context {
                 mqtt.unsubscribe(id + "/output/" + par_type.getKey());
             }
             mqtt.unsubscribe(id + "/output");
-            mqtt.publish(id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 2, true);
+            mqtt.publish(id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 1, true);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -131,7 +131,7 @@ public class Context {
 
     public void add_teacher(long student_id, long teacher_id) {
         try {
-            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new NewStudent(student_id)), 2, false);
+            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new NewStudent(student_id)), 1, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -139,7 +139,7 @@ public class Context {
 
     public void remove_teacher(long student_id, long teacher_id) {
         try {
-            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new LostStudent(student_id)), 2, false);
+            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new LostStudent(student_id)), 1, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

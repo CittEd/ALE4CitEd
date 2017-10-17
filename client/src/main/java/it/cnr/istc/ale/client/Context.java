@@ -199,7 +199,7 @@ public class Context {
                 });
                 for (Parameter par : pars) {
                     u_parameter_types.put(par.getName(), par);
-                    mqtt.publish(u.getId() + "/output", mapper.writeValueAsBytes(new NewParameter(par.getName(), par.getProperties())), 2, false);
+                    mqtt.publish(u.getId() + "/output", mapper.writeValueAsBytes(new NewParameter(par.getName(), par.getProperties())), 1, false);
                 }
                 Map<String, Map<String, String>> values = mapper.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
@@ -214,7 +214,7 @@ public class Context {
                             u_par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
                         }
                     }
-                    mqtt.publish(u.getId() + "/output/" + value.getKey(), mapper.writeValueAsBytes(value.getValue()), 2, true);
+                    mqtt.publish(u.getId() + "/output/" + value.getKey(), mapper.writeValueAsBytes(value.getValue()), 1, true);
                 }
             } catch (MqttException | IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
@@ -239,6 +239,9 @@ public class Context {
             }
             following_lessons.clear();
             lessons.clear();
+            u_parameter_types.clear();
+            u_parameter_values.clear();
+            u_par_values.clear();
             mqtt = null;
         }
         user.set(u);
@@ -352,7 +355,7 @@ public class Context {
             val.put(par_val.getKey(), par_val.getValue().get());
         }
         try {
-            mqtt.publish(user.get().getId() + "/output/" + name, mapper.writeValueAsBytes(val), 2, true);
+            mqtt.publish(user.get().getId() + "/output/" + name, mapper.writeValueAsBytes(val), 1, true);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
