@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -41,12 +40,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -155,22 +154,27 @@ public class MainController implements Initializable {
                 }
             }
         });
-        students.selectionModelProperty().addListener(new ChangeListener<MultipleSelectionModel<User>>() {
-            @Override
-            public void changed(ObservableValue<? extends MultipleSelectionModel<User>> observable, MultipleSelectionModel<User> oldValue, MultipleSelectionModel<User> newValue) {
-                User u = newValue.getSelectedItems().get(0);
-                if (!student_parent.containsKey(u)) {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("fxml/Student.fxml"));
+        students.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
+            if (newValue != null) {
+                if (!student_parent.containsKey(newValue)) {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Student.fxml"));
                     try {
                         Parent root = (Parent) loader.load();
                         StudentController sc = loader.getController();
-                        sc.setUser(u);
-                        student_parent.put(u, root);
+                        sc.setUser(newValue);
+                        student_parent.put(newValue, root);
                     } catch (IOException ex) {
                         Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                teach_h_box.getChildren().set(1, student_parent.get(u));
+                if (teach_h_box.getChildren().size() == 1) {
+                    teach_h_box.getChildren().add(student_parent.get(newValue));
+                    HBox.setHgrow(student_parent.get(newValue), Priority.ALWAYS);
+                } else {
+                    teach_h_box.getChildren().set(1, student_parent.get(newValue));
+                }
+            } else if (teach_h_box.getChildren().size() > 1) {
+                teach_h_box.getChildren().remove(1);
             }
         });
 

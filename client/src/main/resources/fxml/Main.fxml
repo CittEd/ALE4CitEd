@@ -113,7 +113,7 @@
                 </Tab>
                 <Tab text="Teach">
                     <content>
-                        <HBox prefHeight="100.0" prefWidth="200.0">
+                        <HBox fx:id="teach_h_box" prefHeight="100.0" prefWidth="200.0">
                             <children>
                                 <Accordion fx:id="teach_accord">
                                     <panes>
