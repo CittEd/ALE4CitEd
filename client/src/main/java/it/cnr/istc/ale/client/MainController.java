@@ -265,6 +265,7 @@ public class MainController implements Initializable {
 
     public void remove_selected_teachers() {
         for (User user : teachers.selectionModelProperty().get().getSelectedItems()) {
+            Context.getContext().getUserResource().remove_teacher(Context.getContext().getUser().get().getId(), user.getId());
             Context.getContext().remove_teacher(user);
         }
     }

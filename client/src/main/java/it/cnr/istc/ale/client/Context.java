@@ -227,16 +227,11 @@ public class Context {
 
     public void add_teacher(User teacher) {
         try {
-            ur.add_teacher(user.get().getId(), teacher.getId());
             online_users.put(teacher.getId(), new SimpleBooleanProperty());
-            mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
-                if (Boolean.parseBoolean(new String(message.getPayload()))) {
-                    online_users.get(teacher.getId()).set(true);
-                } else {
-                    online_users.get(teacher.getId()).set(false);
-                }
-            });
             teachers.add(teacher);
+            mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
+                online_users.get(teacher.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
+            });
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -244,10 +239,9 @@ public class Context {
 
     public void remove_teacher(User teacher) {
         try {
-            ur.remove_teacher(user.get().getId(), teacher.getId());
             mqtt.unsubscribe(teacher.getId() + "/output/on-line");
-            online_users.remove(teacher.getId());
             teachers.remove(teacher);
+            online_users.remove(teacher.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -256,13 +250,11 @@ public class Context {
     private void add_student(User student) {
         try {
             online_users.put(student.getId(), new SimpleBooleanProperty());
+            students.add(student);
             mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
-                if (Boolean.parseBoolean(new String(message.getPayload()))) {
-                    online_users.get(student.getId()).set(true);
-                } else {
-                    online_users.get(student.getId()).set(false);
-                }
+                online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
+
             par_values.put(student.getId(), FXCollections.observableArrayList());
             parameter_values.put(student.getId(), new LinkedHashMap<>());
             for (Map.Entry<String, Parameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
@@ -304,7 +296,6 @@ public class Context {
                     }
                 }
             });
-            students.add(student);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -317,10 +308,10 @@ public class Context {
             for (String par : parameter_types.get(student.getId()).keySet()) {
                 mqtt.unsubscribe(student.getId() + "/output/" + par);
             }
+            students.remove(student);
+            online_users.remove(student.getId());
             parameter_types.remove(student.getId());
             parameter_values.remove(student.getId());
-            online_users.remove(student.getId());
-            students.remove(student);
         } catch (MqttException ex) {
             Logger.getLogger(Context.class.getName()).log(Level.SEVERE, null, ex);
         }

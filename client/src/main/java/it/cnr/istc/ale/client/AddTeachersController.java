@@ -81,6 +81,7 @@ public class AddTeachersController implements Initializable {
 
     public void add_users() {
         for (User user : users.selectionModelProperty().get().getSelectedItems()) {
+            Context.getContext().getUserResource().add_teacher(Context.getContext().getUser().get().getId(), user.getId());
             Context.getContext().add_teacher(user);
         }
         Context.getContext().getStage().close();
