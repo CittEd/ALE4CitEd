@@ -170,6 +170,9 @@ public class Context {
 
                     @Override
                     public void messageArrived(String topic, MqttMessage message) throws Exception {
+                        String[] split = topic.split("/");
+                        if (split.length == 3) {
+                        }
                     }
 
                     @Override
