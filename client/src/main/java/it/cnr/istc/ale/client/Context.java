@@ -200,7 +200,7 @@ public class Context {
                 });
                 for (Parameter par : pars) {
                     u_parameter_types.put(par.getName(), par);
-                    mqtt.publish(u.getId() + "/output", mapper.writeValueAsBytes(new NewParameter(par.getName(), par.getProperties())), 1, false);
+                    mqtt.publish(u.getId() + "/output", mapper.writeValueAsBytes(new NewParameter(par)), 1, false);
                 }
                 Map<String, Map<String, String>> values = mapper.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
@@ -303,17 +303,18 @@ public class Context {
                 Message m = mapper.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
-                    parameter_types.get(student.getId()).put(np.getName(), new Parameter(np.getName(), np.getProperties()));
-                    mqtt.subscribe(student.getId() + "/output/" + np.getName(), (String par_topic, MqttMessage par_value) -> {
+                    Parameter par_type = np.getParameter();
+                    parameter_types.get(student.getId()).put(par_type.getName(), par_type);
+                    mqtt.subscribe(student.getId() + "/output/" + par_type.getName(), (String par_topic, MqttMessage par_value) -> {
                         Map<String, String> value = mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         });
                         for (Map.Entry<String, String> val : value.entrySet()) {
-                            if (parameter_values.get(student.getId()).get(np.getName()).containsKey(val.getKey())) {
-                                parameter_values.get(student.getId()).get(np.getName()).get(val.getKey()).set(val.getValue());
+                            if (parameter_values.get(student.getId()).get(par_type.getName()).containsKey(val.getKey())) {
+                                parameter_values.get(student.getId()).get(par_type.getName()).get(val.getKey()).set(val.getValue());
                             } else {
                                 SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
-                                parameter_values.get(student.getId()).get(np.getName()).put(val.getKey(), val_prop);
-                                par_values.get(student.getId()).add(new ParameterValue(np.getName() + "." + val.getKey(), val_prop));
+                                parameter_values.get(student.getId()).get(par_type.getName()).put(val.getKey(), val_prop);
+                                par_values.get(student.getId()).add(new ParameterValue(par_type.getName() + "." + val.getKey(), val_prop));
                             }
                         }
                     });

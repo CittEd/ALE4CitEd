@@ -100,9 +100,10 @@ public class Context {
                 Message m = mapper.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
-                    parameter_types.get(id).put(np.getName(), new Parameter(np.getName(), np.getProperties()));
-                    mqtt.subscribe(id + "/output/" + np.getName(), (String par_topic, MqttMessage par_value) -> {
-                        parameter_values.get(id).put(np.getName(), mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
+                    Parameter par = np.getParameter();
+                    parameter_types.get(id).put(par.getName(), par);
+                    mqtt.subscribe(id + "/output/" + par.getName(), (String par_topic, MqttMessage par_value) -> {
+                        parameter_values.get(id).put(par.getName(), mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         }));
                     });
                 } else if (m instanceof LostParameter) {

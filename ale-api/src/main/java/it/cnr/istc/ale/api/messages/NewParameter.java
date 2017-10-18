@@ -18,8 +18,7 @@ package it.cnr.istc.ale.api.messages;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collections;
-import java.util.Map;
+import it.cnr.istc.ale.api.Parameter;
 
 /**
  *
@@ -27,20 +26,14 @@ import java.util.Map;
  */
 public class NewParameter extends Message {
 
-    private final String name;
-    private final Map<String, String> properties;
+    private final Parameter parameter;
 
     @JsonCreator
-    public NewParameter(@JsonProperty("name") String name, @JsonProperty("properties") Map<String, String> properties) {
-        this.name = name;
-        this.properties = properties;
+    public NewParameter(@JsonProperty("parameter") Parameter parameter) {
+        this.parameter = parameter;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Map<String, String> getProperties() {
-        return Collections.unmodifiableMap(properties);
+    public Parameter getParameter() {
+        return parameter;
     }
 }
