@@ -170,9 +170,7 @@ public class Context {
 
                     @Override
                     public void messageArrived(String topic, MqttMessage message) throws Exception {
-                        String[] split = topic.split("/");
-                        if (split.length == 3) {
-                        }
+                        LOG.log(Level.WARNING, "message arrived: {0} - {1}", new Object[]{topic, message});
                     }
 
                     @Override
@@ -280,9 +278,11 @@ public class Context {
                 online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
 
-            par_values.put(student.getId(), FXCollections.observableArrayList());
+            parameter_types.put(student.getId(), new LinkedHashMap<>());
             parameter_values.put(student.getId(), new LinkedHashMap<>());
+            par_values.put(student.getId(), FXCollections.observableArrayList());
             for (Map.Entry<String, Parameter> par_type : ur.get_parameter_types(student.getId()).entrySet()) {
+                parameter_types.get(student.getId()).put(par_type.getKey(), par_type.getValue());
                 parameter_values.get(student.getId()).put(par_type.getKey(), new HashMap<>());
                 mqtt.subscribe(student.getId() + "/output/" + par_type.getKey(), (String topic, MqttMessage message) -> {
                     Map<String, String> value = mapper.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
@@ -299,7 +299,6 @@ public class Context {
                 });
             }
 
-            parameter_types.put(student.getId(), new LinkedHashMap<>());
             mqtt.subscribe(student.getId() + "/output", (String topic, MqttMessage message) -> {
                 Message m = mapper.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
@@ -348,7 +347,7 @@ public class Context {
             parameter_types.remove(student.getId());
             parameter_values.remove(student.getId());
         } catch (MqttException ex) {
-            Logger.getLogger(Context.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
