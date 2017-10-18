@@ -47,7 +47,7 @@
                                     <panes>
                                         <TitledPane text="Events">
                                             <content>
-                                                <VBox prefHeight="200.0" prefWidth="100.0">
+                                                <VBox>
                                                     <children>
                                                         <ListView fx:id="events" VBox.vgrow="ALWAYS" />
                                                     </children>
@@ -56,9 +56,9 @@
                                         </TitledPane>
                                         <TitledPane text="Lessons">
                                             <content>
-                                                <VBox prefHeight="200.0" prefWidth="100.0">
+                                                <VBox>
                                                     <children>
-                                                        <ListView fx:id="following_lessons" />
+                                                        <ListView fx:id="following_lessons" VBox.vgrow="ALWAYS" />
                                                     </children>
                                                 </VBox>
                                             </content>
@@ -76,7 +76,7 @@
                                                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <ListView fx:id="teachers" GridPane.rowSpan="2147483647" />
+                                                        <ListView fx:id="teachers" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS" />
                                                         <Button fx:id="add_teachers_button" mnemonicParsing="false" onAction="#add_teachers" GridPane.columnIndex="1">
                                                             <graphic>
                                                                 <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -130,7 +130,7 @@
                                                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <ListView fx:id="lessons" GridPane.rowSpan="2147483647" />
+                                                        <ListView fx:id="lessons" GridPane.rowSpan="2147483647" GridPane.vgrow="ALWAYS" />
                                                         <Button fx:id="add_lesson_button" mnemonicParsing="false" onAction="#add_lesson" GridPane.columnIndex="1">
                                                             <graphic>
                                                                 <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -161,9 +161,9 @@
                                         </TitledPane>
                                         <TitledPane text="Students">
                                             <content>
-                                                <VBox prefHeight="200.0" prefWidth="100.0">
+                                                <VBox>
                                                     <children>
-                                                        <ListView fx:id="students" />
+                                                        <ListView fx:id="students" VBox.vgrow="ALWAYS" />
                                                     </children>
                                                 </VBox>
                                             </content>
@@ -178,7 +178,7 @@
                     <content>
                         <VBox>
                             <children>
-                                <TableView fx:id="par_values" editable="true">
+                                <TableView fx:id="par_values" editable="true" VBox.vgrow="ALWAYS">
                                     <columns>
                                         <TableColumn fx:id="par_names" editable="false" prefWidth="75.0" text="Name" />
                                         <TableColumn fx:id="par_vals" prefWidth="75.0" text="Value" />

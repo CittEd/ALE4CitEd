@@ -19,20 +19,16 @@ package it.cnr.istc.ale.client;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
-import java.io.IOException;
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
@@ -44,7 +40,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.stage.Modality;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -54,6 +50,7 @@ import javafx.stage.Stage;
  */
 public class MainController implements Initializable {
 
+    private static final Logger LOG = Logger.getLogger(MainController.class.getName());
     @FXML
     private MenuItem login;
     @FXML
@@ -90,8 +87,8 @@ public class MainController implements Initializable {
     private TableColumn<Context.ParameterValue, String> par_names;
     @FXML
     private TableColumn<Context.ParameterValue, String> par_vals;
-    private Parent student_parent;
-    private StudentController student_controller;
+    private final StudentGrid student_grid = new StudentGrid();
+    private static final FileChooser FILE_CHOOSER = new FileChooser();
 
     /**
      * Initializes the controller class.
@@ -154,23 +151,16 @@ public class MainController implements Initializable {
             }
         });
 
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Student.fxml"));
-            student_parent = loader.load();
-            HBox.setHgrow(student_parent, Priority.ALWAYS);
-            student_controller = loader.getController();
-        } catch (IOException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        HBox.setHgrow(student_grid, Priority.ALWAYS);
 
         students.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
             if (newValue != null) {
                 if (teach_h_box.getChildren().size() == 1) {
-                    teach_h_box.getChildren().add(student_parent);
-                } else if (teach_h_box.getChildren().get(1) != student_parent) {
-                    teach_h_box.getChildren().set(1, student_parent);
+                    teach_h_box.getChildren().add(student_grid);
+                } else if (teach_h_box.getChildren().get(1) != student_grid) {
+                    teach_h_box.getChildren().set(1, student_grid);
                 }
-                student_controller.setUser(newValue);
+                student_grid.setUser(newValue);
             }
         });
 
@@ -187,26 +177,7 @@ public class MainController implements Initializable {
     }
 
     public void login() {
-        try {
-            Stage tmp_stage = Context.getContext().getStage();
-
-            Stage login_stage = new Stage();
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/Login.fxml"));
-
-            Scene scene = new Scene(root);
-
-            login_stage.setTitle("Login");
-            login_stage.setScene(scene);
-            login_stage.initOwner(tmp_stage);
-            login_stage.initModality(Modality.APPLICATION_MODAL);
-            login_stage.setResizable(false);
-            Context.getContext().setStage(login_stage);
-            login_stage.showAndWait();
-
-            Context.getContext().setStage(tmp_stage);
-        } catch (IOException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        new LoginDialog().showAndWait().ifPresent(user -> Context.getContext().login(user.email, user.password));
     }
 
     public void logout() {
@@ -214,26 +185,7 @@ public class MainController implements Initializable {
     }
 
     public void new_user() {
-        try {
-            Stage tmp_stage = Context.getContext().getStage();
-
-            Stage login_stage = new Stage();
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/NewUser.fxml"));
-
-            Scene scene = new Scene(root);
-
-            login_stage.setTitle("New user");
-            login_stage.setScene(scene);
-            login_stage.initOwner(tmp_stage);
-            login_stage.initModality(Modality.APPLICATION_MODAL);
-            login_stage.setResizable(false);
-            Context.getContext().setStage(login_stage);
-            login_stage.showAndWait();
-
-            Context.getContext().setStage(tmp_stage);
-        } catch (IOException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        new NewUserDialog().showAndWait().ifPresent(user -> Context.getContext().new_user(user.email, user.password, user.first_name, user.last_name));
     }
 
     public void exit() {
@@ -241,26 +193,12 @@ public class MainController implements Initializable {
     }
 
     public void add_teachers() {
-        try {
-            Stage tmp_stage = Context.getContext().getStage();
-
-            Stage login_stage = new Stage();
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/AddTeachers.fxml"));
-
-            Scene scene = new Scene(root);
-
-            login_stage.setTitle("Add teachers");
-            login_stage.setScene(scene);
-            login_stage.initOwner(tmp_stage);
-            login_stage.initModality(Modality.APPLICATION_MODAL);
-            login_stage.setResizable(false);
-            Context.getContext().setStage(login_stage);
-            login_stage.showAndWait();
-
-            Context.getContext().setStage(tmp_stage);
-        } catch (IOException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        new AddTeachersDialog().showAndWait().ifPresent(teachers -> {
+            for (User teacher : teachers) {
+                Context.getContext().getUserResource().add_teacher(Context.getContext().getUser().get().getId(), teacher.getId());
+                Context.getContext().add_teacher(teacher);
+            }
+        });
     }
 
     public void remove_selected_teachers() {
@@ -271,6 +209,16 @@ public class MainController implements Initializable {
     }
 
     public void add_lesson() {
+        FILE_CHOOSER.setTitle("Open Lesson File");
+        FILE_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
+        FILE_CHOOSER.getExtensionFilters().clear();
+        FILE_CHOOSER.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Lesson", "*.json"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+        File lesson_file = FILE_CHOOSER.showOpenDialog(Context.getContext().getStage());
+        if (lesson_file != null) {
+        }
     }
 
     public void remove_selected_lessons() {

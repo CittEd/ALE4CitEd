@@ -17,38 +17,46 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.User;
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 
 /**
- * FXML Controller class
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class StudentController implements Initializable {
+public class StudentGrid extends GridPane {
 
-    @FXML
-    private TextField first_name;
-    @FXML
-    private TextField last_name;
-    @FXML
-    private TableView<Context.ParameterValue> par_values;
-    @FXML
-    private TableColumn<Context.ParameterValue, String> par_names;
-    @FXML
-    private TableColumn<Context.ParameterValue, String> par_vals;
+    private final TextField first_name = new TextField();
+    private final TextField last_name = new TextField();
+    private final TableView<Context.ParameterValue> par_values = new TableView<>();
+    private final TableColumn<Context.ParameterValue, String> par_names = new TableColumn<>("Name");
+    private final TableColumn<Context.ParameterValue, String> par_vals = new TableColumn<>("Value");
 
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
+    public StudentGrid() {
+        setHgap(10);
+        setVgap(10);
+        setPadding(new Insets(10));
+        setHgrow(first_name, Priority.ALWAYS);
+        setHgrow(last_name, Priority.ALWAYS);
+        setVgrow(par_values, Priority.ALWAYS);
+        setHgrow(par_values, Priority.ALWAYS);
+
+        add(new Label("First name:"), 0, 0);
+        first_name.setPromptText("First name");
+        add(first_name, 1, 0);
+        add(new Label("Last name:"), 0, 1);
+        last_name.setPromptText("Last name");
+        add(last_name, 1, 1);
+
+        add(par_values, 0, 2, 2, 1);
+        par_values.getColumns().addAll(par_names, par_vals);
+
         par_values.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         par_names.setCellValueFactory(new PropertyValueFactory("name"));
         par_vals.setCellValueFactory(new PropertyValueFactory("value"));
