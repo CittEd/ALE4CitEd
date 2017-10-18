@@ -21,8 +21,6 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,7 +90,8 @@ public class MainController implements Initializable {
     private TableColumn<Context.ParameterValue, String> par_names;
     @FXML
     private TableColumn<Context.ParameterValue, String> par_vals;
-    private final Map<User, Parent> student_parent = new HashMap<>();
+    private Parent student_parent;
+    private StudentController student_controller;
 
     /**
      * Initializes the controller class.
@@ -154,27 +153,24 @@ public class MainController implements Initializable {
                 }
             }
         });
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Student.fxml"));
+            student_parent = loader.load();
+            HBox.setHgrow(student_parent, Priority.ALWAYS);
+            student_controller = loader.getController();
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         students.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
             if (newValue != null) {
-                if (!student_parent.containsKey(newValue)) {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Student.fxml"));
-                    try {
-                        Parent root = (Parent) loader.load();
-                        StudentController sc = loader.getController();
-                        sc.setUser(newValue);
-                        student_parent.put(newValue, root);
-                    } catch (IOException ex) {
-                        Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
                 if (teach_h_box.getChildren().size() == 1) {
-                    teach_h_box.getChildren().add(student_parent.get(newValue));
-                    HBox.setHgrow(student_parent.get(newValue), Priority.ALWAYS);
-                } else {
-                    teach_h_box.getChildren().set(1, student_parent.get(newValue));
+                    teach_h_box.getChildren().add(student_parent);
+                } else if (teach_h_box.getChildren().get(1) != student_parent) {
+                    teach_h_box.getChildren().set(1, student_parent);
                 }
-            } else if (teach_h_box.getChildren().size() > 1) {
-                teach_h_box.getChildren().remove(1);
+                student_controller.setUser(newValue);
             }
         });
 
