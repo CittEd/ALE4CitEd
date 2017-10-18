@@ -87,14 +87,19 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         grid.add(roles_table_view, 0, 2, 3, 1);
 
         roles_table_view.getColumns().addAll(role_column, student_column);
+        roles_table_view.setEditable(true);
 
         roles_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        role_column.setCellValueFactory(new PropertyValueFactory("name"));
-        student_column.setCellValueFactory(new PropertyValueFactory("value"));
+        role_column.setCellValueFactory(new PropertyValueFactory("role"));
+        student_column.setCellValueFactory(new PropertyValueFactory("student"));
         student_column.setCellFactory(ComboBoxTableCell.forTableColumn(new StringConverter<User>() {
             @Override
             public String toString(User user) {
-                return user.getLastName() + " " + user.getFirstName();
+                if (user == null) {
+                    return "Select one";
+                } else {
+                    return user.getLastName() + " " + user.getFirstName();
+                }
             }
 
             @Override
@@ -102,6 +107,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         }, Context.getContext().getStudents()));
+        student_column.setEditable(true);
         student_column.setOnEditCommit((TableColumn.CellEditEvent<StudentRole, User> event) -> {
             roles.get(event.getTablePosition().getRow()).student.set(event.getNewValue());
         });
@@ -119,7 +125,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             File lesson_file = FILE_CHOOSER.showOpenDialog(Context.getContext().getStage());
             if (lesson_file != null) {
                 try {
-                    lesson_model = Context.mapper.readValue(lesson_file, LessonModel.class);
+                    lesson_model = Context.MAPPER.readValue(lesson_file, LessonModel.class);
                     lesson_type_name.setText(lesson_model.getName());
                     for (String role : lesson_model.getRoles()) {
                         roles.add(new StudentRole(role, null));
@@ -135,29 +141,29 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().collect(Collectors.toMap(StudentRole::getRole, StudentRole::getStudent))) : null);
     }
 
-    private static class StudentRole {
+    public static class StudentRole {
 
-        private final StringProperty role;
-        private final ObjectProperty<User> student;
+        public final StringProperty role;
+        public final ObjectProperty<User> student;
 
-        private StudentRole(String name, User student) {
+        public StudentRole(String name, User student) {
             this.role = new SimpleStringProperty(name);
             this.student = new SimpleObjectProperty<>(student);
         }
 
-        private String getRole() {
+        public String getRole() {
             return role.get();
         }
 
-        private StringProperty roleProperty() {
+        public StringProperty roleProperty() {
             return role;
         }
 
-        private User getStudent() {
+        public User getStudent() {
             return student.get();
         }
 
-        private ObjectProperty<User> studentProperty() {
+        public ObjectProperty<User> studentProperty() {
             return student;
         }
     }

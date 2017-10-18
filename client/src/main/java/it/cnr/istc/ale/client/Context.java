@@ -68,7 +68,7 @@ public class Context {
     public static final String REST_URI = "http://" + HOST + ":" + SERVICE_PORT;
     public static final String MQTT_PORT = "1883";
     private static Context context;
-    public static final ObjectMapper mapper = new ObjectMapper();
+    public static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static Context getContext() {
         if (context == null) {
@@ -182,7 +182,7 @@ public class Context {
                 options.setAutomaticReconnect(true);
                 mqtt.connect(options);
                 mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
-                    Message m = mapper.readValue(message.getPayload(), Message.class);
+                    Message m = MAPPER.readValue(message.getPayload(), Message.class);
                     if (m instanceof NewStudent) {
                         add_student(ur.get_user(((NewStudent) m).getStudentId()));
                     } else if (m instanceof LostStudent) {
@@ -196,13 +196,13 @@ public class Context {
                     add_student(student);
                 }
 
-                Collection<Parameter> pars = mapper.readValue(getClass().getResourceAsStream("/parameters/types.json"), new TypeReference<Collection<Parameter>>() {
+                Collection<Parameter> pars = MAPPER.readValue(getClass().getResourceAsStream("/parameters/types.json"), new TypeReference<Collection<Parameter>>() {
                 });
                 for (Parameter par : pars) {
                     parameter_types.put(par.getName(), par);
-                    mqtt.publish(u.getId() + "/output", mapper.writeValueAsBytes(new NewParameter(par)), 1, false);
+                    mqtt.publish(u.getId() + "/output", MAPPER.writeValueAsBytes(new NewParameter(par)), 1, false);
                 }
-                Map<String, Map<String, String>> values = mapper.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
+                Map<String, Map<String, String>> values = MAPPER.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
                 });
                 for (Map.Entry<String, Map<String, String>> value : values.entrySet()) {
                     parameter_values.put(value.getKey(), new HashMap<>());
@@ -215,7 +215,7 @@ public class Context {
                             par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
                         }
                     }
-                    mqtt.publish(u.getId() + "/output/" + value.getKey(), mapper.writeValueAsBytes(value.getValue()), 1, true);
+                    mqtt.publish(u.getId() + "/output/" + value.getKey(), MAPPER.writeValueAsBytes(value.getValue()), 1, true);
                 }
             } catch (MqttException | IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
@@ -291,7 +291,7 @@ public class Context {
                 user_parameter_types.get(student.getId()).put(par_type.getKey(), par_type.getValue());
                 user_parameter_values.get(student.getId()).put(par_type.getKey(), new HashMap<>());
                 mqtt.subscribe(student.getId() + "/output/" + par_type.getKey(), (String topic, MqttMessage message) -> {
-                    Map<String, String> value = mapper.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
+                    Map<String, String> value = MAPPER.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
                     });
                     for (Map.Entry<String, String> val : value.entrySet()) {
                         if (user_parameter_values.get(student.getId()).get(par_type.getKey()).containsKey(val.getKey())) {
@@ -306,13 +306,13 @@ public class Context {
             }
 
             mqtt.subscribe(student.getId() + "/output", (String topic, MqttMessage message) -> {
-                Message m = mapper.readValue(message.getPayload(), Message.class);
+                Message m = MAPPER.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
                     Parameter par_type = np.getParameter();
                     user_parameter_types.get(student.getId()).put(par_type.getName(), par_type);
                     mqtt.subscribe(student.getId() + "/output/" + par_type.getName(), (String par_topic, MqttMessage par_value) -> {
-                        Map<String, String> value = mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
+                        Map<String, String> value = MAPPER.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         });
                         for (Map.Entry<String, String> val : value.entrySet()) {
                             if (user_parameter_values.get(student.getId()).get(par_type.getName()).containsKey(val.getKey())) {
@@ -364,7 +364,7 @@ public class Context {
             val.put(par_val.getKey(), par_val.getValue().get());
         }
         try {
-            mqtt.publish(user.get().getId() + "/output/" + name, mapper.writeValueAsBytes(val), 1, true);
+            mqtt.publish(user.get().getId() + "/output/" + name, MAPPER.writeValueAsBytes(val), 1, true);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -410,25 +410,6 @@ public class Context {
 
         public StringProperty valueProperty() {
             return value;
-        }
-    }
-
-    public static class LessonRole {
-
-        private final StringProperty role;
-        private final ObjectProperty<User> student;
-
-        public LessonRole(StringProperty role, ObjectProperty<User> student) {
-            this.role = role;
-            this.student = student;
-        }
-
-        public StringProperty roleProperty() {
-            return role;
-        }
-
-        public ObjectProperty<User> studentProperty() {
-            return student;
         }
     }
 }

@@ -40,6 +40,9 @@ public class App extends Application {
         stage.setTitle("Active Learning Environment");
         stage.setScene(scene);
         stage.show();
+
+//        LessonModel model = new LessonModel("First lesson model", Arrays.asList("Student1", "Student2"), Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+//        Context.MAPPER.writeValue(System.out, model);
     }
 
     @Override
