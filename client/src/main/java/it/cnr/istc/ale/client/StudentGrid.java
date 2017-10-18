@@ -34,9 +34,9 @@ public class StudentGrid extends GridPane {
 
     private final TextField first_name = new TextField();
     private final TextField last_name = new TextField();
-    private final TableView<Context.ParameterValue> par_values = new TableView<>();
-    private final TableColumn<Context.ParameterValue, String> par_names = new TableColumn<>("Name");
-    private final TableColumn<Context.ParameterValue, String> par_vals = new TableColumn<>("Value");
+    private final TableView<Context.ParameterValue> parameters_table_view = new TableView<>();
+    private final TableColumn<Context.ParameterValue, String> name_column = new TableColumn<>("Name");
+    private final TableColumn<Context.ParameterValue, String> value_column = new TableColumn<>("Value");
 
     public StudentGrid() {
         setHgap(10);
@@ -44,27 +44,29 @@ public class StudentGrid extends GridPane {
         setPadding(new Insets(10));
         setHgrow(first_name, Priority.ALWAYS);
         setHgrow(last_name, Priority.ALWAYS);
-        setVgrow(par_values, Priority.ALWAYS);
-        setHgrow(par_values, Priority.ALWAYS);
+        setVgrow(parameters_table_view, Priority.ALWAYS);
+        setHgrow(parameters_table_view, Priority.ALWAYS);
 
         add(new Label("First name:"), 0, 0);
         first_name.setPromptText("First name");
+        first_name.setEditable(false);
         add(first_name, 1, 0);
         add(new Label("Last name:"), 0, 1);
         last_name.setPromptText("Last name");
+        last_name.setEditable(false);
         add(last_name, 1, 1);
 
-        add(par_values, 0, 2, 2, 1);
-        par_values.getColumns().addAll(par_names, par_vals);
+        add(parameters_table_view, 0, 2, 2, 1);
+        parameters_table_view.getColumns().addAll(name_column, value_column);
 
-        par_values.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        par_names.setCellValueFactory(new PropertyValueFactory("name"));
-        par_vals.setCellValueFactory(new PropertyValueFactory("value"));
+        parameters_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        name_column.setCellValueFactory(new PropertyValueFactory("name"));
+        value_column.setCellValueFactory(new PropertyValueFactory("value"));
     }
 
     public void setUser(User user) {
         first_name.setText(user.getFirstName());
         last_name.setText(user.getLastName());
-        par_values.setItems(Context.getContext().getParameterValues(user.getId()));
+        parameters_table_view.setItems(Context.getContext().getParameterValues(user.getId()));
     }
 }

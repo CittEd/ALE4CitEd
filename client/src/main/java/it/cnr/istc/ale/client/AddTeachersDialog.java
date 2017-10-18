@@ -37,12 +37,12 @@ import javafx.scene.layout.GridPane;
  */
 public class AddTeachersDialog extends Dialog<User[]> {
 
-    private final ButtonType add_button = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
     private final GridPane grid = new GridPane();
     private final TextField find_field = new TextField();
     private final Button find_button = new Button("Find");
     private final ObservableList<User> found_users = FXCollections.observableArrayList();
-    private ListView<User> found_users_view = new ListView<>(found_users);
+    private ListView<User> found_users_list_view = new ListView<>(found_users);
+    private final ButtonType add_button = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
 
     public AddTeachersDialog() {
         setTitle("Add teachers");
@@ -53,10 +53,10 @@ public class AddTeachersDialog extends Dialog<User[]> {
         find_field.setPromptText("Teacher");
         grid.add(find_field, 1, 0);
         grid.add(find_button, 2, 0);
-        grid.add(found_users_view, 0, 1, 3, 1);
+        grid.add(found_users_list_view, 0, 1, 3, 1);
         getDialogPane().setContent(grid);
 
-        found_users_view.setCellFactory((ListView<User> param) -> new ListCell<User>() {
+        found_users_list_view.setCellFactory((ListView<User> param) -> new ListCell<User>() {
             @Override
             protected void updateItem(User user, boolean empty) {
                 super.updateItem(user, empty);
@@ -72,7 +72,7 @@ public class AddTeachersDialog extends Dialog<User[]> {
         });
 
         getDialogPane().getButtonTypes().add(add_button);
-        getDialogPane().lookupButton(add_button).disableProperty().bind(Bindings.isEmpty(found_users_view.selectionModelProperty().get().getSelectedItems()));
-        setResultConverter((ButtonType param) -> param == add_button ? found_users_view.getSelectionModel().getSelectedItems().toArray(new User[found_users_view.getSelectionModel().getSelectedItems().size()]) : null);
+        getDialogPane().lookupButton(add_button).disableProperty().bind(Bindings.isEmpty(found_users_list_view.selectionModelProperty().get().getSelectedItems()));
+        setResultConverter((ButtonType param) -> param == add_button ? found_users_list_view.getSelectionModel().getSelectedItems().toArray(new User[found_users_list_view.getSelectionModel().getSelectedItems().size()]) : null);
     }
 }

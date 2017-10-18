@@ -31,10 +31,10 @@ import javafx.scene.layout.GridPane;
  */
 public class LoginDialog extends Dialog<LoginDialog.LoginResult> {
 
-    private final ButtonType login_button = new ButtonType("Login", ButtonData.OK_DONE);
     private final GridPane grid = new GridPane();
     private final TextField email_field = new TextField();
     private final PasswordField password_field = new PasswordField();
+    private final ButtonType login_button = new ButtonType("Login", ButtonData.OK_DONE);
 
     public LoginDialog() {
         setTitle("Login");
@@ -56,12 +56,20 @@ public class LoginDialog extends Dialog<LoginDialog.LoginResult> {
 
     public static class LoginResult {
 
-        public final String email;
-        public final String password;
+        private final String email;
+        private final String password;
 
-        public LoginResult(String email, String password) {
+        private LoginResult(String email, String password) {
             this.email = email;
             this.password = password;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getPassword() {
+            return password;
         }
     }
 }

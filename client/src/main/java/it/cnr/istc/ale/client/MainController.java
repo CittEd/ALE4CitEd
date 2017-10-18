@@ -19,10 +19,8 @@ package it.cnr.istc.ale.client;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
-import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -40,7 +38,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -50,7 +47,6 @@ import javafx.stage.Stage;
  */
 public class MainController implements Initializable {
 
-    private static final Logger LOG = Logger.getLogger(MainController.class.getName());
     @FXML
     private MenuItem login;
     @FXML
@@ -88,7 +84,6 @@ public class MainController implements Initializable {
     @FXML
     private TableColumn<Context.ParameterValue, String> par_vals;
     private final StudentGrid student_grid = new StudentGrid();
-    private static final FileChooser FILE_CHOOSER = new FileChooser();
 
     /**
      * Initializes the controller class.
@@ -177,7 +172,7 @@ public class MainController implements Initializable {
     }
 
     public void login() {
-        new LoginDialog().showAndWait().ifPresent(user -> Context.getContext().login(user.email, user.password));
+        new LoginDialog().showAndWait().ifPresent(user -> Context.getContext().login(user.getEmail(), user.getPassword()));
     }
 
     public void logout() {
@@ -185,7 +180,7 @@ public class MainController implements Initializable {
     }
 
     public void new_user() {
-        new NewUserDialog().showAndWait().ifPresent(user -> Context.getContext().new_user(user.email, user.password, user.first_name, user.last_name));
+        new NewUserDialog().showAndWait().ifPresent(user -> Context.getContext().new_user(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName()));
     }
 
     public void exit() {
@@ -193,8 +188,8 @@ public class MainController implements Initializable {
     }
 
     public void add_teachers() {
-        new AddTeachersDialog().showAndWait().ifPresent(teachers -> {
-            for (User teacher : teachers) {
+        new AddTeachersDialog().showAndWait().ifPresent(teachers_to_add -> {
+            for (User teacher : teachers_to_add) {
                 Context.getContext().getUserResource().add_teacher(Context.getContext().getUser().get().getId(), teacher.getId());
                 Context.getContext().add_teacher(teacher);
             }
@@ -209,16 +204,8 @@ public class MainController implements Initializable {
     }
 
     public void add_lesson() {
-        FILE_CHOOSER.setTitle("Open Lesson File");
-        FILE_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
-        FILE_CHOOSER.getExtensionFilters().clear();
-        FILE_CHOOSER.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Lesson", "*.json"),
-                new FileChooser.ExtensionFilter("All Files", "*.*")
-        );
-        File lesson_file = FILE_CHOOSER.showOpenDialog(Context.getContext().getStage());
-        if (lesson_file != null) {
-        }
+        new AddLessonDialog().showAndWait().ifPresent(new_lesson -> {
+        });
     }
 
     public void remove_selected_lessons() {

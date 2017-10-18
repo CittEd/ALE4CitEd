@@ -16,7 +16,6 @@
  */
 package it.cnr.istc.ale.client;
 
-import javafx.beans.binding.Bindings;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -31,12 +30,12 @@ import javafx.scene.layout.GridPane;
  */
 public class NewUserDialog extends Dialog<NewUserDialog.NewUserResult> {
 
-    private final ButtonType create_button = new ButtonType("Create", ButtonData.OK_DONE);
     private final GridPane grid = new GridPane();
     private final TextField email_field = new TextField();
     private final PasswordField password_field = new PasswordField();
     private final TextField first_name_field = new TextField();
     private final TextField last_name_field = new TextField();
+    private final ButtonType create_button = new ButtonType("Create", ButtonData.OK_DONE);
 
     public NewUserDialog() {
         setTitle("New user");
@@ -58,22 +57,38 @@ public class NewUserDialog extends Dialog<NewUserDialog.NewUserResult> {
         getDialogPane().setContent(grid);
 
         getDialogPane().getButtonTypes().add(create_button);
-        getDialogPane().lookupButton(create_button).disableProperty().bind(Bindings.or(email_field.textProperty().isEmpty(), password_field.textProperty().isEmpty()));
+        getDialogPane().lookupButton(create_button).disableProperty().bind(email_field.textProperty().isEmpty().or(password_field.textProperty().isEmpty()).or(first_name_field.textProperty().isEmpty()).or(last_name_field.textProperty().isEmpty()));
         setResultConverter((ButtonType param) -> param == create_button ? new NewUserResult(email_field.getText(), password_field.getText(), first_name_field.getText(), last_name_field.getText()) : null);
     }
 
     public static class NewUserResult {
 
-        public final String email;
-        public final String password;
-        public final String first_name;
-        public final String last_name;
+        private final String email;
+        private final String password;
+        private final String first_name;
+        private final String last_name;
 
-        public NewUserResult(String email, String password, String first_name, String last_name) {
+        private NewUserResult(String email, String password, String first_name, String last_name) {
             this.email = email;
             this.password = password;
             this.first_name = first_name;
             this.last_name = last_name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public String getFirstName() {
+            return first_name;
+        }
+
+        public String getLastName() {
+            return last_name;
         }
     }
 }
