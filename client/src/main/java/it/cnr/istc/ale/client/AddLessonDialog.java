@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -137,8 +137,13 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         });
 
         getDialogPane().getButtonTypes().add(add_button);
-        getDialogPane().lookupButton(add_button).disableProperty().bind(Bindings.and(lesson_type_name.textProperty().isEmpty(), lesson_name.textProperty().isEmpty()));
-        setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().collect(Collectors.toMap(StudentRole::getRole, StudentRole::getStudent))) : null);
+        getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_type_name.textProperty().isEmpty().or(lesson_name.textProperty().isEmpty()).or(new BooleanBinding() {
+            @Override
+            protected boolean computeValue() {
+                return roles.stream().anyMatch(role -> role.student.get() == null);
+            }
+        }));
+        setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().collect(Collectors.toMap(StudentRole::getRole, StudentRole::getStudentId))) : null);
     }
 
     public static class StudentRole {
@@ -159,8 +164,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             return role;
         }
 
-        public User getStudent() {
-            return student.get();
+        public Long getStudentId() {
+            return student.get().getId();
         }
 
         public ObjectProperty<User> studentProperty() {
@@ -172,9 +177,9 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
 
         private final LessonModel model;
         private final String lesson_name;
-        private final Map<String, User> roles;
+        private final Map<String, Long> roles;
 
-        private AddLessonResult(LessonModel model, String lesson_name, Map<String, User> roles) {
+        private AddLessonResult(LessonModel model, String lesson_name, Map<String, Long> roles) {
             this.model = model;
             this.lesson_name = lesson_name;
             this.roles = roles;
@@ -188,7 +193,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             return lesson_name;
         }
 
-        public Map<String, User> getRoles() {
+        public Map<String, Long> getRoles() {
             return Collections.unmodifiableMap(roles);
         }
     }

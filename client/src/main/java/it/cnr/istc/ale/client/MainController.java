@@ -205,6 +205,8 @@ public class MainController implements Initializable {
 
     public void add_lesson() {
         new AddLessonDialog().showAndWait().ifPresent(new_lesson -> {
+            Lesson lesson = Context.getContext().getLessonResource().new_lesson(Context.getContext().getUser().get().getId(), new_lesson.getLessonName(), new_lesson.getModel(), new_lesson.getRoles());
+            Context.getContext().add_lesson(lesson);
         });
     }
 

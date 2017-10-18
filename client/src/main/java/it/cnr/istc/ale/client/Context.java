@@ -106,6 +106,10 @@ public class Context {
         return ur;
     }
 
+    public LessonResource getLessonResource() {
+        return lr;
+    }
+
     public Stage getStage() {
         return stage;
     }
