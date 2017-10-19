@@ -131,6 +131,15 @@ public class MainController implements Initializable {
 
         teach_accord.setExpandedPane(teach_accord.getPanes().get(0));
         lessons.setItems(Context.getContext().getLessons());
+        lessons.setCellFactory((ListView<Lesson> param) -> new ListCell<Lesson>() {
+            @Override
+            protected void updateItem(Lesson lesson, boolean empty) {
+                super.updateItem(lesson, empty);
+                if (!empty) {
+                    setText(lesson.getName());
+                }
+            }
+        });
         add_lesson_button.disableProperty().bind(user.isNull());
         remove_lesson_button.disableProperty().bind(Bindings.isEmpty(lessons.selectionModelProperty().get().getSelectedItems()));
         students.setItems(Context.getContext().getStudents());

@@ -43,11 +43,10 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        Context context = Context.getContext();
-        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + context.getHost() + ":" + context.getServicePort()).build(), new ResourceConfig(UserResource.class, LessonResource.class));
+        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.ServicePort)).build(), new ResourceConfig(UserResource.class, LessonResource.class));
 
         BrokerService broker = new BrokerService();
-        broker.addConnector(UriBuilder.fromUri("mqtt://" + context.getHost() + ":" + context.getMqttPort()).build());
+        broker.addConnector(UriBuilder.fromUri("mqtt://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort)).build());
         broker.setPlugins(new BrokerPlugin[]{new BrokerPlugin() {
             @Override
             public Broker installPlugin(Broker broker) throws Exception {

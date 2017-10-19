@@ -36,7 +36,7 @@ public class LessonResource implements LessonAPI {
 
     public LessonResource(Client client) {
         this.client = client;
-        this.rest_uri = "http://" + Context.getContext().getHost() + ":" + Context.getContext().getServicePort();
+        this.rest_uri = "http://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.ServicePort);
     }
 
     @Override

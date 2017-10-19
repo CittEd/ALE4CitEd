@@ -26,7 +26,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -42,7 +44,10 @@ public class LessonResource implements LessonAPI {
     private static final Logger LOG = Logger.getLogger(LessonResource.class.getName());
 
     @Override
-    public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles) {
+    @POST
+    @Path("new_lesson")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Lesson new_lesson(@FormParam("teacher_id") long teacher_id, @FormParam("lesson_name") String lesson_name, @FormParam("model") String model, @FormParam("roles") String roles) {
         try {
             return Context.getContext().newLesson(teacher_id, lesson_name, Context.MAPPER.readValue(model, LessonModel.class), Context.MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
             }));

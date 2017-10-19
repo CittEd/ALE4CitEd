@@ -28,9 +28,9 @@ import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.model.LessonModel;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -61,9 +61,6 @@ public class Context {
         }
         return context;
     }
-    private String host;
-    private String service_port;
-    private String mqtt_port;
     private MqttClient mqtt;
     private final Map<Long, Map<String, Parameter>> parameter_types = new HashMap<>();
     private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
@@ -73,12 +70,7 @@ public class Context {
 
     private Context() {
         try {
-            Map<String, String> config = MAPPER.readValue(getClass().getResourceAsStream("/config.json"), new TypeReference<Map<String, String>>() {
-            });
-            host = config.get("host");
-            service_port = config.get("service-port");
-            mqtt_port = config.get("mqtt-port");
-            mqtt = new MqttClient("tcp://" + host + ":" + mqtt_port, SERVER_ID, new MemoryPersistence());
+            mqtt = new MqttClient("tcp://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort), SERVER_ID, new MemoryPersistence());
             mqtt.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
@@ -97,21 +89,9 @@ public class Context {
             options.setCleanSession(false);
             options.setAutomaticReconnect(true);
             mqtt.connect(options);
-        } catch (MqttException | IOException ex) {
+        } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public String getServicePort() {
-        return service_port;
-    }
-
-    public String getMqttPort() {
-        return mqtt_port;
     }
 
     public void addConnection(long id) {
@@ -203,10 +183,10 @@ public class Context {
     }
 
     public Collection<Lesson> get_lessons(long teacher_id) {
-        return lessons.get(teacher_id);
+        return lessons.containsKey(teacher_id) ? lessons.get(teacher_id) : Collections.emptyList();
     }
 
     public Collection<Lesson> get_followed_lessons(long student_id) {
-        return followed_lessons.get(student_id);
+        return followed_lessons.containsKey(student_id) ? followed_lessons.get(student_id) : Collections.emptyList();
     }
 }
