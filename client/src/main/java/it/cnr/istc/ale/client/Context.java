@@ -89,7 +89,7 @@ public class Context {
     private Stage stage;
     private final ObjectProperty<User> user = new SimpleObjectProperty<>();
     private final ObservableList<Event> events = FXCollections.observableArrayList();
-    private final ObservableList<Lesson> following_lessons = FXCollections.observableArrayList();
+    private final ObservableList<Lesson> followed_lessons = FXCollections.observableArrayList();
     private final ObservableList<User> teachers = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
     private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
     private final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
@@ -148,7 +148,7 @@ public class Context {
     }
 
     public ObservableList<Lesson> getFollowingLessons() {
-        return following_lessons;
+        return followed_lessons;
     }
 
     public ObservableList<User> getTeachers() {
@@ -183,8 +183,12 @@ public class Context {
         if (u != null) {
             assert user.isNull().get();
             assert mqtt == null;
-            following_lessons.addAll(lr.get_followed_lessons(u.getId()));
-            lessons.addAll(lr.get_lessons(u.getId()));
+            for (Lesson lesson : lr.get_followed_lessons(u.getId())) {
+                add_followed_lesson(lesson);
+            }
+            for (Lesson lesson : lr.get_lessons(u.getId())) {
+                add_lesson(lesson);
+            }
             try {
                 mqtt = new MqttClient("tcp://" + host + ":" + mqtt_port, String.valueOf(u.getId()), new MemoryPersistence());
                 mqtt.setCallback(new MqttCallback() {
@@ -263,14 +267,26 @@ public class Context {
                     LOG.log(Level.SEVERE, null, ex);
                 }
             }
-            following_lessons.clear();
-            lessons.clear();
+            for (Lesson lesson : new ArrayList<>(followed_lessons)) {
+                remove_followed_lesson(lesson);
+            }
+            for (Lesson lesson : new ArrayList<>(lessons)) {
+                remove_lesson(lesson);
+            }
             parameter_types.clear();
             parameter_values.clear();
             par_values.clear();
             mqtt = null;
         }
         user.set(u);
+    }
+
+    public void add_followed_lesson(Lesson lesson) {
+        followed_lessons.add(lesson);
+    }
+
+    public void remove_followed_lesson(Lesson lesson) {
+        followed_lessons.remove(lesson);
     }
 
     public void add_teacher(User teacher) {
@@ -296,9 +312,11 @@ public class Context {
     }
 
     public void add_lesson(Lesson lesson) {
+        lessons.add(lesson);
     }
 
     public void remove_lesson(Lesson lesson) {
+        lessons.remove(lesson);
     }
 
     private void add_student(User student) {

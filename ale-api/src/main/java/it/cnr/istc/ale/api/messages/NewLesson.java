@@ -14,27 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api;
+package it.cnr.istc.ale.api.messages;
 
-import java.util.Collection;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import it.cnr.istc.ale.api.Lesson;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public interface LessonAPI {
+public class NewLesson extends Message {
 
-    public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles);
+    private final Lesson lesson;
 
-    public Collection<Lesson> get_lessons(long teacher_id);
+    @JsonCreator
+    public NewLesson(@JsonProperty("lesson") Lesson lesson) {
+        this.lesson = lesson;
+    }
 
-    public Collection<Lesson> get_followed_lessons(long teacher_id);
-
-    public void start_lesson(long lesson_id);
-
-    public void pause_lesson(long lesson_id);
-
-    public void stop_lesson(long lesson_id);
-
-    public void go_at(long lesson_id, long timestamp);
+    public Lesson getLesson() {
+        return lesson;
+    }
 }

@@ -16,12 +16,15 @@
  */
 package it.cnr.istc.ale.server.resources;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
 import it.cnr.istc.ale.api.model.LessonModel;
+import it.cnr.istc.ale.server.Context;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -39,24 +42,30 @@ public class LessonResource implements LessonAPI {
     private static final Logger LOG = Logger.getLogger(LessonResource.class.getName());
 
     @Override
-    public Lesson new_lesson(long user_id, String lesson_name, LessonModel model, Map<String, Long> roles) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles) {
+        try {
+            return Context.getContext().newLesson(teacher_id, lesson_name, Context.MAPPER.readValue(model, LessonModel.class), Context.MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
+            }));
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     @Override
     @GET
     @Path("get_lessons")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Lesson> get_lessons(@QueryParam("user_id") long user_id) {
-        return Collections.emptyList();
+    public Collection<Lesson> get_lessons(@QueryParam("teacher_id") long teacher_id) {
+        return Context.getContext().get_lessons(teacher_id);
     }
 
     @Override
     @GET
     @Path("get_followed_lessons")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Lesson> get_followed_lessons(@QueryParam("user_id") long user_id) {
-        return Collections.emptyList();
+    public Collection<Lesson> get_followed_lessons(@QueryParam("teacher_id") long teacher_id) {
+        return Context.getContext().get_followed_lessons(teacher_id);
     }
 
     @Override

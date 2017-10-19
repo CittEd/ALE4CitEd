@@ -19,14 +19,20 @@ package it.cnr.istc.ale.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
+import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.model.LessonModel;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +53,7 @@ public class Context {
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
     public static final String SERVER_ID = "server";
     private static Context context;
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    public static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static Context getContext() {
         if (context == null) {
@@ -61,6 +67,9 @@ public class Context {
     private MqttClient mqtt;
     private final Map<Long, Map<String, Parameter>> parameter_types = new HashMap<>();
     private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
+    private final Map<Lesson, LessonModel> models = new IdentityHashMap<>();
+    private final Map<Long, Collection<Lesson>> lessons = new HashMap<>();
+    private final Map<Long, Collection<Lesson>> followed_lessons = new HashMap<>();
 
     private Context() {
         try {
@@ -170,5 +179,34 @@ public class Context {
 
     public boolean is_online(long user_id) {
         return parameter_types.containsKey(user_id);
+    }
+
+    public Lesson newLesson(long teacher_id, String name, LessonModel model, Map<String, Long> roles) {
+        Lesson l = new Lesson(teacher_id, name, roles);
+        models.put(l, model);
+        if (!lessons.containsKey(teacher_id)) {
+            lessons.put(teacher_id, new ArrayList<>());
+        }
+        lessons.get(teacher_id).add(l);
+        for (Long student_id : roles.values()) {
+            if (!followed_lessons.containsKey(student_id)) {
+                followed_lessons.put(student_id, new ArrayList<>());
+            }
+            followed_lessons.get(student_id).add(l);
+            try {
+                mqtt.publish(student_id + "/input", MAPPER.writeValueAsBytes(new NewLesson(l)), 1, false);
+            } catch (JsonProcessingException | MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        return l;
+    }
+
+    public Collection<Lesson> get_lessons(long teacher_id) {
+        return lessons.get(teacher_id);
+    }
+
+    public Collection<Lesson> get_followed_lessons(long student_id) {
+        return followed_lessons.get(student_id);
     }
 }

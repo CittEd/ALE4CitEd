@@ -16,11 +16,14 @@
  */
 package it.cnr.istc.ale.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -205,8 +208,12 @@ public class MainController implements Initializable {
 
     public void add_lesson() {
         new AddLessonDialog().showAndWait().ifPresent(new_lesson -> {
-            Lesson lesson = Context.getContext().getLessonResource().new_lesson(Context.getContext().getUser().get().getId(), new_lesson.getLessonName(), new_lesson.getModel(), new_lesson.getRoles());
-            Context.getContext().add_lesson(lesson);
+            try {
+                Lesson lesson = Context.getContext().getLessonResource().new_lesson(Context.getContext().getUser().get().getId(), new_lesson.getLessonName(), Context.MAPPER.writeValueAsString(new_lesson.getModel()), Context.MAPPER.writeValueAsString(new_lesson.getRoles()));
+                Context.getContext().add_lesson(lesson);
+            } catch (JsonProcessingException ex) {
+                Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
 

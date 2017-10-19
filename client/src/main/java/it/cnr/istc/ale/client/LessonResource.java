@@ -18,10 +18,10 @@ package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
-import it.cnr.istc.ale.api.model.LessonModel;
 import java.util.Collection;
-import java.util.Map;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Form;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
@@ -40,27 +40,36 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
-    public Lesson new_lesson(long user_id, String lesson_name, LessonModel model, Map<String, Long> roles) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles) {
+        Form form = new Form();
+        form.param("teacher_id", Long.toString(teacher_id));
+        form.param("lesson_name", lesson_name);
+        form.param("model", model);
+        form.param("roles", roles);
+        return client.target(rest_uri)
+                .path("lessons")
+                .path("new_lesson")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form), Lesson.class);
     }
 
     @Override
-    public Collection<Lesson> get_lessons(long user_id) {
+    public Collection<Lesson> get_lessons(long teacher_id) {
         return client.target(rest_uri)
                 .path("lessons")
                 .path("get_lessons")
-                .queryParam("user_id", user_id)
+                .queryParam("teacher_id", teacher_id)
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<Lesson>>() {
                 });
     }
 
     @Override
-    public Collection<Lesson> get_followed_lessons(long user_id) {
+    public Collection<Lesson> get_followed_lessons(long teacher_id) {
         return client.target(rest_uri)
                 .path("lessons")
                 .path("get_followed_lessons")
-                .queryParam("user_id", user_id)
+                .queryParam("teacher_id", teacher_id)
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<Lesson>>() {
                 });
