@@ -16,9 +16,6 @@
  */
 package it.cnr.istc.ale.server;
 
-import static it.cnr.istc.ale.server.Context.HOST;
-import static it.cnr.istc.ale.server.Context.MQTT_PORT;
-import static it.cnr.istc.ale.server.Context.SERVICE_PORT;
 import it.cnr.istc.ale.server.resources.LessonResource;
 import it.cnr.istc.ale.server.resources.UserResource;
 import javax.persistence.EntityManagerFactory;
@@ -46,10 +43,11 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + HOST + ":" + SERVICE_PORT).build(), new ResourceConfig(UserResource.class, LessonResource.class));
+        Context context = Context.getContext();
+        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + context.getHost() + ":" + context.getServicePort()).build(), new ResourceConfig(UserResource.class, LessonResource.class));
 
         BrokerService broker = new BrokerService();
-        broker.addConnector(UriBuilder.fromUri("mqtt://" + HOST + ":" + MQTT_PORT).build());
+        broker.addConnector(UriBuilder.fromUri("mqtt://" + context.getHost() + ":" + context.getMqttPort()).build());
         broker.setPlugins(new BrokerPlugin[]{new BrokerPlugin() {
             @Override
             public Broker installPlugin(Broker broker) throws Exception {

@@ -19,7 +19,6 @@ package it.cnr.istc.ale.client;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
 import it.cnr.istc.ale.api.model.LessonModel;
-import static it.cnr.istc.ale.client.Context.REST_URI;
 import java.util.Collection;
 import java.util.Map;
 import javax.ws.rs.client.Client;
@@ -33,9 +32,11 @@ import javax.ws.rs.core.MediaType;
 public class LessonResource implements LessonAPI {
 
     private final Client client;
+    private final String rest_uri;
 
     public LessonResource(Client client) {
         this.client = client;
+        this.rest_uri = "http://" + Context.getContext().getHost() + ":" + Context.getContext().getServicePort();
     }
 
     @Override
@@ -45,7 +46,7 @@ public class LessonResource implements LessonAPI {
 
     @Override
     public Collection<Lesson> get_lessons(long user_id) {
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("lessons")
                 .path("get_lessons")
                 .queryParam("user_id", user_id)
@@ -56,7 +57,7 @@ public class LessonResource implements LessonAPI {
 
     @Override
     public Collection<Lesson> get_followed_lessons(long user_id) {
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("lessons")
                 .path("get_followed_lessons")
                 .queryParam("user_id", user_id)

@@ -19,7 +19,6 @@ package it.cnr.istc.ale.client;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
-import static it.cnr.istc.ale.client.Context.REST_URI;
 import java.util.Collection;
 import java.util.Map;
 import javax.ws.rs.client.Client;
@@ -35,9 +34,11 @@ import javax.ws.rs.core.MediaType;
 public class UserResource implements UserAPI {
 
     private final Client client;
+    private final String rest_uri;
 
     public UserResource(Client client) {
         this.client = client;
+        this.rest_uri = "http://" + Context.getContext().getHost() + ":" + Context.getContext().getServicePort();
     }
 
     @Override
@@ -47,7 +48,7 @@ public class UserResource implements UserAPI {
         form.param("password", password);
         form.param("first_name", first_name);
         form.param("last_name", last_name);
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("users")
                 .path("new_user")
                 .request(MediaType.APPLICATION_JSON)
@@ -56,7 +57,7 @@ public class UserResource implements UserAPI {
 
     @Override
     public User get_user(long user_id) {
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("users")
                 .path("get_user")
                 .queryParam("user_id", user_id)
@@ -66,7 +67,7 @@ public class UserResource implements UserAPI {
 
     @Override
     public Map<String, Parameter> get_parameter_types(long student_id) {
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("users")
                 .path("get_parameter_types")
                 .queryParam("student_id", student_id)
@@ -77,7 +78,7 @@ public class UserResource implements UserAPI {
 
     @Override
     public Collection<User> find_users(String search_string) {
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("users")
                 .path("find")
                 .queryParam("search_string", search_string)
@@ -91,7 +92,7 @@ public class UserResource implements UserAPI {
         Form form = new Form();
         form.param("email", email);
         form.param("password", password);
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("users")
                 .path("login")
                 .request(MediaType.APPLICATION_JSON)
@@ -103,7 +104,7 @@ public class UserResource implements UserAPI {
         Form form = new Form();
         form.param("student_id", Long.toString(student_id));
         form.param("teacher_id", Long.toString(teacher_id));
-        client.target(REST_URI)
+        client.target(rest_uri)
                 .path("users")
                 .path("add_teacher")
                 .request(MediaType.APPLICATION_JSON)
@@ -115,7 +116,7 @@ public class UserResource implements UserAPI {
         Form form = new Form();
         form.param("student_id", Long.toString(student_id));
         form.param("teacher_id", Long.toString(teacher_id));
-        client.target(REST_URI)
+        client.target(rest_uri)
                 .path("users")
                 .path("remove_teacher")
                 .request(MediaType.APPLICATION_JSON)
@@ -124,7 +125,7 @@ public class UserResource implements UserAPI {
 
     @Override
     public Collection<User> get_teachers(long student_id) {
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("users")
                 .path("get_teachers")
                 .queryParam("student_id", Long.toString(student_id))
@@ -135,7 +136,7 @@ public class UserResource implements UserAPI {
 
     @Override
     public Collection<User> get_students(long teacher_id) {
-        return client.target(REST_URI)
+        return client.target(rest_uri)
                 .path("users")
                 .path("get_students")
                 .queryParam("teacher_id", Long.toString(teacher_id))

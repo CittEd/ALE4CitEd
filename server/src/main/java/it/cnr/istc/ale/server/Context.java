@@ -25,6 +25,7 @@ import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.NewParameter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -44,12 +45,9 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
-    public static final String HOST = "localhost";
-    public static final String SERVICE_PORT = "8080";
-    public static final String MQTT_PORT = "1883";
     public static final String SERVER_ID = "server";
     private static Context context;
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static Context getContext() {
         if (context == null) {
@@ -57,13 +55,21 @@ public class Context {
         }
         return context;
     }
+    private String host;
+    private String service_port;
+    private String mqtt_port;
     private MqttClient mqtt;
     private final Map<Long, Map<String, Parameter>> parameter_types = new HashMap<>();
     private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
 
     private Context() {
         try {
-            mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, SERVER_ID, new MemoryPersistence());
+            Map<String, String> config = MAPPER.readValue(getClass().getResourceAsStream("/config.json"), new TypeReference<Map<String, String>>() {
+            });
+            host = config.get("host");
+            service_port = config.get("service-port");
+            mqtt_port = config.get("mqtt-port");
+            mqtt = new MqttClient("tcp://" + host + ":" + mqtt_port, SERVER_ID, new MemoryPersistence());
             mqtt.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
@@ -82,9 +88,21 @@ public class Context {
             options.setCleanSession(false);
             options.setAutomaticReconnect(true);
             mqtt.connect(options);
-        } catch (MqttException ex) {
+        } catch (MqttException | IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getServicePort() {
+        return service_port;
+    }
+
+    public String getMqttPort() {
+        return mqtt_port;
     }
 
     public void addConnection(long id) {
@@ -97,13 +115,13 @@ public class Context {
         try {
             mqtt.publish(id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
             mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
-                Message m = mapper.readValue(message.getPayload(), Message.class);
+                Message m = MAPPER.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
                     Parameter par = np.getParameter();
                     parameter_types.get(id).put(par.getName(), par);
                     mqtt.subscribe(id + "/output/" + par.getName(), (String par_topic, MqttMessage par_value) -> {
-                        parameter_values.get(id).put(par.getName(), mapper.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
+                        parameter_values.get(id).put(par.getName(), MAPPER.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         }));
                     });
                 } else if (m instanceof LostParameter) {
@@ -132,7 +150,7 @@ public class Context {
 
     public void add_teacher(long student_id, long teacher_id) {
         try {
-            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new NewStudent(student_id)), 1, false);
+            mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new NewStudent(student_id)), 1, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -140,7 +158,7 @@ public class Context {
 
     public void remove_teacher(long student_id, long teacher_id) {
         try {
-            mqtt.publish(teacher_id + "/input", mapper.writeValueAsBytes(new LostStudent(student_id)), 1, false);
+            mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new LostStudent(student_id)), 1, false);
         } catch (JsonProcessingException | MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

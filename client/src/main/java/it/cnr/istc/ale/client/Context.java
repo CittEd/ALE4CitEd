@@ -63,10 +63,6 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
-    public static final String HOST = "localhost";
-    public static final String SERVICE_PORT = "8080";
-    public static final String REST_URI = "http://" + HOST + ":" + SERVICE_PORT;
-    public static final String MQTT_PORT = "1883";
     private static Context context;
     public static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -76,6 +72,9 @@ public class Context {
         }
         return context;
     }
+    private String host;
+    private String service_port;
+    private String mqtt_port;
     private final Client client = ClientBuilder.newClient();
     private final UserResource ur = new UserResource(client);
     private final LessonResource lr = new LessonResource(client);
@@ -96,6 +95,28 @@ public class Context {
     private final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
 
     private Context() {
+        Map<String, String> config;
+        try {
+            config = MAPPER.readValue(getClass().getResourceAsStream("/config.json"), new TypeReference<Map<String, String>>() {
+            });
+            host = config.get("host");
+            service_port = config.get("service-port");
+            mqtt_port = config.get("mqtt-port");
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getServicePort() {
+        return service_port;
+    }
+
+    public String getMqttPort() {
+        return mqtt_port;
     }
 
     public Client getClient() {
@@ -165,7 +186,7 @@ public class Context {
             following_lessons.addAll(lr.get_followed_lessons(u.getId()));
             lessons.addAll(lr.get_lessons(u.getId()));
             try {
-                mqtt = new MqttClient("tcp://" + HOST + ":" + MQTT_PORT, String.valueOf(u.getId()), new MemoryPersistence());
+                mqtt = new MqttClient("tcp://" + host + ":" + mqtt_port, String.valueOf(u.getId()), new MemoryPersistence());
                 mqtt.setCallback(new MqttCallback() {
                     @Override
                     public void connectionLost(Throwable cause) {
