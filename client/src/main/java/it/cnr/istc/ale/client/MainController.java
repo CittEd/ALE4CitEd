@@ -31,6 +31,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -184,7 +186,16 @@ public class MainController implements Initializable {
     }
 
     public void login() {
-        new LoginDialog().showAndWait().ifPresent(user -> Context.getContext().login(user.getEmail(), user.getPassword()));
+        new LoginDialog().showAndWait().ifPresent(user -> {
+            try {
+                Context.getContext().login(user.getEmail(), user.getPassword());
+            } catch (Exception e) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Exception");
+                alert.setHeaderText(e.getLocalizedMessage());
+                alert.showAndWait();
+            }
+        });
     }
 
     public void logout() {
@@ -192,7 +203,17 @@ public class MainController implements Initializable {
     }
 
     public void new_user() {
-        new NewUserDialog().showAndWait().ifPresent(user -> Context.getContext().new_user(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName()));
+        new NewUserDialog().showAndWait().ifPresent(user -> {
+            try {
+                Context.getContext().new_user(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
+            } catch (Exception e) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Exception");
+                alert.setHeaderText(e.getLocalizedMessage());
+                alert.showAndWait();
+            }
+        }
+        );
     }
 
     public void exit() {
@@ -221,7 +242,10 @@ public class MainController implements Initializable {
                 Lesson lesson = Context.getContext().getLessonResource().new_lesson(Context.getContext().getUser().get().getId(), new_lesson.getLessonName(), Context.MAPPER.writeValueAsString(new_lesson.getModel()), Context.MAPPER.writeValueAsString(new_lesson.getRoles()));
                 Context.getContext().add_lesson(lesson);
             } catch (JsonProcessingException ex) {
-                Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Exception");
+                alert.setHeaderText(ex.getLocalizedMessage());
+                alert.showAndWait();
             }
         });
     }
