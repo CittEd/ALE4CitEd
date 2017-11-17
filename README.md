@@ -1,2 +1,1 @@
-# ALE4CitEd
-Active Learning Environment
+# LECTurE (Learning Environment CiTtà Educante)
