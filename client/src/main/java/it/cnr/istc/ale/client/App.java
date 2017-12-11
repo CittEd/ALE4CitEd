@@ -37,7 +37,7 @@ public class App extends Application {
 
         Scene scene = new Scene(root);
 
-        stage.setTitle("Active Learning Environment");
+        stage.setTitle("LECTurE (Learning Environment CiTtà Educante)");
         stage.setScene(scene);
         stage.show();
     }
