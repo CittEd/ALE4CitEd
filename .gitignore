@@ -1,0 +1,6 @@
+/server/target/
+/client/target/
+/ale-api/target/
+/server/derby.log
+/server/activemq-data/
+/server/db/
