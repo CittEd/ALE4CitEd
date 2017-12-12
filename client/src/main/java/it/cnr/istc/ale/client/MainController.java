@@ -94,6 +94,7 @@ public class MainController implements Initializable {
      * Initializes the controller class.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void initialize(URL url, ResourceBundle rb) {
         Stage stage = Context.getContext().getStage();
 

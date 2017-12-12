@@ -68,6 +68,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
     private final ButtonType add_button = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
     private LessonModel lesson_model;
 
+    @SuppressWarnings("unchecked")
     public AddLessonDialog() {
         grid.setHgap(10);
         grid.setVgap(10);

@@ -454,6 +454,7 @@ public abstract class Core implements IScope, IEnv {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends Item> T get(String name) {
         T it = (T) items.get(name);
         if (it != null) {

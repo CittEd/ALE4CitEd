@@ -38,6 +38,7 @@ public class StudentGrid extends GridPane {
     private final TableColumn<Context.ParameterValue, String> name_column = new TableColumn<>("Name");
     private final TableColumn<Context.ParameterValue, String> value_column = new TableColumn<>("Value");
 
+    @SuppressWarnings("unchecked")
     public StudentGrid() {
         setHgap(10);
         setVgap(10);
