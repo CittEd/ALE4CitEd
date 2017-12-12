@@ -33,9 +33,9 @@ import java.util.Collections;
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")
 @JsonSubTypes({
-    @Type(value = Event.class, name = "core")
-    ,@Type(value = TextEvent.class, name = "text")
-    ,@Type(value = QuestionEvent.class, name = "question")})
+    @Type(value = Event.class, name = "core"),
+    @Type(value = TextEvent.class, name = "text"),
+    @Type(value = QuestionEvent.class, name = "question")})
 public class Event {
 
     private final String name;

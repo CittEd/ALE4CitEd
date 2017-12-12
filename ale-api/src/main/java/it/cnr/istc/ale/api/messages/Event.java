@@ -30,8 +30,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         include = JsonTypeInfo.As.PROPERTY,
         property = "event-type")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = TextEvent.class, name = "text-event")
-    ,@JsonSubTypes.Type(value = QuestionEvent.class, name = "question-event")})
+    @JsonSubTypes.Type(value = TextEvent.class, name = "text-event"),
+    @JsonSubTypes.Type(value = QuestionEvent.class, name = "question-event")})
 public abstract class Event extends Message {
 
     private final long id;

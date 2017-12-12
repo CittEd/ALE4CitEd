@@ -28,10 +28,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = AndCondition.class, name = "and")
-    ,@JsonSubTypes.Type(value = OrCondition.class, name = "or")
-    ,@JsonSubTypes.Type(value = NotCondition.class, name = "not")
-    ,@JsonSubTypes.Type(value = NumericCondition.class, name = "numeric")
-    ,@JsonSubTypes.Type(value = NominalCondition.class, name = "nominal")})
+    @JsonSubTypes.Type(value = AndCondition.class, name = "and"),
+    @JsonSubTypes.Type(value = OrCondition.class, name = "or"),
+    @JsonSubTypes.Type(value = NotCondition.class, name = "not"),
+    @JsonSubTypes.Type(value = NumericCondition.class, name = "numeric"),
+    @JsonSubTypes.Type(value = NominalCondition.class, name = "nominal")})
 public abstract class Condition {
 }
