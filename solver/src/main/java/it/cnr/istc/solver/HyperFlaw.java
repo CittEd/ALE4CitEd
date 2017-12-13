@@ -78,8 +78,6 @@ class HyperFlaw extends Flaw {
             check_lits.addLast(new Lit(cnj_var));
             if (slv.sat_core.check(check_lits.toArray(new Lit[check_lits.size()]))) {
                 add_resolver(new HyperResolver(slv, cnj_var, cst, this, c_res));
-            } else {
-                boolean check = slv.sat_core.check(check_lits.toArray(new Lit[check_lits.size()]));
             }
             check_lits.pollLast();
         }
