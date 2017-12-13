@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class HyperFlaw extends Flaw {
+class HyperFlaw extends Flaw {
 
     final Flaw[] flaws;
 
