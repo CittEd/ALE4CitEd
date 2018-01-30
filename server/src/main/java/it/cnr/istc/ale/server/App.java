@@ -37,8 +37,6 @@ import org.glassfish.jersey.server.ResourceConfig;
  */
 public class App {
 
-    public static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ALE_PU");
-
     /**
      * @param args the command line arguments
      */

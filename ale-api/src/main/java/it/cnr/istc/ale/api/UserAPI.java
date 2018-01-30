@@ -25,6 +25,20 @@ import java.util.Map;
  */
 public interface UserAPI {
 
+    /**
+     * Creates a new user given an e-mail, a password, a first name and a last
+     * name.
+     *
+     * @param email a {@code String} representing the e-mail of the new user.
+     * The e-mail field should by uniqe.
+     * @param password a {@code String} representing the password of the new
+     * user.
+     * @param first_name a {@code String} representing the first name of the new
+     * user.
+     * @param last_name a {@code String} representing the last name of the new
+     * user.
+     * @return a {@link User} instance representing the newly created user.
+     */
     public User new_user(String email, String password, String first_name, String last_name);
 
     public User get_user(long user_id);

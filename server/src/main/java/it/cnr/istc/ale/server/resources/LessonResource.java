@@ -16,15 +16,10 @@
  */
 package it.cnr.istc.ale.server.resources;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
-import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.server.Context;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -48,13 +43,7 @@ public class LessonResource implements LessonAPI {
     @Path("new_lesson")
     @Produces(MediaType.APPLICATION_JSON)
     public Lesson new_lesson(@FormParam("teacher_id") long teacher_id, @FormParam("lesson_name") String lesson_name, @FormParam("model") String model, @FormParam("roles") String roles) {
-        try {
-            return Context.getContext().new_lesson(teacher_id, lesson_name, Context.MAPPER.readValue(model, LessonModel.class), Context.MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
-            }));
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return Context.getContext().new_lesson(teacher_id, lesson_name, model, roles);
     }
 
     @Override
@@ -75,21 +64,21 @@ public class LessonResource implements LessonAPI {
 
     @Override
     public void start_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Context.getContext().start_lesson(lesson_id);
     }
 
     @Override
     public void pause_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Context.getContext().pause_lesson(lesson_id);
     }
 
     @Override
     public void stop_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Context.getContext().stop_lesson(lesson_id);
     }
 
     @Override
     public void go_at(long lesson_id, long timestamp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Context.getContext().go_at(lesson_id, timestamp);
     }
 }

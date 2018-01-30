@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +20,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
+import it.cnr.istc.ale.api.LessonAPI;
 import it.cnr.istc.ale.api.Parameter;
-import it.cnr.istc.ale.api.messages.NewStudent;
-import it.cnr.istc.ale.api.messages.LostStudent;
+import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.api.UserAPI;
 import it.cnr.istc.ale.api.messages.LostParameter;
+import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.messages.NewStudent;
 import it.cnr.istc.ale.api.model.LessonModel;
+import it.cnr.istc.ale.server.db.UserEntity;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +41,11 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -48,9 +58,10 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class Context {
+public class Context implements UserAPI, LessonAPI {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ALE_PU");
     public static final String SERVER_ID = "server";
     private static Context context;
     public static final ObjectMapper MAPPER = new ObjectMapper();
@@ -62,10 +73,25 @@ public class Context {
         return context;
     }
     private MqttClient mqtt;
+    /**
+     * For each user id, a map of parameter types containing the name of the
+     * parameter as key.
+     */
     private final Map<Long, Map<String, Parameter>> parameter_types = new HashMap<>();
+    /**
+     * For each user id, a map of parameter values containing the name of the
+     * parameter as key. Notice that parameter values are represented through a
+     * map.
+     */
     private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
     private final Map<Lesson, LessonModel> models = new IdentityHashMap<>();
+    /**
+     * For each teacher id, the collection of lessons followed as a teacher.
+     */
     private final Map<Long, Collection<Lesson>> lessons = new HashMap<>();
+    /**
+     * For each student id, the collection of lessons followed as a student.
+     */
     private final Map<Long, Collection<Lesson>> followed_lessons = new HashMap<>();
 
     private Context() {
@@ -137,7 +163,65 @@ public class Context {
         }
     }
 
+    @Override
+    public User new_user(String email, String password, String first_name, String last_name) {
+        EntityManager em = emf.createEntityManager();
+        UserEntity ue = new UserEntity();
+        ue.setEmail(email);
+        ue.setPassword(password);
+        ue.setFirstName(first_name);
+        ue.setLastName(last_name);
+        em.getTransaction().begin();
+        em.persist(ue);
+        em.getTransaction().commit();
+        return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
+    }
+
+    @Override
+    public User get_user(long user_id) {
+        UserEntity ue = emf.createEntityManager().find(UserEntity.class, user_id);
+        return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
+    }
+
+    @Override
+    public Map<String, Parameter> get_parameter_types(long student_id) {
+        Map<String, Parameter> types = parameter_types.get(student_id);
+        if (types == null) {
+            LOG.log(Level.WARNING, "No parameter types for (offline) user {0}", student_id);
+            return Collections.emptyMap();
+        } else {
+            return types;
+        }
+    }
+
+    @Override
+    public Collection<User> find_users(String search_string) {
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.first_name LIKE :search_string OR u.last_name LIKE :search_string", UserEntity.class);
+        query.setParameter("search_string", search_string);
+        return query.getResultList().stream().map(usr -> new User(usr.getId(), usr.getFirstName(), usr.getLastName())).collect(Collectors.toList());
+    }
+
+    @Override
+    public User login(String email, String password) {
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.email = :email AND u.password = :password", UserEntity.class);
+        query.setParameter("email", email);
+        query.setParameter("password", password);
+        UserEntity ue = query.getSingleResult();
+        return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
+    }
+
+    @Override
     public void add_teacher(long student_id, long teacher_id) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        UserEntity student = em.find(UserEntity.class, student_id);
+        UserEntity teacher = em.find(UserEntity.class, teacher_id);
+        student.addTeacher(teacher);
+        teacher.addStudent(student);
+        em.persist(student);
+        em.getTransaction().commit();
         try {
             mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new NewStudent(student_id)), 1, false);
         } catch (JsonProcessingException | MqttException ex) {
@@ -145,7 +229,16 @@ public class Context {
         }
     }
 
+    @Override
     public void remove_teacher(long student_id, long teacher_id) {
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        UserEntity student = em.find(UserEntity.class, student_id);
+        UserEntity teacher = em.find(UserEntity.class, teacher_id);
+        student.removeTeacher(teacher);
+        teacher.removeStudent(student);
+        em.persist(student);
+        em.getTransaction().commit();
         try {
             mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new LostStudent(student_id)), 1, false);
         } catch (JsonProcessingException | MqttException ex) {
@@ -153,40 +246,73 @@ public class Context {
         }
     }
 
-    public Map<String, Parameter> get_parameter_types(long user_id) {
-        return parameter_types.get(user_id);
+    @Override
+    public Collection<User> get_teachers(long student_id) {
+        return emf.createEntityManager().find(UserEntity.class, student_id).getTeachers().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
     }
 
-    public boolean is_online(long user_id) {
-        return parameter_types.containsKey(user_id);
+    @Override
+    public Collection<User> get_students(long teacher_id) {
+        return emf.createEntityManager().find(UserEntity.class, teacher_id).getStudents().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
     }
 
-    public Lesson new_lesson(long teacher_id, String name, LessonModel model, Map<String, Long> roles) {
-        Lesson l = new Lesson(teacher_id, name, roles);
-        models.put(l, model);
-        if (!lessons.containsKey(teacher_id)) {
-            lessons.put(teacher_id, new ArrayList<>());
-        }
-        lessons.get(teacher_id).add(l);
-        for (Long student_id : roles.values()) {
-            if (!followed_lessons.containsKey(student_id)) {
-                followed_lessons.put(student_id, new ArrayList<>());
+    @Override
+    public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles) {
+        try {
+            LessonModel lesson_model = MAPPER.readValue(model, LessonModel.class);
+            Map<String, Long> lesson_roles = MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
+            });
+            Lesson l = new Lesson(teacher_id, lesson_name, lesson_roles);
+            models.put(l, lesson_model);
+            if (!lessons.containsKey(teacher_id)) {
+                lessons.put(teacher_id, new ArrayList<>());
             }
-            followed_lessons.get(student_id).add(l);
-            try {
-                mqtt.publish(student_id + "/input", MAPPER.writeValueAsBytes(new NewLesson(l)), 1, false);
-            } catch (JsonProcessingException | MqttException ex) {
-                LOG.log(Level.SEVERE, null, ex);
+            lessons.get(teacher_id).add(l);
+            for (Long student_id : lesson_roles.values()) {
+                if (!followed_lessons.containsKey(student_id)) {
+                    followed_lessons.put(student_id, new ArrayList<>());
+                }
+                followed_lessons.get(student_id).add(l);
+                try {
+                    mqtt.publish(student_id + "/input", MAPPER.writeValueAsBytes(new NewLesson(l)), 1, false);
+                } catch (JsonProcessingException | MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
+            return l;
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            return null;
         }
-        return l;
     }
 
+    @Override
     public Collection<Lesson> get_lessons(long teacher_id) {
         return lessons.containsKey(teacher_id) ? lessons.get(teacher_id) : Collections.emptyList();
     }
 
+    @Override
     public Collection<Lesson> get_followed_lessons(long student_id) {
         return followed_lessons.containsKey(student_id) ? followed_lessons.get(student_id) : Collections.emptyList();
+    }
+
+    @Override
+    public void start_lesson(long lesson_id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void pause_lesson(long lesson_id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void stop_lesson(long lesson_id) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void go_at(long lesson_id, long timestamp) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

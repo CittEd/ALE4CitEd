@@ -24,17 +24,65 @@ import java.util.Collection;
  */
 public interface LessonAPI {
 
+    /**
+     * Creates a new lesson given the id of the teacher that wants to follow the
+     * lesson, the name of the lesson instance, the model of the lesson and a
+     * map of roles containing, for each role, the corresponding student id.
+     *
+     * @param teacher_id a {@code long} representing the id of a teacher.
+     * @param lesson_name a {@code String} representing the name of the specific
+     * lesson instance.
+     * @param model the model of the lesson.
+     * @param roles the mapping of the roles for the lesson instance.
+     * @return a {@link Lesson} instance representing a specific lesson.
+     */
     public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles);
 
+    /**
+     * Given a teacher id, returns the collection of lessons followed as a
+     * teacher.
+     *
+     * @param teacher_id a {@code long} representing the id of a teacher.
+     * @return the collection of lessons followed as a teacher.
+     */
     public Collection<Lesson> get_lessons(long teacher_id);
 
-    public Collection<Lesson> get_followed_lessons(long teacher_id);
+    /**
+     * Given a student id, returns the collection of lessons followed as a
+     * student.
+     *
+     * @param student_id a {@code long} representing the id of a student.
+     * @return the collection of lessons followed as a student.
+     */
+    public Collection<Lesson> get_followed_lessons(long student_id);
 
+    /**
+     * Starts the execution of the lesson identified by the given lesson id.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     */
     public void start_lesson(long lesson_id);
 
+    /**
+     * Pauses the execution of the lesson identified by the given lesson id.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     */
     public void pause_lesson(long lesson_id);
 
+    /**
+     * Stops the execution of the lesson identified by the given lesson id.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     */
     public void stop_lesson(long lesson_id);
 
+    /**
+     * Moves the temporal execution of the lesson identified by the given lesson
+     * id at the specified timestamp.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     * @param timestamp a {@code long} representing the execution timestamp.
+     */
     public void go_at(long lesson_id, long timestamp);
 }

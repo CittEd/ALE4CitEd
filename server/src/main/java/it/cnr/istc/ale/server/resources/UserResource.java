@@ -19,19 +19,14 @@ package it.cnr.istc.ale.server.resources;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
-import it.cnr.istc.ale.server.App;
 import it.cnr.istc.ale.server.Context;
-import it.cnr.istc.ale.server.db.UserEntity;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.RollbackException;
-import javax.persistence.TypedQuery;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -58,16 +53,7 @@ public class UserResource implements UserAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public User new_user(@FormParam("email") String email, @FormParam("password") String password, @FormParam("first_name") String first_name, @FormParam("last_name") String last_name) {
         try {
-            EntityManager em = App.emf.createEntityManager();
-            UserEntity ue = new UserEntity();
-            ue.setEmail(email);
-            ue.setPassword(password);
-            ue.setFirstName(first_name);
-            ue.setLastName(last_name);
-            em.getTransaction().begin();
-            em.persist(ue);
-            em.getTransaction().commit();
-            return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
+            return Context.getContext().new_user(email, password, first_name, last_name);
         } catch (RollbackException e) {
             LOG.log(Level.WARNING, "new user", e);
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.FORBIDDEN);
@@ -79,8 +65,11 @@ public class UserResource implements UserAPI {
     @Path("get_user")
     @Produces(MediaType.APPLICATION_JSON)
     public User get_user(@QueryParam("user_id") long user_id) {
-        UserEntity ue = App.emf.createEntityManager().find(UserEntity.class, user_id);
-        return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
+        try {
+            return Context.getContext().get_user(user_id);
+        } catch (NoResultException e) {
+            throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.NOT_FOUND);
+        }
     }
 
     @Override
@@ -90,7 +79,7 @@ public class UserResource implements UserAPI {
     public Map<String, Parameter> get_parameter_types(@QueryParam("student_id") long student_id) {
         Map<String, Parameter> types = Context.getContext().get_parameter_types(student_id);
         if (types == null) {
-            LOG.log(Level.WARNING, "No parameter types for (offline) user {0}", student_id);
+            LOG.log(Level.WARNING, "No parameter types for user {0}", student_id);
             return Collections.emptyMap();
         } else {
             return types;
@@ -102,10 +91,7 @@ public class UserResource implements UserAPI {
     @Path("find")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> find_users(@QueryParam("search_string") String search_string) {
-        EntityManager em = App.emf.createEntityManager();
-        TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.first_name LIKE :search_string OR u.last_name LIKE :search_string", UserEntity.class);
-        query.setParameter("search_string", search_string);
-        return query.getResultList().stream().map(usr -> new User(usr.getId(), usr.getFirstName(), usr.getLastName())).collect(Collectors.toList());
+        return Context.getContext().find_users(search_string);
     }
 
     @Override
@@ -113,13 +99,8 @@ public class UserResource implements UserAPI {
     @Path("login")
     @Produces(MediaType.APPLICATION_JSON)
     public User login(@FormParam("email") String email, @FormParam("password") String password) {
-        EntityManager em = App.emf.createEntityManager();
-        TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.email = :email AND u.password = :password", UserEntity.class);
-        query.setParameter("email", email);
-        query.setParameter("password", password);
         try {
-            UserEntity ue = query.getSingleResult();
-            return new User(ue.getId(), ue.getFirstName(), ue.getLastName());
+            return Context.getContext().login(email, password);
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.UNAUTHORIZED);
         }
@@ -129,14 +110,6 @@ public class UserResource implements UserAPI {
     @PUT
     @Path("add_teacher")
     public void add_teacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
-        EntityManager em = App.emf.createEntityManager();
-        em.getTransaction().begin();
-        UserEntity student = em.find(UserEntity.class, student_id);
-        UserEntity teacher = em.find(UserEntity.class, teacher_id);
-        student.addTeacher(teacher);
-        teacher.addStudent(student);
-        em.persist(student);
-        em.getTransaction().commit();
         Context.getContext().add_teacher(student_id, teacher_id);
     }
 
@@ -144,14 +117,6 @@ public class UserResource implements UserAPI {
     @PUT
     @Path("remove_teacher")
     public void remove_teacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
-        EntityManager em = App.emf.createEntityManager();
-        em.getTransaction().begin();
-        UserEntity student = em.find(UserEntity.class, student_id);
-        UserEntity teacher = em.find(UserEntity.class, teacher_id);
-        student.removeTeacher(teacher);
-        teacher.removeStudent(student);
-        em.persist(student);
-        em.getTransaction().commit();
         Context.getContext().remove_teacher(student_id, teacher_id);
     }
 
@@ -161,7 +126,7 @@ public class UserResource implements UserAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> get_teachers(@QueryParam("student_id") long student_id) {
         try {
-            return App.emf.createEntityManager().find(UserEntity.class, student_id).getTeachers().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
+            return Context.getContext().get_teachers(student_id);
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.NOT_FOUND);
         }
@@ -173,7 +138,7 @@ public class UserResource implements UserAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> get_students(@QueryParam("teacher_id") long teacher_id) {
         try {
-            return App.emf.createEntityManager().find(UserEntity.class, teacher_id).getStudents().stream().map(st -> new User(st.getId(), st.getFirstName(), st.getLastName())).collect(Collectors.toList());
+            return Context.getContext().get_students(teacher_id);
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.NOT_FOUND);
         }

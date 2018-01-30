@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -217,11 +218,11 @@ public class Context {
                     parameter_values.put(value.getKey(), new HashMap<>());
                     for (Map.Entry<String, String> val : value.getValue().entrySet()) {
                         if (parameter_values.get(value.getKey()).containsKey(val.getKey())) {
-                            parameter_values.get(value.getKey()).get(val.getKey()).set(val.getValue());
+                            Platform.runLater(() -> parameter_values.get(value.getKey()).get(val.getKey()).set(val.getValue()));
                         } else {
                             SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                             parameter_values.get(value.getKey()).put(val.getKey(), val_prop);
-                            par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
+                            Platform.runLater(() -> par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop)));
                         }
                     }
                     mqtt.publish(u.getId() + "/output/" + value.getKey(), MAPPER.writeValueAsBytes(value.getValue()), 1, true);
@@ -253,26 +254,28 @@ public class Context {
             for (Lesson lesson : new ArrayList<>(lessons)) {
                 remove_lesson(lesson);
             }
-            parameter_types.clear();
-            parameter_values.clear();
-            par_values.clear();
+            Platform.runLater(() -> {
+                parameter_types.clear();
+                parameter_values.clear();
+                par_values.clear();
+            });
             mqtt = null;
         }
         user.set(u);
     }
 
     public void add_following_lesson(Lesson lesson) {
-        following_lessons.add(lesson);
+        Platform.runLater(() -> following_lessons.add(lesson));
     }
 
     public void remove_following_lesson(Lesson lesson) {
-        following_lessons.remove(lesson);
+        Platform.runLater(() -> following_lessons.remove(lesson));
     }
 
     public void add_teacher(User teacher) {
         try {
             online_users.put(teacher.getId(), new SimpleBooleanProperty());
-            teachers.add(teacher);
+            Platform.runLater(() -> teachers.add(teacher));
             mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 online_users.get(teacher.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -284,7 +287,7 @@ public class Context {
     public void remove_teacher(User teacher) {
         try {
             mqtt.unsubscribe(teacher.getId() + "/output/on-line");
-            teachers.remove(teacher);
+            Platform.runLater(() -> teachers.remove(teacher));
             online_users.remove(teacher.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -292,17 +295,17 @@ public class Context {
     }
 
     public void add_lesson(Lesson lesson) {
-        lessons.add(lesson);
+        Platform.runLater(() -> lessons.add(lesson));
     }
 
     public void remove_lesson(Lesson lesson) {
-        lessons.remove(lesson);
+        Platform.runLater(() -> lessons.remove(lesson));
     }
 
     private void add_student(User student) {
         try {
             online_users.put(student.getId(), new SimpleBooleanProperty());
-            students.add(student);
+            Platform.runLater(() -> students.add(student));
             mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -318,11 +321,11 @@ public class Context {
                     });
                     for (Map.Entry<String, String> val : value.entrySet()) {
                         if (user_parameter_values.get(student.getId()).get(par_type.getKey()).containsKey(val.getKey())) {
-                            user_parameter_values.get(student.getId()).get(par_type.getKey()).get(val.getKey()).set(val.getValue());
+                            Platform.runLater(() -> user_parameter_values.get(student.getId()).get(par_type.getKey()).get(val.getKey()).set(val.getValue()));
                         } else {
                             SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                             user_parameter_values.get(student.getId()).get(par_type.getKey()).put(val.getKey(), val_prop);
-                            user_par_values.get(student.getId()).add(new ParameterValue(par_type.getKey() + "." + val.getKey(), val_prop));
+                            Platform.runLater(() -> user_par_values.get(student.getId()).add(new ParameterValue(par_type.getKey() + "." + val.getKey(), val_prop)));
                         }
                     }
                 });
@@ -339,25 +342,27 @@ public class Context {
                         });
                         for (Map.Entry<String, String> val : value.entrySet()) {
                             if (user_parameter_values.get(student.getId()).get(par_type.getName()).containsKey(val.getKey())) {
-                                user_parameter_values.get(student.getId()).get(par_type.getName()).get(val.getKey()).set(val.getValue());
+                                Platform.runLater(() -> user_parameter_values.get(student.getId()).get(par_type.getName()).get(val.getKey()).set(val.getValue()));
                             } else {
                                 SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                                 user_parameter_values.get(student.getId()).get(par_type.getName()).put(val.getKey(), val_prop);
-                                user_par_values.get(student.getId()).add(new ParameterValue(par_type.getName() + "." + val.getKey(), val_prop));
+                                Platform.runLater(() -> user_par_values.get(student.getId()).add(new ParameterValue(par_type.getName() + "." + val.getKey(), val_prop)));
                             }
                         }
                     });
                 } else if (m instanceof LostParameter) {
                     LostParameter lp = (LostParameter) m;
                     mqtt.unsubscribe(student.getId() + "/output/" + lp.getName());
-                    user_parameter_types.get(student.getId()).remove(lp.getName());
-                    user_parameter_values.get(student.getId()).remove(lp.getName());
-                    user_par_values.get(student.getId()).clear();
-                    for (Map.Entry<String, Map<String, StringProperty>> par_value : user_parameter_values.get(student.getId()).entrySet()) {
-                        for (Map.Entry<String, StringProperty> sub_val : par_value.getValue().entrySet()) {
-                            user_par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), user_parameter_values.get(student.getId()).get(par_value.getKey()).get(sub_val.getKey())));
+                    Platform.runLater(() -> {
+                        user_parameter_types.get(student.getId()).remove(lp.getName());
+                        user_parameter_values.get(student.getId()).remove(lp.getName());
+                        user_par_values.get(student.getId()).clear();
+                        for (Map.Entry<String, Map<String, StringProperty>> par_value : user_parameter_values.get(student.getId()).entrySet()) {
+                            for (Map.Entry<String, StringProperty> sub_val : par_value.getValue().entrySet()) {
+                                user_par_values.get(student.getId()).add(new ParameterValue(par_value.getKey() + "." + sub_val.getKey(), user_parameter_values.get(student.getId()).get(par_value.getKey()).get(sub_val.getKey())));
+                            }
                         }
-                    }
+                    });
                 }
             });
         } catch (MqttException ex) {
@@ -372,7 +377,9 @@ public class Context {
             for (String par : user_parameter_types.get(student.getId()).keySet()) {
                 mqtt.unsubscribe(student.getId() + "/output/" + par);
             }
-            students.remove(student);
+            Platform.runLater(() -> {
+                students.remove(student);
+            });
             online_users.remove(student.getId());
             user_parameter_types.remove(student.getId());
             user_parameter_values.remove(student.getId());
