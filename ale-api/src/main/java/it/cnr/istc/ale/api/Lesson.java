@@ -27,15 +27,21 @@ import java.util.Map;
  */
 public class Lesson {
 
+    private final long lessonId;
     private final long teacherId;
     private final String name;
     private final Map<String, Long> roles;
 
     @JsonCreator
-    public Lesson(@JsonProperty("teacherId") long teacherId, @JsonProperty("name") String name, @JsonProperty("roles") Map<String, Long> roles) {
+    public Lesson(@JsonProperty("lessonId") long lessonId, @JsonProperty("teacherId") long teacherId, @JsonProperty("name") String name, @JsonProperty("roles") Map<String, Long> roles) {
+        this.lessonId = lessonId;
         this.teacherId = teacherId;
         this.name = name;
         this.roles = roles;
+    }
+
+    public long getLessonId() {
+        return lessonId;
     }
 
     public long getTeacherId() {

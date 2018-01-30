@@ -18,6 +18,7 @@ package it.cnr.istc.ale.server.resources;
 
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
+import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.server.Context;
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -44,6 +45,14 @@ public class LessonResource implements LessonAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Lesson new_lesson(@FormParam("teacher_id") long teacher_id, @FormParam("lesson_name") String lesson_name, @FormParam("model") String model, @FormParam("roles") String roles) {
         return Context.getContext().new_lesson(teacher_id, lesson_name, model, roles);
+    }
+
+    @Override
+    @POST
+    @Path("get_models")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<LessonModel> get_models(@FormParam("teacher_id") long teacher_id) {
+        return Context.getContext().get_models(teacher_id);
     }
 
     @Override

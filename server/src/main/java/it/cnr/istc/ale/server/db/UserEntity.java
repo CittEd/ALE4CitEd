@@ -20,12 +20,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -44,9 +46,15 @@ public class UserEntity implements Serializable {
     private String first_name;
     private String last_name;
     @ManyToMany
-    private Collection<UserEntity> teachers = new ArrayList<>();
+    private final Collection<UserEntity> teachers = new ArrayList<>();
     @ManyToMany(mappedBy = "teachers")
-    private Collection<UserEntity> students = new ArrayList<>();
+    private final Collection<UserEntity> students = new ArrayList<>();
+    @OneToMany(mappedBy = "teacher")
+    private final Collection<LessonEntity> lessons = new ArrayList<>();
+    @OneToMany(mappedBy = "student")
+    private List<RoleEntity> roles;
+    @OneToMany
+    private final Collection<LessonModelEntity> models = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -106,5 +114,41 @@ public class UserEntity implements Serializable {
 
     public void removeStudent(UserEntity student) {
         students.remove(student);
+    }
+
+    public Collection<LessonEntity> getLessons() {
+        return Collections.unmodifiableCollection(lessons);
+    }
+
+    public void addLesson(LessonEntity lesson) {
+        lessons.add(lesson);
+    }
+
+    public void removeLesson(LessonEntity lesson) {
+        lessons.remove(lesson);
+    }
+
+    public Collection<RoleEntity> getRoles() {
+        return Collections.unmodifiableCollection(roles);
+    }
+
+    public void addRole(RoleEntity role) {
+        roles.add(role);
+    }
+
+    public void removeRole(RoleEntity role) {
+        roles.remove(role);
+    }
+
+    public Collection<LessonModelEntity> getModels() {
+        return Collections.unmodifiableCollection(models);
+    }
+
+    public void addModel(LessonModelEntity model) {
+        models.add(model);
+    }
+
+    public void removeModel(LessonModelEntity model) {
+        models.remove(model);
     }
 }

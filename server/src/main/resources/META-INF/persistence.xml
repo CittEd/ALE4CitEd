@@ -3,6 +3,9 @@
     <persistence-unit name="ALE_PU" transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>it.cnr.istc.ale.server.db.UserEntity</class>
+        <class>it.cnr.istc.ale.server.db.LessonEntity</class>
+        <class>it.cnr.istc.ale.server.db.LessonModelEntity</class>
+        <class>it.cnr.istc.ale.server.db.RoleEntity</class>
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:derby:db;create=true"/>
             <property name="javax.persistence.jdbc.user" value=""/>

@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.ale.api;
 
+import it.cnr.istc.ale.api.model.LessonModel;
 import java.util.Collection;
 
 /**
@@ -46,6 +47,14 @@ public interface LessonAPI {
      * @return the collection of lessons followed as a teacher.
      */
     public Collection<Lesson> get_lessons(long teacher_id);
+
+    /**
+     * Given a teacher id, returns the lesson models associated to the teacher.
+     *
+     * @param teacher_id a {@code long} representing the id of a teacher.
+     * @return the collection of lessons models associated teacher.
+     */
+    public Collection<LessonModel> get_models(long teacher_id);
 
     /**
      * Given a student id, returns the collection of lessons followed as a

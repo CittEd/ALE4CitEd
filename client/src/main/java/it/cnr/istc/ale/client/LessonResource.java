@@ -18,6 +18,7 @@ package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
+import it.cnr.istc.ale.api.model.LessonModel;
 import java.util.Collection;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -61,6 +62,17 @@ public class LessonResource implements LessonAPI {
                 .queryParam("teacher_id", teacher_id)
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<Lesson>>() {
+                });
+    }
+
+    @Override
+    public Collection<LessonModel> get_models(long teacher_id) {
+        return client.target(rest_uri)
+                .path("lessons")
+                .path("get_models")
+                .queryParam("teacher_id", teacher_id)
+                .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<Collection<LessonModel>>() {
                 });
     }
 

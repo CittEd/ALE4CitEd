@@ -31,13 +31,15 @@ import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
 import it.cnr.istc.ale.api.model.LessonModel;
+import it.cnr.istc.ale.server.db.LessonEntity;
+import it.cnr.istc.ale.server.db.LessonModelEntity;
+import it.cnr.istc.ale.server.db.RoleEntity;
 import it.cnr.istc.ale.server.db.UserEntity;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,15 +86,6 @@ public class Context implements UserAPI, LessonAPI {
      * map.
      */
     private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
-    private final Map<Lesson, LessonModel> models = new IdentityHashMap<>();
-    /**
-     * For each teacher id, the collection of lessons followed as a teacher.
-     */
-    private final Map<Long, Collection<Lesson>> lessons = new HashMap<>();
-    /**
-     * For each student id, the collection of lessons followed as a student.
-     */
-    private final Map<Long, Collection<Lesson>> followed_lessons = new HashMap<>();
 
     private Context() {
         try {
@@ -262,17 +255,35 @@ public class Context implements UserAPI, LessonAPI {
             LessonModel lesson_model = MAPPER.readValue(model, LessonModel.class);
             Map<String, Long> lesson_roles = MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
             });
-            Lesson l = new Lesson(teacher_id, lesson_name, lesson_roles);
-            models.put(l, lesson_model);
-            if (!lessons.containsKey(teacher_id)) {
-                lessons.put(teacher_id, new ArrayList<>());
+
+            EntityManager em = emf.createEntityManager();
+            em.getTransaction().begin();
+            LessonModelEntity lme = new LessonModelEntity();
+            lme.setModel(model);
+            em.persist(lme);
+            UserEntity teacher = em.find(UserEntity.class, teacher_id);
+            teacher.addModel(lme);
+            LessonEntity le = new LessonEntity();
+            le.setName(lesson_name);
+            le.setTeacher(teacher);
+            teacher.addLesson(le);
+            for (Map.Entry<String, Long> role : lesson_roles.entrySet()) {
+                UserEntity student = em.find(UserEntity.class, role.getValue());
+                RoleEntity re = new RoleEntity();
+                re.setStudent(student);
+                re.setLesson(le);
+                re.setName(role.getKey());
+                student.addRole(re);
+                em.persist(re);
+                em.persist(student);
             }
-            lessons.get(teacher_id).add(l);
+            em.persist(le);
+            teacher.addLesson(le);
+            em.persist(teacher);
+            em.getTransaction().commit();
+
+            Lesson l = new Lesson(le.getId(), teacher_id, lesson_name, lesson_roles);
             for (Long student_id : lesson_roles.values()) {
-                if (!followed_lessons.containsKey(student_id)) {
-                    followed_lessons.put(student_id, new ArrayList<>());
-                }
-                followed_lessons.get(student_id).add(l);
                 try {
                     mqtt.publish(student_id + "/input", MAPPER.writeValueAsBytes(new NewLesson(l)), 1, false);
                 } catch (JsonProcessingException | MqttException ex) {
@@ -288,12 +299,47 @@ public class Context implements UserAPI, LessonAPI {
 
     @Override
     public Collection<Lesson> get_lessons(long teacher_id) {
-        return lessons.containsKey(teacher_id) ? lessons.get(teacher_id) : Collections.emptyList();
+        EntityManager em = emf.createEntityManager();
+        UserEntity teacher = em.find(UserEntity.class, teacher_id);
+        Collection<Lesson> lessons = new ArrayList<>(teacher.getLessons().size());
+        for (LessonEntity lesson : teacher.getLessons()) {
+            Map<String, Long> roles = new HashMap<>();
+            for (RoleEntity role : lesson.getRoles()) {
+                roles.put(role.getName(), role.getStudent().getId());
+            }
+            lessons.add(new Lesson(lesson.getId(), teacher_id, lesson.getName(), roles));
+        }
+        return lessons;
+    }
+
+    @Override
+    public Collection<LessonModel> get_models(long teacher_id) {
+        EntityManager em = emf.createEntityManager();
+        UserEntity teacher = em.find(UserEntity.class, teacher_id);
+        Collection<LessonModel> models = new ArrayList<>(teacher.getModels().size());
+        for (LessonModelEntity model : teacher.getModels()) {
+            try {
+                models.add(MAPPER.readValue(model.getModel(), LessonModel.class));
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        return models;
     }
 
     @Override
     public Collection<Lesson> get_followed_lessons(long student_id) {
-        return followed_lessons.containsKey(student_id) ? followed_lessons.get(student_id) : Collections.emptyList();
+        EntityManager em = emf.createEntityManager();
+        UserEntity student = em.find(UserEntity.class, student_id);
+        Collection<Lesson> lessons = new ArrayList<>(student.getLessons().size());
+        for (RoleEntity role : student.getRoles()) {
+            Map<String, Long> roles = new HashMap<>();
+            for (RoleEntity r : role.getLesson().getRoles()) {
+                roles.put(r.getName(), r.getStudent().getId());
+            }
+            lessons.add(new Lesson(role.getLesson().getId(), role.getLesson().getId(), role.getLesson().getName(), roles));
+        }
+        return lessons;
     }
 
     @Override
