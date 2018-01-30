@@ -190,11 +190,11 @@ public class Context {
                 mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
                     Message m = MAPPER.readValue(message.getPayload(), Message.class);
                     if (m instanceof NewStudent) {
-                        add_student(ur.get_user(((NewStudent) m).getStudentId()));
+                        Platform.runLater(() -> add_student(ur.get_user(((NewStudent) m).getStudentId())));
                     } else if (m instanceof LostStudent) {
-                        remove_student(students.stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get());
+                        Platform.runLater(() -> remove_student(students.stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get()));
                     } else if (m instanceof NewLesson) {
-                        add_following_lesson(((NewLesson) m).getLesson());
+                        Platform.runLater(() -> add_following_lesson(((NewLesson) m).getLesson()));
                     } else {
                         throw new UnsupportedOperationException("Not supported yet: " + m);
                     }
@@ -218,11 +218,11 @@ public class Context {
                     parameter_values.put(value.getKey(), new HashMap<>());
                     for (Map.Entry<String, String> val : value.getValue().entrySet()) {
                         if (parameter_values.get(value.getKey()).containsKey(val.getKey())) {
-                            Platform.runLater(() -> parameter_values.get(value.getKey()).get(val.getKey()).set(val.getValue()));
+                            parameter_values.get(value.getKey()).get(val.getKey()).set(val.getValue());
                         } else {
                             SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                             parameter_values.get(value.getKey()).put(val.getKey(), val_prop);
-                            Platform.runLater(() -> par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop)));
+                            par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
                         }
                     }
                     mqtt.publish(u.getId() + "/output/" + value.getKey(), MAPPER.writeValueAsBytes(value.getValue()), 1, true);
@@ -254,28 +254,26 @@ public class Context {
             for (Lesson lesson : new ArrayList<>(lessons)) {
                 remove_lesson(lesson);
             }
-            Platform.runLater(() -> {
-                parameter_types.clear();
-                parameter_values.clear();
-                par_values.clear();
-            });
+            parameter_types.clear();
+            parameter_values.clear();
+            par_values.clear();
             mqtt = null;
         }
         user.set(u);
     }
 
     public void add_following_lesson(Lesson lesson) {
-        Platform.runLater(() -> following_lessons.add(lesson));
+        following_lessons.add(lesson);
     }
 
     public void remove_following_lesson(Lesson lesson) {
-        Platform.runLater(() -> following_lessons.remove(lesson));
+        following_lessons.remove(lesson);
     }
 
     public void add_teacher(User teacher) {
         try {
             online_users.put(teacher.getId(), new SimpleBooleanProperty());
-            Platform.runLater(() -> teachers.add(teacher));
+            teachers.add(teacher);
             mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 online_users.get(teacher.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -287,7 +285,7 @@ public class Context {
     public void remove_teacher(User teacher) {
         try {
             mqtt.unsubscribe(teacher.getId() + "/output/on-line");
-            Platform.runLater(() -> teachers.remove(teacher));
+            teachers.remove(teacher);
             online_users.remove(teacher.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -295,17 +293,17 @@ public class Context {
     }
 
     public void add_lesson(Lesson lesson) {
-        Platform.runLater(() -> lessons.add(lesson));
+        lessons.add(lesson);
     }
 
     public void remove_lesson(Lesson lesson) {
-        Platform.runLater(() -> lessons.remove(lesson));
+        lessons.remove(lesson);
     }
 
     private void add_student(User student) {
         try {
             online_users.put(student.getId(), new SimpleBooleanProperty());
-            Platform.runLater(() -> students.add(student));
+            students.add(student);
             mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -377,9 +375,7 @@ public class Context {
             for (String par : user_parameter_types.get(student.getId()).keySet()) {
                 mqtt.unsubscribe(student.getId() + "/output/" + par);
             }
-            Platform.runLater(() -> {
-                students.remove(student);
-            });
+            students.remove(student);
             online_users.remove(student.getId());
             user_parameter_types.remove(student.getId());
             user_parameter_values.remove(student.getId());
