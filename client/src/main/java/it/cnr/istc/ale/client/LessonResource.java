@@ -65,11 +65,11 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
-    public Collection<Lesson> get_followed_lessons(long teacher_id) {
+    public Collection<Lesson> get_followed_lessons(long student_id) {
         return client.target(rest_uri)
                 .path("lessons")
                 .path("get_followed_lessons")
-                .queryParam("teacher_id", teacher_id)
+                .queryParam("student_id", student_id)
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<Lesson>>() {
                 });

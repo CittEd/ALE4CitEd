@@ -26,6 +26,7 @@ import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Message;
+import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
 import java.io.IOException;
@@ -86,7 +87,7 @@ public class Context {
     private Stage stage;
     private final ObjectProperty<User> user = new SimpleObjectProperty<>();
     private final ObservableList<Event> events = FXCollections.observableArrayList();
-    private final ObservableList<Lesson> followed_lessons = FXCollections.observableArrayList();
+    private final ObservableList<Lesson> following_lessons = FXCollections.observableArrayList();
     private final ObservableList<User> teachers = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
     private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
     private final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
@@ -123,7 +124,7 @@ public class Context {
     }
 
     public ObservableList<Lesson> getFollowingLessons() {
-        return followed_lessons;
+        return following_lessons;
     }
 
     public ObservableList<User> getTeachers() {
@@ -159,7 +160,7 @@ public class Context {
             assert user.isNull().get();
             assert mqtt == null;
             for (Lesson lesson : lr.get_followed_lessons(u.getId())) {
-                add_followed_lesson(lesson);
+                add_following_lesson(lesson);
             }
             for (Lesson lesson : lr.get_lessons(u.getId())) {
                 add_lesson(lesson);
@@ -191,6 +192,10 @@ public class Context {
                         add_student(ur.get_user(((NewStudent) m).getStudentId()));
                     } else if (m instanceof LostStudent) {
                         remove_student(students.stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get());
+                    } else if (m instanceof NewLesson) {
+                        add_following_lesson(((NewLesson) m).getLesson());
+                    } else {
+                        throw new UnsupportedOperationException("Not supported yet: " + m);
                     }
                 });
                 for (User teacher : ur.get_teachers(u.getId())) {
@@ -242,8 +247,8 @@ public class Context {
                     LOG.log(Level.SEVERE, null, ex);
                 }
             }
-            for (Lesson lesson : new ArrayList<>(followed_lessons)) {
-                remove_followed_lesson(lesson);
+            for (Lesson lesson : new ArrayList<>(following_lessons)) {
+                remove_following_lesson(lesson);
             }
             for (Lesson lesson : new ArrayList<>(lessons)) {
                 remove_lesson(lesson);
@@ -256,12 +261,12 @@ public class Context {
         user.set(u);
     }
 
-    public void add_followed_lesson(Lesson lesson) {
-        followed_lessons.add(lesson);
+    public void add_following_lesson(Lesson lesson) {
+        following_lessons.add(lesson);
     }
 
-    public void remove_followed_lesson(Lesson lesson) {
-        followed_lessons.remove(lesson);
+    public void remove_following_lesson(Lesson lesson) {
+        following_lessons.remove(lesson);
     }
 
     public void add_teacher(User teacher) {

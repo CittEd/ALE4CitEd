@@ -77,6 +77,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         setVgrow(roles_table_view, Priority.ALWAYS);
         setHgrow(roles_table_view, Priority.ALWAYS);
 
+        setTitle("Add lesson");
+
         grid.add(new Label("Lesson type:"), 0, 0);
         lesson_type_name.setPromptText("Lesson type");
         lesson_type_name.setEditable(false);
@@ -131,6 +133,9 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
                     for (String role : lesson_model.getRoles()) {
                         roles.add(new StudentRole(role, null));
                     }
+
+                    getDialogPane().lookupButton(add_button).disableProperty().unbind();
+                    getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_type_name.textProperty().isEmpty().or(lesson_name.textProperty().isEmpty()).or(new StudentRoleBinding()));
                 } catch (IOException ex) {
                     Logger.getLogger(AddLessonDialog.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -138,13 +143,22 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         });
 
         getDialogPane().getButtonTypes().add(add_button);
-        getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_type_name.textProperty().isEmpty().or(lesson_name.textProperty().isEmpty()).or(new BooleanBinding() {
-            @Override
-            protected boolean computeValue() {
-                return roles.stream().anyMatch(role -> role.student.get() == null);
-            }
-        }));
+        getDialogPane().lookupButton(add_button).disableProperty().set(true);
         setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().collect(Collectors.toMap(StudentRole::getRole, StudentRole::getStudentId))) : null);
+    }
+
+    public class StudentRoleBinding extends BooleanBinding {
+
+        public StudentRoleBinding() {
+            for (StudentRole role : roles) {
+                bind(role.student);
+            }
+        }
+
+        @Override
+        protected boolean computeValue() {
+            return roles.stream().anyMatch(role -> role.student.get() == null);
+        }
     }
 
     public static class StudentRole {

@@ -161,7 +161,7 @@ public class Context {
         return parameter_types.containsKey(user_id);
     }
 
-    public Lesson newLesson(long teacher_id, String name, LessonModel model, Map<String, Long> roles) {
+    public Lesson new_lesson(long teacher_id, String name, LessonModel model, Map<String, Long> roles) {
         Lesson l = new Lesson(teacher_id, name, roles);
         models.put(l, model);
         if (!lessons.containsKey(teacher_id)) {

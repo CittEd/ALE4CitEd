@@ -22,8 +22,6 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -114,6 +112,15 @@ public class MainController implements Initializable {
         learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
         events.setItems(Context.getContext().getEvents());
         following_lessons.setItems(Context.getContext().getFollowingLessons());
+        following_lessons.setCellFactory((ListView<Lesson> param) -> new ListCell<Lesson>() {
+            @Override
+            protected void updateItem(Lesson lesson, boolean empty) {
+                super.updateItem(lesson, empty);
+                if (!empty) {
+                    setText(lesson.getName());
+                }
+            }
+        });
         teachers.setItems(Context.getContext().getTeachers());
         teachers.setCellFactory((ListView<User> param) -> new ListCell<User>() {
             @Override

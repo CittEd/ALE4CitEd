@@ -49,7 +49,7 @@ public class LessonResource implements LessonAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Lesson new_lesson(@FormParam("teacher_id") long teacher_id, @FormParam("lesson_name") String lesson_name, @FormParam("model") String model, @FormParam("roles") String roles) {
         try {
-            return Context.getContext().newLesson(teacher_id, lesson_name, Context.MAPPER.readValue(model, LessonModel.class), Context.MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
+            return Context.getContext().new_lesson(teacher_id, lesson_name, Context.MAPPER.readValue(model, LessonModel.class), Context.MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
             }));
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -69,8 +69,8 @@ public class LessonResource implements LessonAPI {
     @GET
     @Path("get_followed_lessons")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Lesson> get_followed_lessons(@QueryParam("teacher_id") long teacher_id) {
-        return Context.getContext().get_followed_lessons(teacher_id);
+    public Collection<Lesson> get_followed_lessons(@QueryParam("student_id") long student_id) {
+        return Context.getContext().get_followed_lessons(student_id);
     }
 
     @Override
