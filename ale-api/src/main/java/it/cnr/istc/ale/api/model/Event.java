@@ -40,17 +40,17 @@ public class Event {
 
     private final String name;
     private final String role;
-    private final Collection<Condition> trConditions;
-    private final Collection<Condition> exConditions;
+    private final Condition trigger_condition;
+    private final Condition execution_condition;
     private final Collection<String> events;
     private final Collection<Relation> relations;
 
     @JsonCreator
-    public Event(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("trConditions") Collection<Condition> trConditions, @JsonProperty("exConditions") Collection<Condition> exConditions, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
+    public Event(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("trigger_condition") Condition trigger_condition, @JsonProperty("execution_condition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
         this.name = name;
         this.role = role;
-        this.trConditions = trConditions;
-        this.exConditions = exConditions;
+        this.trigger_condition = trigger_condition;
+        this.execution_condition = execution_condition;
         this.events = events;
         this.relations = relations;
     }
@@ -63,12 +63,12 @@ public class Event {
         return role;
     }
 
-    public Collection<Condition> getTrConditions() {
-        return Collections.unmodifiableCollection(trConditions);
+    public Condition getTriggerCondition() {
+        return trigger_condition;
     }
 
-    public Collection<Condition> getExConditions() {
-        return Collections.unmodifiableCollection(exConditions);
+    public Condition getExecutionCondition() {
+        return execution_condition;
     }
 
     public Collection<String> getEvents() {

@@ -28,12 +28,12 @@ public class Relation {
 
     private final String from;
     private final String to;
-    private final long lb;
-    private final long ub;
+    private final Long lb;
+    private final Long ub;
     private final TimeUnit unit;
 
     @JsonCreator
-    public Relation(@JsonProperty("from") String from, @JsonProperty("to") String to, @JsonProperty("lb") long lb, @JsonProperty("ub") long ub, @JsonProperty("unit") TimeUnit unit) {
+    public Relation(@JsonProperty("from") String from, @JsonProperty("to") String to, @JsonProperty("lb") Long lb, @JsonProperty("ub") Long ub, @JsonProperty("unit") TimeUnit unit) {
         this.from = from;
         this.to = to;
         this.lb = lb;
@@ -49,11 +49,11 @@ public class Relation {
         return to;
     }
 
-    public long getLb() {
+    public Long getLb() {
         return lb;
     }
 
-    public long getUb() {
+    public Long getUb() {
         return ub;
     }
 
