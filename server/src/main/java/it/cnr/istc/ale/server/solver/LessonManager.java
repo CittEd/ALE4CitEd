@@ -54,8 +54,7 @@ public class LessonManager implements TemporalNetworkListener {
     public final int origin = network.newVar();
     private final List<Long> lesson_timeline_pulses = new ArrayList<>();
     private final List<Collection<Token>> lesson_timeline_values = new ArrayList<>();
-    private long old_tick = 0;
-    private long tick = 0;
+    private long t_now = 0;
     private int idx = 0;
     private final Collection<LessonManagerListener> listeners = new ArrayList<>();
 
@@ -178,6 +177,47 @@ public class LessonManager implements TemporalNetworkListener {
         for (LessonManagerListener l : listeners) {
             l.movedToken(tokens.get(var));
         }
+    }
+
+    /**
+     * Executes the lesson, either forward or backward, till the given relative
+     * (to the lesson) time.
+     *
+     * @param t the relative current time.
+     */
+    public void goTo(final long t) {
+        if (t > t_now) {
+            // we are moving forward..
+            long next_pulse = lesson_timeline_pulses.get(idx);
+            while (next_pulse <= t) {
+                for (Token tk : lesson_timeline_values.get(idx)) {
+                    for (LessonManagerListener l : listeners) {
+                        l.executeToken(tk);
+                    }
+                }
+                idx++;
+                next_pulse = lesson_timeline_pulses.get(idx);
+            }
+        }
+        if (t < t_now && idx > 0) {
+            // we are moving backward..
+            long last_pulse = lesson_timeline_pulses.get(idx - 1);
+            while (last_pulse > t) {
+                for (Token tk : lesson_timeline_values.get(idx - 1)) {
+                    for (LessonManagerListener l : listeners) {
+                        l.hideToken(tk);
+                    }
+                }
+                idx--;
+                if (idx > 0) {
+                    last_pulse = lesson_timeline_pulses.get(idx - 1);
+                } else {
+                    // we have no more tokens to hide..
+                    break;
+                }
+            }
+        }
+        t_now = t;
     }
 
     public void addSolverListener(LessonManagerListener listener) {
