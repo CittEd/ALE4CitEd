@@ -4,7 +4,4 @@
 /server/derby.log
 /server/activemq-data/
 /server/db/
-/smt/target/
-/core/target/
-/solver/target/
 /server/nbproject/
