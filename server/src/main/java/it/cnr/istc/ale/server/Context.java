@@ -25,6 +25,7 @@ import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
 import it.cnr.istc.ale.api.messages.EventUpdate;
+import it.cnr.istc.ale.api.messages.HideEvent;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Message;
@@ -33,6 +34,8 @@ import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
 import it.cnr.istc.ale.api.model.LessonModel;
+import it.cnr.istc.ale.api.model.QuestionEvent;
+import it.cnr.istc.ale.api.model.TextEvent;
 import it.cnr.istc.ale.server.db.LessonEntity;
 import it.cnr.istc.ale.server.db.LessonModelEntity;
 import it.cnr.istc.ale.server.db.RoleEntity;
@@ -315,6 +318,63 @@ public class Context implements UserAPI, LessonAPI {
                         // we notify the teacher that an event has been updated..
                         mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new EventUpdate(tk.tp, (long) lm.network.getValue(tk.tp))), 1, false);
                     } catch (JsonProcessingException | MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                @Override
+                public void executeToken(Token tk) {
+                    try {
+                        byte[] execute_event_bytes = null;
+                        if (tk.event instanceof TextEvent) {
+                            execute_event_bytes = MAPPER.writeValueAsBytes(new it.cnr.istc.ale.api.messages.TextEvent(l.getId(), tk.tp, ((TextEvent) tk.event).getContent()));
+                        } else if (tk.event instanceof QuestionEvent) {
+                            Collection<String> answers = new ArrayList<>(((QuestionEvent) tk.event).getAnswers().size());
+                            for (QuestionEvent.Answer answer : ((QuestionEvent) tk.event).getAnswers()) {
+                                answers.add(MAPPER.writeValueAsString(answer));
+                            }
+                            execute_event_bytes = MAPPER.writeValueAsBytes(new it.cnr.istc.ale.api.messages.QuestionEvent(l.getId(), tk.tp, ((QuestionEvent) tk.event).getQuestion(), answers));
+                        } else {
+                            throw new UnsupportedOperationException("Not supported yet.");
+                        }
+                        try {
+                            // we notify the teacher that a token has to be hidden..
+                            mqtt.publish(teacher_id + "/input", execute_event_bytes, 1, false);
+                        } catch (MqttException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
+                        }
+                        for (Long student_id : lesson_roles.values()) {
+                            try {
+                                // we notify all the students that a token has to be hidden..
+                                mqtt.publish(student_id + "/input", execute_event_bytes, 1, false);
+                            } catch (MqttException ex) {
+                                LOG.log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    } catch (JsonProcessingException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                @Override
+                public void hideToken(Token tk) {
+                    try {
+                        byte[] hide_event_bytes = MAPPER.writeValueAsBytes(new HideEvent(l.getId(), tk.tp));
+                        try {
+                            // we notify the teacher that a token has to be hidden..
+                            mqtt.publish(teacher_id + "/input", hide_event_bytes, 1, false);
+                        } catch (MqttException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
+                        }
+                        for (Long student_id : lesson_roles.values()) {
+                            try {
+                                // we notify all the students that a token has to be hidden..
+                                mqtt.publish(student_id + "/input", hide_event_bytes, 1, false);
+                            } catch (MqttException ex) {
+                                LOG.log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    } catch (JsonProcessingException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }

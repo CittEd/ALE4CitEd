@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,30 +18,27 @@ package it.cnr.istc.ale.api.messages;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class QuestionEvent extends Event {
+public class HideEvent extends Message {
 
-    private final String question;
-    private final Collection<String> answers;
+    private final long lesson_id;
+    private final long event_id;
 
     @JsonCreator
-    public QuestionEvent(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("id") long id, @JsonProperty("question") String question, @JsonProperty("answers") Collection<String> answers) {
-        super(lesson_id, id);
-        this.question = question;
-        this.answers = answers;
+    public HideEvent(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("event_id") long event_id) {
+        this.lesson_id = lesson_id;
+        this.event_id = event_id;
     }
 
-    public String getQuestion() {
-        return question;
+    public long getLessonId() {
+        return lesson_id;
     }
 
-    public Collection<String> getAnswers() {
-        return Collections.unmodifiableCollection(answers);
+    public long getEventId() {
+        return event_id;
     }
 }

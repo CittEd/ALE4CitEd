@@ -149,8 +149,20 @@ public class TemporalNetwork {
             this.ub = ub;
             watches.get(from).add(this);
             watches.get(to).add(this);
-            prop_q.push(from);
-            prop_q.push(to);
+            double from_val = values.get(from), to_val = values.get(to);
+            if (to_val < from_val + lb) {
+                values.set(to, from_val + lb);
+                for (TemporalNetworkListener l : listeners) {
+                    l.newValue(to);
+                }
+                prop_q.push(to);
+            } else if (to_val > from_val + ub) {
+                values.set(to, from_val + ub);
+                for (TemporalNetworkListener l : listeners) {
+                    l.newValue(to);
+                }
+                prop_q.push(to);
+            }
         }
 
         private void propagate(final int var) {

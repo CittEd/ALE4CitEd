@@ -22,6 +22,7 @@ import it.cnr.istc.ale.api.model.Relation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -40,10 +41,22 @@ public class LessonManager implements TemporalNetworkListener {
     private static final Logger LOG = Logger.getLogger(LessonManager.class.getName());
     public final TemporalNetwork network = new TemporalNetwork();
     private final Map<String, Event> event_templates = new HashMap<>();
+    /**
+     * For each time point, the corresponding token.
+     */
     private final List<Token> tokens = new ArrayList<>();
+    /**
+     * A collection of triggerable tokens. These tokens are expanded whenever
+     * their triggering condition becomes satisfied.
+     */
     private final Collection<Token> triggerable_tokens = new ArrayList<>();
     private final Deque<Token> prop_q = new ArrayDeque<>();
     public final int origin = network.newVar();
+    private final List<Long> lesson_timeline_pulses = new ArrayList<>();
+    private final List<Collection<Token>> lesson_timeline_values = new ArrayList<>();
+    private long old_tick = 0;
+    private long tick = 0;
+    private int idx = 0;
     private final Collection<LessonManagerListener> listeners = new ArrayList<>();
 
     public LessonManager() {
@@ -57,7 +70,9 @@ public class LessonManager implements TemporalNetworkListener {
             }
             event_templates.put(event_template.getName(), event_template);
         }
+
         Map<String, Token> c_tks = new HashMap<>();
+        // we create the tokens..
         for (String id : model.getEvents()) {
             Token tk = new Token(null, network.newVar(), event_templates.get(id));
             tokens.add(tk);
@@ -67,6 +82,8 @@ public class LessonManager implements TemporalNetworkListener {
             c_tks.put(id, tk);
             prop_q.push(tk);
         }
+
+        // we enforce the temporal relations..
         for (Relation rel : model.getRelations()) {
             double lb = rel.getLb() != null ? rel.getUnit().convert(rel.getLb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
             double ub = rel.getUb() != null ? rel.getUnit().convert(rel.getUb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
@@ -76,11 +93,35 @@ public class LessonManager implements TemporalNetworkListener {
                 network.newTemporalRelation(c_tks.get(rel.getFrom()).tp, c_tks.get(rel.getTo()).tp, lb, ub);
             }
         }
+
+        // we build the lesson..
+        build();
+    }
+
+    private void extract_timeline() {
+        lesson_timeline_pulses.clear();
+        lesson_timeline_values.clear();
+        Map<Long, Collection<Token>> at = new HashMap<>();
+        for (Token tk : tokens) {
+            long pulse = (long) network.getValue(tk.tp);
+            lesson_timeline_pulses.add(pulse);
+            Collection<Token> tks = at.get(pulse);
+            if (tks == null) {
+                tks = new ArrayList<>();
+                at.put(pulse, tks);
+            }
+            tks.add(tk);
+        }
+        Collections.sort(lesson_timeline_pulses);
+        for (Long pulse : lesson_timeline_pulses) {
+            lesson_timeline_values.add(at.get(pulse));
+        }
     }
 
     private void expand_event(final Token tk) {
         Map<String, Token> c_tks = new HashMap<>();
         c_tks.put(THIS, tk);
+        // we create the tokens..
         for (String id : tk.event.getEvents()) {
             Token c_tk = new Token(tk, network.newVar(), event_templates.get(id));
             tokens.add(c_tk);
@@ -90,6 +131,8 @@ public class LessonManager implements TemporalNetworkListener {
             c_tks.put(id, c_tk);
             prop_q.push(c_tk);
         }
+
+        // we enforce the temporal relations..
         for (Relation rel : tk.event.getRelations()) {
             double lb = rel.getLb() != null ? rel.getUnit().convert(rel.getLb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
             double ub = rel.getUb() != null ? rel.getUnit().convert(rel.getUb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
@@ -97,7 +140,7 @@ public class LessonManager implements TemporalNetworkListener {
         }
     }
 
-    public void propagate() {
+    private void build() {
         while (!prop_q.isEmpty()) {
             Token tk = prop_q.pop();
             if (tk.event.getTriggerCondition() != null) {
@@ -108,6 +151,11 @@ public class LessonManager implements TemporalNetworkListener {
         }
         // we propagate the temporal network..
         network.propagate();
+        // we guarantee that the origin is at 0..
+        network.setValue(origin, 0);
+
+        // we extract the lesson timeline..
+        extract_timeline();
     }
 
     public Token getToken(final int var) {
@@ -118,6 +166,11 @@ public class LessonManager implements TemporalNetworkListener {
         network.setValue(tk.tp, value);
         // we propagate the temporal network..
         network.propagate();
+        // we guarantee that the origin is at 0..
+        network.setValue(origin, 0);
+
+        // we extract the lesson timeline..
+        extract_timeline();
     }
 
     @Override

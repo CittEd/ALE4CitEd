@@ -34,13 +34,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = QuestionEvent.class, name = "question-event")})
 public abstract class Event extends Message {
 
-    private final long id;
     private final long lesson_id;
+    private final long id;
 
     @JsonCreator
-    public Event(@JsonProperty("id") long id, @JsonProperty("lesson_id") long lesson_id) {
-        this.id = id;
+    public Event(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("id") long id) {
         this.lesson_id = lesson_id;
+        this.id = id;
     }
 
     public long getId() {

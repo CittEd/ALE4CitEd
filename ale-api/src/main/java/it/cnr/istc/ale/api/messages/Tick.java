@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,30 +18,27 @@ package it.cnr.istc.ale.api.messages;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class QuestionEvent extends Event {
+public class Tick extends Message {
 
-    private final String question;
-    private final Collection<String> answers;
+    private final long lesson_id;
+    private final long tick;
 
     @JsonCreator
-    public QuestionEvent(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("id") long id, @JsonProperty("question") String question, @JsonProperty("answers") Collection<String> answers) {
-        super(lesson_id, id);
-        this.question = question;
-        this.answers = answers;
+    public Tick(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("tick") long tick) {
+        this.lesson_id = lesson_id;
+        this.tick = tick;
     }
 
-    public String getQuestion() {
-        return question;
+    public long getLessonId() {
+        return lesson_id;
     }
 
-    public Collection<String> getAnswers() {
-        return Collections.unmodifiableCollection(answers);
+    public long getTick() {
+        return tick;
     }
 }
