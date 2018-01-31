@@ -34,23 +34,23 @@ import java.util.logging.Logger;
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public class Solver implements TemporalNetworkListener {
+public class LessonManager implements TemporalNetworkListener {
 
     public static final String THIS = "this";
-    private static final Logger LOG = Logger.getLogger(Solver.class.getName());
+    private static final Logger LOG = Logger.getLogger(LessonManager.class.getName());
     public final TemporalNetwork network = new TemporalNetwork();
     private final Map<String, Event> event_templates = new HashMap<>();
     private final List<Token> tokens = new ArrayList<>();
     private final Collection<Token> triggerable_tokens = new ArrayList<>();
     private final Deque<Token> prop_q = new ArrayDeque<>();
     public final int origin = network.newVar();
-    private final Collection<SolverListener> listeners = new ArrayList<>();
+    private final Collection<LessonManagerListener> listeners = new ArrayList<>();
 
-    public Solver() {
-        tokens.add(new Token(this, origin, null));
+    public LessonManager() {
+        tokens.add(new Token(null, origin, null));
     }
 
-    public void read(final LessonModel model) {
+    public void setModel(final LessonModel model) {
         for (Event event_template : model.getModel()) {
             if (event_templates.containsKey(event_template.getName())) {
                 LOG.log(Level.WARNING, "Renaming event {0}", event_template.getName());
@@ -59,9 +59,10 @@ public class Solver implements TemporalNetworkListener {
         }
         Map<String, Token> c_tks = new HashMap<>();
         for (String id : model.getEvents()) {
-            Token tk = new Token(this, network.newVar(), event_templates.get(id));
-            for (SolverListener l : listeners) {
-                l.newToken(this, tk);
+            Token tk = new Token(null, network.newVar(), event_templates.get(id));
+            tokens.add(tk);
+            for (LessonManagerListener l : listeners) {
+                l.newToken(tk);
             }
             c_tks.put(id, tk);
             prop_q.push(tk);
@@ -81,9 +82,10 @@ public class Solver implements TemporalNetworkListener {
         Map<String, Token> c_tks = new HashMap<>();
         c_tks.put(THIS, tk);
         for (String id : tk.event.getEvents()) {
-            Token c_tk = new Token(this, network.newVar(), event_templates.get(id));
-            for (SolverListener l : listeners) {
-                l.newToken(this, tk);
+            Token c_tk = new Token(tk, network.newVar(), event_templates.get(id));
+            tokens.add(c_tk);
+            for (LessonManagerListener l : listeners) {
+                l.newToken(tk);
             }
             c_tks.put(id, c_tk);
             prop_q.push(c_tk);
@@ -108,18 +110,28 @@ public class Solver implements TemporalNetworkListener {
         network.propagate();
     }
 
+    public Token getToken(final int var) {
+        return tokens.get(var);
+    }
+
+    public void moveToken(final Token tk, final double value) {
+        network.setValue(tk.tp, value);
+        // we propagate the temporal network..
+        network.propagate();
+    }
+
     @Override
     public void newValue(int var) {
-        for (SolverListener l : listeners) {
-            l.movedToken(this, tokens.get(var));
+        for (LessonManagerListener l : listeners) {
+            l.movedToken(tokens.get(var));
         }
     }
 
-    public void addSolverListener(SolverListener listener) {
+    public void addSolverListener(LessonManagerListener listener) {
         listeners.add(listener);
     }
 
-    public void removeSolverListener(SolverListener listener) {
+    public void removeSolverListener(LessonManagerListener listener) {
         listeners.remove(listener);
     }
 }

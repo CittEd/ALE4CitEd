@@ -25,14 +25,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class LostLesson extends Message {
 
-    private final String name;
+    private final long id;
 
     @JsonCreator
-    public LostLesson(@JsonProperty("name") String name) {
-        this.name = name;
+    public LostLesson(@JsonProperty("id") long id) {
+        this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public long getId() {
+        return id;
     }
 }

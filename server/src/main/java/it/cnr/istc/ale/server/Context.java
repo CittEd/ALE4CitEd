@@ -24,9 +24,11 @@ import it.cnr.istc.ale.api.LessonAPI;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
+import it.cnr.istc.ale.api.messages.EventUpdate;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Message;
+import it.cnr.istc.ale.api.messages.NewEvent;
 import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
@@ -35,6 +37,8 @@ import it.cnr.istc.ale.server.db.LessonEntity;
 import it.cnr.istc.ale.server.db.LessonModelEntity;
 import it.cnr.istc.ale.server.db.RoleEntity;
 import it.cnr.istc.ale.server.db.UserEntity;
+import it.cnr.istc.ale.server.solver.LessonManager;
+import it.cnr.istc.ale.server.solver.Token;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +59,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import it.cnr.istc.ale.server.solver.LessonManagerListener;
 
 /**
  *
@@ -86,6 +91,10 @@ public class Context implements UserAPI, LessonAPI {
      * map.
      */
     private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
+    /**
+     * For each lesson, the solver that manages the lesson.
+     */
+    private final Map<Long, LessonManager> lessons = new HashMap<>();
 
     private Context() {
         try {
@@ -113,30 +122,35 @@ public class Context implements UserAPI, LessonAPI {
         }
     }
 
-    public void addConnection(long id) {
-        if (!parameter_types.containsKey(id)) {
-            parameter_types.put(id, new HashMap<>());
+    public void addConnection(long user_id) {
+        if (!parameter_types.containsKey(user_id)) {
+            parameter_types.put(user_id, new HashMap<>());
         }
-        if (!parameter_values.containsKey(id)) {
-            parameter_values.put(id, new HashMap<>());
+        if (!parameter_values.containsKey(user_id)) {
+            parameter_values.put(user_id, new HashMap<>());
         }
         try {
-            mqtt.publish(id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
-            mqtt.subscribe(id + "/output", (String topic, MqttMessage message) -> {
+            mqtt.publish(user_id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
+            mqtt.subscribe(user_id + "/output", (String topic, MqttMessage message) -> {
                 Message m = MAPPER.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
+                    // the user has declared a new parameter..
                     NewParameter np = (NewParameter) m;
                     Parameter par = np.getParameter();
-                    parameter_types.get(id).put(par.getName(), par);
-                    mqtt.subscribe(id + "/output/" + par.getName(), (String par_topic, MqttMessage par_value) -> {
-                        parameter_values.get(id).put(par.getName(), MAPPER.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
+                    parameter_types.get(user_id).put(par.getName(), par);
+                    mqtt.subscribe(user_id + "/output/" + par.getName(), (String par_topic, MqttMessage par_value) -> {
+                        // the user has updated one of his/her parameters..
+                        parameter_values.get(user_id).put(par.getName(), MAPPER.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         }));
                     });
                 } else if (m instanceof LostParameter) {
+                    // the user has removed a parameter..
                     LostParameter lp = (LostParameter) m;
-                    mqtt.unsubscribe(id + "/output/" + lp.getName());
-                    parameter_types.get(id).remove(lp.getName());
-                    parameter_values.get(id).remove(lp.getName());
+                    mqtt.unsubscribe(user_id + "/output/" + lp.getName());
+                    parameter_types.get(user_id).remove(lp.getName());
+                    parameter_values.get(user_id).remove(lp.getName());
+                } else {
+                    throw new UnsupportedOperationException("Not supported yet: " + m);
                 }
             });
         } catch (MqttException ex) {
@@ -144,13 +158,13 @@ public class Context implements UserAPI, LessonAPI {
         }
     }
 
-    public void removeConnection(long id) {
+    public void removeConnection(long user_id) {
         try {
-            for (Map.Entry<String, Parameter> par_type : parameter_types.get(id).entrySet()) {
-                mqtt.unsubscribe(id + "/output/" + par_type.getKey());
+            for (Map.Entry<String, Parameter> par_type : parameter_types.get(user_id).entrySet()) {
+                mqtt.unsubscribe(user_id + "/output/" + par_type.getKey());
             }
-            mqtt.unsubscribe(id + "/output");
-            mqtt.publish(id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 1, true);
+            mqtt.unsubscribe(user_id + "/output");
+            mqtt.publish(user_id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 1, true);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -283,6 +297,32 @@ public class Context implements UserAPI, LessonAPI {
             em.getTransaction().commit();
 
             Lesson l = new Lesson(le.getId(), teacher_id, lesson_name, lesson_roles);
+            LessonManager lm = new LessonManager();
+            lm.addSolverListener(new LessonManagerListener() {
+                @Override
+                public void newToken(Token tk) {
+                    try {
+                        // we notify the teacher that a new event has been created..
+                        mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new NewEvent(tk.tp, l.getId(), tk.cause != null ? (long) tk.cause.tp : null, (long) lm.network.getValue(tk.tp), tk.event.getName())), 1, false);
+                    } catch (JsonProcessingException | MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                @Override
+                public void movedToken(Token tk) {
+                    try {
+                        // we notify the teacher that an event has been updated..
+                        mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new EventUpdate(tk.tp, (long) lm.network.getValue(tk.tp))), 1, false);
+                    } catch (JsonProcessingException | MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
+            lm.setModel(lesson_model);
+            lessons.put(l.getId(), lm);
+
+            // we notify all the students that a new lesson has been created..
             for (Long student_id : lesson_roles.values()) {
                 try {
                     mqtt.publish(student_id + "/input", MAPPER.writeValueAsBytes(new NewLesson(l)), 1, false);

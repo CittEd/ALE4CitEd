@@ -26,13 +26,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class NewEvent extends Message {
 
     private final long id;
-    private final long cause;
+    private final long lesson_id;
+    private final Long cause;
     private final long time;
     private final String refEvent;
 
     @JsonCreator
-    public NewEvent(@JsonProperty("id") long id, @JsonProperty("cause") long cause, @JsonProperty("time") long time, @JsonProperty("refEvent") String refEvent) {
+    public NewEvent(@JsonProperty("id") long id, @JsonProperty("lesson_id") long lesson_id, @JsonProperty("cause") Long cause, @JsonProperty("time") long time, @JsonProperty("refEvent") String refEvent) {
         this.id = id;
+        this.lesson_id = lesson_id;
         this.cause = cause;
         this.time = time;
         this.refEvent = refEvent;
@@ -42,7 +44,11 @@ public class NewEvent extends Message {
         return id;
     }
 
-    public long getCause() {
+    public long getLessonId() {
+        return lesson_id;
+    }
+
+    public Long getCause() {
         return cause;
     }
 

@@ -20,9 +20,9 @@ package it.cnr.istc.ale.server.solver;
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
-public interface SolverListener {
+public interface LessonManagerListener {
 
-    public void newToken(final Solver s, final Token tk);
+    public void newToken(final Token tk);
 
-    public void movedToken(final Solver s, final Token tk);
+    public void movedToken(final Token tk);
 }

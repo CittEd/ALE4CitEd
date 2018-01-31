@@ -35,13 +35,19 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class Event extends Message {
 
     private final long id;
+    private final long lesson_id;
 
     @JsonCreator
-    public Event(@JsonProperty("id") long id) {
+    public Event(@JsonProperty("id") long id, @JsonProperty("lesson_id") long lesson_id) {
         this.id = id;
+        this.lesson_id = lesson_id;
     }
 
     public long getId() {
         return id;
+    }
+
+    public long getLessonId() {
+        return lesson_id;
     }
 }

@@ -28,8 +28,8 @@ public class TextEvent extends Event {
     private final String content;
 
     @JsonCreator
-    public TextEvent(@JsonProperty("id") long id, @JsonProperty("content") String content) {
-        super(id);
+    public TextEvent(@JsonProperty("id") long id, @JsonProperty("lesson_id") long lesson_id, @JsonProperty("content") String content) {
+        super(id, lesson_id);
         this.content = content;
     }
 

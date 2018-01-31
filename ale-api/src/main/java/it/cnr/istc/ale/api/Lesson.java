@@ -27,25 +27,25 @@ import java.util.Map;
  */
 public class Lesson {
 
-    private final long lessonId;
-    private final long teacherId;
+    private final long id;
+    private final long teacher_id;
     private final String name;
     private final Map<String, Long> roles;
 
     @JsonCreator
-    public Lesson(@JsonProperty("lessonId") long lessonId, @JsonProperty("teacherId") long teacherId, @JsonProperty("name") String name, @JsonProperty("roles") Map<String, Long> roles) {
-        this.lessonId = lessonId;
-        this.teacherId = teacherId;
+    public Lesson(@JsonProperty("id") long id, @JsonProperty("teacher_id") long teacher_id, @JsonProperty("name") String name, @JsonProperty("roles") Map<String, Long> roles) {
+        this.id = id;
+        this.teacher_id = teacher_id;
         this.name = name;
         this.roles = roles;
     }
 
-    public long getLessonId() {
-        return lessonId;
+    public long getId() {
+        return id;
     }
 
     public long getTeacherId() {
-        return teacherId;
+        return teacher_id;
     }
 
     public String getName() {

@@ -24,12 +24,12 @@ import it.cnr.istc.ale.api.model.Event;
  */
 public class Token {
 
-    public final Solver solver;
+    public final Token cause;
     public final int tp;
     public final Event event;
 
-    Token(Solver solver, int tp, Event event) {
-        this.solver = solver;
+    Token(final Token cause, final int tp, final Event event) {
+        this.cause = cause;
         this.tp = tp;
         this.event = event;
     }
