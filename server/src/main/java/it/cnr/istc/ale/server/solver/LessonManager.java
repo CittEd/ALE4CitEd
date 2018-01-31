@@ -180,6 +180,14 @@ public class LessonManager implements TemporalNetworkListener {
     }
 
     /**
+     * Executes one tick. In other words moves the execution of the lesson
+     * forward of one second.
+     */
+    public void tick() {
+        goTo(t_now + 1000);
+    }
+
+    /**
      * Executes the lesson, either forward or backward, till the given relative
      * (to the lesson) time.
      *

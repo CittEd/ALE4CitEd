@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -48,10 +49,10 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
-    @POST
+    @GET
     @Path("get_models")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<LessonModel> get_models(@FormParam("teacher_id") long teacher_id) {
+    public Collection<LessonModel> get_models(@QueryParam("teacher_id") long teacher_id) {
         return Context.getContext().get_models(teacher_id);
     }
 
@@ -72,22 +73,30 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
-    public void start_lesson(long lesson_id) {
+    @PUT
+    @Path("start_lesson")
+    public void start_lesson(@FormParam("lesson_id") long lesson_id) {
         Context.getContext().start_lesson(lesson_id);
     }
 
     @Override
-    public void pause_lesson(long lesson_id) {
+    @PUT
+    @Path("pause_lesson")
+    public void pause_lesson(@FormParam("lesson_id") long lesson_id) {
         Context.getContext().pause_lesson(lesson_id);
     }
 
     @Override
-    public void stop_lesson(long lesson_id) {
+    @PUT
+    @Path("stop_lesson")
+    public void stop_lesson(@FormParam("lesson_id") long lesson_id) {
         Context.getContext().stop_lesson(lesson_id);
     }
 
     @Override
-    public void go_at(long lesson_id, long timestamp) {
+    @PUT
+    @Path("go_at")
+    public void go_at(@FormParam("lesson_id") long lesson_id, @FormParam("timestamp") long timestamp) {
         Context.getContext().go_at(lesson_id, timestamp);
     }
 }

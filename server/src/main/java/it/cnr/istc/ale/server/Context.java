@@ -63,6 +63,11 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import it.cnr.istc.ale.server.solver.LessonManagerListener;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
@@ -72,6 +77,7 @@ public class Context implements UserAPI, LessonAPI {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
     private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ALE_PU");
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
     public static final String SERVER_ID = "server";
     private static Context context;
     public static final ObjectMapper MAPPER = new ObjectMapper();
@@ -98,6 +104,8 @@ public class Context implements UserAPI, LessonAPI {
      * For each lesson, the solver that manages the lesson.
      */
     private final Map<Long, LessonManager> lessons = new HashMap<>();
+    private final Map<Long, Boolean> running_lessons = new HashMap<>();
+    private final Lock lessons_lock = new ReentrantLock();
 
     private Context() {
         try {
@@ -123,6 +131,19 @@ public class Context implements UserAPI, LessonAPI {
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+
+        EXECUTOR.scheduleAtFixedRate(() -> {
+            lessons_lock.lock();
+            try {
+                for (Map.Entry<Long, LessonManager> entry : lessons.entrySet()) {
+                    if (running_lessons.get(entry.getKey())) {
+                        entry.getValue().tick();
+                    }
+                }
+            } finally {
+                lessons_lock.unlock();
+            }
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     public void addConnection(long user_id) {
@@ -381,6 +402,7 @@ public class Context implements UserAPI, LessonAPI {
             });
             lm.setModel(lesson_model);
             lessons.put(l.getId(), lm);
+            running_lessons.put(l.getId(), Boolean.FALSE);
 
             // we notify all the students that a new lesson has been created..
             for (Long student_id : lesson_roles.values()) {
@@ -444,12 +466,22 @@ public class Context implements UserAPI, LessonAPI {
 
     @Override
     public void start_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        lessons_lock.lock();
+        try {
+            running_lessons.put(lesson_id, Boolean.TRUE);
+        } finally {
+            lessons_lock.unlock();
+        }
     }
 
     @Override
     public void pause_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        lessons_lock.lock();
+        try {
+            running_lessons.put(lesson_id, Boolean.FALSE);
+        } finally {
+            lessons_lock.unlock();
+        }
     }
 
     @Override
@@ -459,6 +491,11 @@ public class Context implements UserAPI, LessonAPI {
 
     @Override
     public void go_at(long lesson_id, long timestamp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        lessons_lock.lock();
+        try {
+            lessons.get(lesson_id).goTo(timestamp);
+        } finally {
+            lessons_lock.unlock();
+        }
     }
 }
