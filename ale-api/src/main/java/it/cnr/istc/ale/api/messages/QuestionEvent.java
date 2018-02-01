@@ -31,7 +31,7 @@ public class QuestionEvent extends Event {
     private final Collection<String> answers;
 
     @JsonCreator
-    public QuestionEvent(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("id") long id, @JsonProperty("question") String question, @JsonProperty("answers") Collection<String> answers) {
+    public QuestionEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") long id, @JsonProperty("question") String question, @JsonProperty("answers") Collection<String> answers) {
         super(lesson_id, id);
         this.question = question;
         this.answers = answers;

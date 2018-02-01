@@ -29,7 +29,7 @@ public class Tick extends Message {
     private final long tick;
 
     @JsonCreator
-    public Tick(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("tick") long tick) {
+    public Tick(@JsonProperty("lessonId") long lesson_id, @JsonProperty("tick") long tick) {
         this.lesson_id = lesson_id;
         this.tick = tick;
     }

@@ -38,16 +38,16 @@ public abstract class Event extends Message {
     private final long id;
 
     @JsonCreator
-    public Event(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("id") long id) {
+    public Event(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") long id) {
         this.lesson_id = lesson_id;
         this.id = id;
     }
 
-    public long getId() {
-        return id;
-    }
-
     public long getLessonId() {
         return lesson_id;
+    }
+
+    public long getId() {
+        return id;
     }
 }

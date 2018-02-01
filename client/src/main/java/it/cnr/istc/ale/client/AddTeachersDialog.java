@@ -29,6 +29,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 /**
@@ -63,6 +64,11 @@ public class AddTeachersDialog extends Dialog<User[]> {
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
                 }
+            }
+        });
+        found_users_list_view.setOnMouseClicked((MouseEvent event) -> {
+            if (event.getClickCount() == 2 && !found_users_list_view.getSelectionModel().isEmpty()) {
+                ((Button) getDialogPane().lookupButton(add_button)).fire();
             }
         });
 

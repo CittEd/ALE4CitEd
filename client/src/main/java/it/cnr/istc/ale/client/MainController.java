@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -37,6 +38,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
@@ -86,6 +88,7 @@ public class MainController implements Initializable {
     private TableColumn<Context.ParameterValue, String> par_names;
     @FXML
     private TableColumn<Context.ParameterValue, String> par_vals;
+    private final LessonGrid lesson_grid = new LessonGrid();
     private final StudentGrid student_grid = new StudentGrid();
 
     /**
@@ -152,6 +155,20 @@ public class MainController implements Initializable {
         });
         add_lesson_button.disableProperty().bind(user.isNull());
         remove_lesson_button.disableProperty().bind(Bindings.isEmpty(lessons.selectionModelProperty().get().getSelectedItems()));
+
+        HBox.setHgrow(lesson_grid, Priority.ALWAYS);
+
+        lessons.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Lesson> observable, Lesson oldValue, Lesson newValue) -> {
+            if (newValue != null) {
+                if (teach_h_box.getChildren().size() == 1) {
+                    teach_h_box.getChildren().add(lesson_grid);
+                } else if (teach_h_box.getChildren().get(1) != lesson_grid) {
+                    teach_h_box.getChildren().set(1, lesson_grid);
+                }
+                lesson_grid.setLesson(newValue);
+            }
+        });
+
         students.setItems(Context.getContext().getStudents());
         students.setCellFactory((ListView<User> param) -> new ListCell<User>() {
             @Override
@@ -178,6 +195,31 @@ public class MainController implements Initializable {
                     teach_h_box.getChildren().set(1, student_grid);
                 }
                 student_grid.setUser(newValue);
+            }
+        });
+
+        teach_accord.expandedPaneProperty().addListener((ObservableValue<? extends TitledPane> observable, TitledPane oldValue, TitledPane newValue) -> {
+            if (newValue != null) {
+                switch (teach_accord.getPanes().indexOf(newValue)) {
+                    case 0:
+                        if (!lessons.getSelectionModel().isEmpty()) {
+                            if (teach_h_box.getChildren().size() == 1) {
+                                teach_h_box.getChildren().add(lesson_grid);
+                            } else if (teach_h_box.getChildren().get(1) != lesson_grid) {
+                                teach_h_box.getChildren().set(1, lesson_grid);
+                            }
+                        }
+                        break;
+                    case 1:
+                        if (!students.getSelectionModel().isEmpty()) {
+                            if (teach_h_box.getChildren().size() == 1) {
+                                teach_h_box.getChildren().add(student_grid);
+                            } else if (teach_h_box.getChildren().get(1) != student_grid) {
+                                teach_h_box.getChildren().set(1, student_grid);
+                            }
+                        }
+                        break;
+                }
             }
         });
 

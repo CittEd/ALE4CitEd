@@ -40,8 +40,10 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -78,19 +80,70 @@ public class Context {
     private final UserResource ur = new UserResource(client);
     private final LessonResource lr = new LessonResource(client);
     private MqttClient mqtt;
+    /**
+     * The current user's parameter types.
+     */
     private final Map<String, Parameter> parameter_types = new HashMap<>();
+    /**
+     * The current user's parameter values.
+     */
     private final Map<String, Map<String, StringProperty>> parameter_values = new HashMap<>();
+    /**
+     * The current user's parameter values as a list, to be displayed on tables.
+     * Notice that each parameter can aggregate more than a single value.
+     */
     private final ObservableList<ParameterValue> par_values = FXCollections.observableArrayList();
+    /**
+     * For each user, a boolean property representing whether the user is online
+     * or not.
+     */
     private final Map<Long, BooleanProperty> online_users = new HashMap<>();
+    /**
+     * For each user, the user's parameter types.
+     */
     private final Map<Long, Map<String, Parameter>> user_parameter_types = new HashMap<>();
+    /**
+     * For each user, the user's parameter values.
+     */
     private final Map<Long, Map<String, Map<String, StringProperty>>> user_parameter_values = new HashMap<>();
+    /**
+     * For each user, the user's parameter values as a list, to be displayed on
+     * tables. Notice that each parameter can aggregate more than a single
+     * value.
+     */
     private final Map<Long, ObservableList<ParameterValue>> user_par_values = new HashMap<>();
+    /**
+     * For each lesson, the lesson's relative time.
+     */
+    private final Map<Long, LongProperty> lesson_time = new HashMap<>();
+    /**
+     * For each lesson, the lesson's events.
+     */
+    private final Map<Long, ObservableList<EventRow>> lesson_event = new HashMap<>();
     private Stage stage;
+    /**
+     * The current user.
+     */
     private final ObjectProperty<User> user = new SimpleObjectProperty<>();
+    /**
+     * The received events.
+     */
     private final ObservableList<Event> events = FXCollections.observableArrayList();
+    /**
+     * The lessons followed as a student.
+     */
     private final ObservableList<Lesson> following_lessons = FXCollections.observableArrayList();
+    /**
+     * The followed teachers.
+     */
     private final ObservableList<User> teachers = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
+    /**
+     * The lessons followed as a teacher.
+     */
     private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
+    /**
+     * The following students.
+     */
     private final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{online_users.get(u.getId())});
 
     private Context() {
@@ -134,6 +187,14 @@ public class Context {
 
     public ObservableList<Lesson> getLessons() {
         return lessons;
+    }
+
+    public LongProperty getLessonTime(Lesson lesson) {
+        return lesson_time.get(lesson.getId());
+    }
+
+    public ObservableList<EventRow> getLessonEvents(Lesson lesson) {
+        return lesson_event.get(lesson.getId());
     }
 
     public ObservableList<User> getStudents() {
@@ -420,12 +481,39 @@ public class Context {
         return user_par_values.get(user_id);
     }
 
+    public static class EventRow {
+
+        private final LongProperty time;
+        private final StringProperty name;
+
+        private EventRow(long time, String name) {
+            this.time = new SimpleLongProperty(time);
+            this.name = new SimpleStringProperty(name);
+        }
+
+        public long getTime() {
+            return time.get();
+        }
+
+        public LongProperty timeProperty() {
+            return time;
+        }
+
+        public String getName() {
+            return name.get();
+        }
+
+        public StringProperty nameProperty() {
+            return name;
+        }
+    }
+
     public static class ParameterValue {
 
         private final StringProperty name;
         private final StringProperty value;
 
-        public ParameterValue(String name, StringProperty value) {
+        private ParameterValue(String name, StringProperty value) {
             this.name = new SimpleStringProperty(name);
             this.value = value;
         }

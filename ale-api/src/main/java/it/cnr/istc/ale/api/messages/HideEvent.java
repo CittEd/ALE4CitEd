@@ -29,7 +29,7 @@ public class HideEvent extends Message {
     private final long event_id;
 
     @JsonCreator
-    public HideEvent(@JsonProperty("lesson_id") long lesson_id, @JsonProperty("event_id") long event_id) {
+    public HideEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("eventId") long event_id) {
         this.lesson_id = lesson_id;
         this.event_id = event_id;
     }

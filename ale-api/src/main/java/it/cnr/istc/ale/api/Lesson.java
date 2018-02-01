@@ -33,7 +33,7 @@ public class Lesson {
     private final Map<String, Long> roles;
 
     @JsonCreator
-    public Lesson(@JsonProperty("id") long id, @JsonProperty("teacher_id") long teacher_id, @JsonProperty("name") String name, @JsonProperty("roles") Map<String, Long> roles) {
+    public Lesson(@JsonProperty("id") long id, @JsonProperty("teacherId") long teacher_id, @JsonProperty("name") String name, @JsonProperty("roles") Map<String, Long> roles) {
         this.id = id;
         this.teacher_id = teacher_id;
         this.name = name;

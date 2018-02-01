@@ -29,7 +29,7 @@ public class TextEvent extends Event {
     private final String content;
 
     @JsonCreator
-    public TextEvent(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("trigger_condition") Condition trigger_condition, @JsonProperty("execution_condition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("content") String content) {
+    public TextEvent(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("content") String content) {
         super(name, role, trigger_condition, execution_condition, events, relations);
         this.content = content;
     }

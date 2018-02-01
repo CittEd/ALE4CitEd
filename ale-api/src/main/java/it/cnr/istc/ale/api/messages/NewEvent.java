@@ -32,7 +32,7 @@ public class NewEvent extends Message {
     private final String refEvent;
 
     @JsonCreator
-    public NewEvent(@JsonProperty("id") long id, @JsonProperty("lesson_id") long lesson_id, @JsonProperty("cause") Long cause, @JsonProperty("time") long time, @JsonProperty("refEvent") String refEvent) {
+    public NewEvent(@JsonProperty("id") long id, @JsonProperty("lessonId") long lesson_id, @JsonProperty("cause") Long cause, @JsonProperty("time") long time, @JsonProperty("refEvent") String refEvent) {
         this.id = id;
         this.lesson_id = lesson_id;
         this.cause = cause;

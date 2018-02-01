@@ -46,7 +46,7 @@ public class Event {
     private final Collection<Relation> relations;
 
     @JsonCreator
-    public Event(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("trigger_condition") Condition trigger_condition, @JsonProperty("execution_condition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
+    public Event(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
         this.name = name;
         this.role = role;
         this.trigger_condition = trigger_condition;
