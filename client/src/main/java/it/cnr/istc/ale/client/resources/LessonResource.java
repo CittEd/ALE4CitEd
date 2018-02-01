@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,11 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.client;
+package it.cnr.istc.ale.client.resources;
 
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
 import it.cnr.istc.ale.api.model.LessonModel;
+import it.cnr.istc.ale.client.Config;
 import java.util.Collection;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -89,21 +90,46 @@ public class LessonResource implements LessonAPI {
 
     @Override
     public void start_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("start_lesson")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form));
     }
 
     @Override
     public void pause_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("pause_lesson")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form));
     }
 
     @Override
     public void stop_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("stop_lesson")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form));
     }
 
     @Override
     public void go_at(long lesson_id, long timestamp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        form.param("timestamp", Long.toString(timestamp));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("go_at")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form));
     }
 }

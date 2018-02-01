@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.model.LessonModel;
+import it.cnr.istc.ale.client.context.Context;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -109,7 +110,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             public User fromString(String string) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-        }, Context.getContext().getStudents()));
+        }, Context.getContext().getTeachingContext().getStudents()));
         student_column.setEditable(true);
         student_column.setOnEditCommit((TableColumn.CellEditEvent<StudentRole, User> event) -> {
             roles.get(event.getTablePosition().getRow()).student.set(event.getNewValue());

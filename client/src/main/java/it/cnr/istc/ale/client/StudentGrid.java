@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.client.context.Context;
+import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -34,9 +36,9 @@ public class StudentGrid extends GridPane {
 
     private final TextField first_name = new TextField();
     private final TextField last_name = new TextField();
-    private final TableView<Context.ParameterValue> parameters_table_view = new TableView<>();
-    private final TableColumn<Context.ParameterValue, String> name_column = new TableColumn<>("Name");
-    private final TableColumn<Context.ParameterValue, String> value_column = new TableColumn<>("Value");
+    private final TableView<ParameterValue> parameters_table_view = new TableView<>();
+    private final TableColumn<ParameterValue, String> name_column = new TableColumn<>("Name");
+    private final TableColumn<ParameterValue, String> value_column = new TableColumn<>("Value");
 
     @SuppressWarnings("unchecked")
     public StudentGrid() {
@@ -68,6 +70,6 @@ public class StudentGrid extends GridPane {
     public void setUser(User user) {
         first_name.setText(user.getFirstName());
         last_name.setText(user.getLastName());
-        parameters_table_view.setItems(Context.getContext().getParameterValues(user.getId()));
+        parameters_table_view.setItems(Context.getContext().getTeachingContext().getParameterValues(user.getId()));
     }
 }

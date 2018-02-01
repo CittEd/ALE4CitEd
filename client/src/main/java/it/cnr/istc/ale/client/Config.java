@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 package it.cnr.istc.ale.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import static it.cnr.istc.ale.client.Context.MAPPER;
+import it.cnr.istc.ale.client.context.Context;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
@@ -29,6 +29,7 @@ import java.util.logging.Logger;
  */
 public class Config {
 
+    private static final Logger LOG = Logger.getLogger(Config.class.getName());
     private static Config instance;
 
     public static Config getInstance() {
@@ -41,10 +42,10 @@ public class Config {
 
     private Config() {
         try {
-            config = MAPPER.readValue(getClass().getResourceAsStream("/config.json"), new TypeReference<Map<String, String>>() {
+            config = Context.MAPPER.readValue(getClass().getResourceAsStream("/config.json"), new TypeReference<Map<String, String>>() {
             });
         } catch (IOException ex) {
-            Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 

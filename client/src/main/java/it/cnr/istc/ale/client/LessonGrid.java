@@ -17,7 +17,8 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.Lesson;
-import it.cnr.istc.ale.client.Context.EventRow;
+import it.cnr.istc.ale.client.context.Context;
+import it.cnr.istc.ale.client.context.TeachingContext.EventRow;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -35,7 +36,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
-import static javafx.scene.layout.GridPane.setHgrow;
 import javafx.scene.layout.Priority;
 
 /**
@@ -94,7 +94,7 @@ public class LessonGrid extends GridPane {
                     super.updateItem(item, empty);
                     if (!empty) {
                         setText(format(item));
-                        if (item <= Context.getContext().getLessonTime(lesson).get()) {
+                        if (item <= Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
                             setStyle("-fx-font-weight: bold;");
                         } else {
                             setStyle("-fx-font-weight: normal;");
@@ -110,7 +110,7 @@ public class LessonGrid extends GridPane {
                 super.updateItem(item, empty);
                 if (!empty) {
                     EventRow row = getTableView().getItems().get(getIndex());
-                    if (row.getTime() < Context.getContext().getLessonTime(lesson).get()) {
+                    if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
                         setStyle("-fx-font-weight: bold;");
                     } else {
                         setStyle("-fx-font-weight: normal;");
@@ -124,11 +124,11 @@ public class LessonGrid extends GridPane {
 
     public void setLesson(final Lesson lesson) {
         if (this.lesson != null) {
-            Context.getContext().getLessonTime(lesson).removeListener(TIME_LISTENER);
+            Context.getContext().getTeachingContext().getLessonTime(lesson).removeListener(TIME_LISTENER);
         }
         this.lesson = lesson;
         lesson_name.setText(lesson.getName());
-        Context.getContext().getLessonTime(lesson).addListener(TIME_LISTENER);
+        Context.getContext().getTeachingContext().getLessonTime(lesson).addListener(TIME_LISTENER);
     }
 
     public static String format(final long time) {

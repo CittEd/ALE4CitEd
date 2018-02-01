@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,16 @@
  */
 package it.cnr.istc.ale.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.client.context.Context;
+import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -46,7 +46,6 @@ import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 
 /**
- * FXML Controller class
  *
  * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  */
@@ -83,11 +82,11 @@ public class MainController implements Initializable {
     @FXML
     private ListView<User> students;
     @FXML
-    private TableView<Context.ParameterValue> par_values;
+    private TableView<ParameterValue> par_values;
     @FXML
-    private TableColumn<Context.ParameterValue, String> par_names;
+    private TableColumn<ParameterValue, String> par_names;
     @FXML
-    private TableColumn<Context.ParameterValue, String> par_vals;
+    private TableColumn<ParameterValue, String> par_vals;
     private final LessonGrid lesson_grid = new LessonGrid();
     private final StudentGrid student_grid = new StudentGrid();
 
@@ -99,7 +98,7 @@ public class MainController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         Stage stage = Context.getContext().getStage();
 
-        ObjectProperty<User> user = Context.getContext().getUser();
+        ObjectProperty<User> user = Context.getContext().getUserContext().getUser();
         user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
             if (newValue != null) {
                 stage.setTitle("LECTurE (Learning Environment CiTtà Educante) - " + newValue.getFirstName());
@@ -113,8 +112,8 @@ public class MainController implements Initializable {
         logout.disableProperty().bind(user.isNull());
 
         learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
-        events.setItems(Context.getContext().getEvents());
-        following_lessons.setItems(Context.getContext().getFollowingLessons());
+        events.setItems(Context.getContext().getLearningContext().getEvents());
+        following_lessons.setItems(Context.getContext().getLearningContext().getLessons());
         following_lessons.setCellFactory((ListView<Lesson> param) -> new ListCell<Lesson>() {
             @Override
             protected void updateItem(Lesson lesson, boolean empty) {
@@ -124,14 +123,14 @@ public class MainController implements Initializable {
                 }
             }
         });
-        teachers.setItems(Context.getContext().getTeachers());
+        teachers.setItems(Context.getContext().getLearningContext().getTeachers());
         teachers.setCellFactory((ListView<User> param) -> new ListCell<User>() {
             @Override
             protected void updateItem(User user, boolean empty) {
                 super.updateItem(user, empty);
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
-                    if (Context.getContext().is_online(user).get()) {
+                    if (Context.getContext().getConnectionContext().isOnline(user).get()) {
                         setStyle("-fx-text-fill: black;");
                     } else {
                         setStyle("-fx-text-fill: gray;");
@@ -143,7 +142,7 @@ public class MainController implements Initializable {
         remove_teachers_button.disableProperty().bind(Bindings.isEmpty(teachers.selectionModelProperty().get().getSelectedItems()));
 
         teach_accord.setExpandedPane(teach_accord.getPanes().get(0));
-        lessons.setItems(Context.getContext().getLessons());
+        lessons.setItems(Context.getContext().getTeachingContext().getLessons());
         lessons.setCellFactory((ListView<Lesson> param) -> new ListCell<Lesson>() {
             @Override
             protected void updateItem(Lesson lesson, boolean empty) {
@@ -169,14 +168,14 @@ public class MainController implements Initializable {
             }
         });
 
-        students.setItems(Context.getContext().getStudents());
+        students.setItems(Context.getContext().getTeachingContext().getStudents());
         students.setCellFactory((ListView<User> param) -> new ListCell<User>() {
             @Override
             protected void updateItem(User user, boolean empty) {
                 super.updateItem(user, empty);
                 if (!empty) {
                     setText(user.getLastName() + " " + user.getFirstName());
-                    if (Context.getContext().is_online(user).get()) {
+                    if (Context.getContext().getConnectionContext().isOnline(user).get()) {
                         setStyle("-fx-text-fill: black;");
                     } else {
                         setStyle("-fx-text-fill: gray;");
@@ -223,22 +222,18 @@ public class MainController implements Initializable {
             }
         });
 
-        par_values.setItems(Context.getContext().getParameterValues());
+        par_values.setItems(Context.getContext().getUserContext().getParameterValues());
         par_values.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         par_names.setCellValueFactory(new PropertyValueFactory("name"));
         par_vals.setCellValueFactory(new PropertyValueFactory("value"));
         par_vals.setCellFactory(TextFieldTableCell.forTableColumn());
-        par_vals.setOnEditCommit((TableColumn.CellEditEvent<Context.ParameterValue, String> event) -> {
-            Context.ParameterValue par_val = (Context.ParameterValue) event.getTableView().getItems().get(event.getTablePosition().getRow());
-            par_val.valueProperty().set(event.getNewValue());
-            Context.getContext().par_update(par_val.nameProperty().get().split("\\.")[0]);
-        });
+        par_vals.setOnEditCommit((TableColumn.CellEditEvent<ParameterValue, String> event) -> ((ParameterValue) event.getTableView().getItems().get(event.getTablePosition().getRow())).valueProperty().set(event.getNewValue()));
     }
 
     public void login() {
         new LoginDialog().showAndWait().ifPresent(user -> {
             try {
-                Context.getContext().login(user.getEmail(), user.getPassword());
+                Context.getContext().getConnectionContext().login(user.getEmail(), user.getPassword());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Exception");
@@ -249,13 +244,13 @@ public class MainController implements Initializable {
     }
 
     public void logout() {
-        Context.getContext().logout();
+        Context.getContext().getConnectionContext().logout();
     }
 
     public void new_user() {
         new NewUserDialog().showAndWait().ifPresent(user -> {
             try {
-                Context.getContext().new_user(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
+                Context.getContext().getConnectionContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Exception");
@@ -273,30 +268,20 @@ public class MainController implements Initializable {
     public void add_teachers() {
         new AddTeachersDialog().showAndWait().ifPresent(teachers_to_add -> {
             for (User teacher : teachers_to_add) {
-                Context.getContext().getUserResource().add_teacher(Context.getContext().getUser().get().getId(), teacher.getId());
-                Context.getContext().add_teacher(teacher);
+                Context.getContext().addTeacher(teacher);
             }
         });
     }
 
     public void remove_selected_teachers() {
         for (User user : teachers.selectionModelProperty().get().getSelectedItems()) {
-            Context.getContext().getUserResource().remove_teacher(Context.getContext().getUser().get().getId(), user.getId());
-            Context.getContext().remove_teacher(user);
+            Context.getContext().removeTeacher(user);
         }
     }
 
     public void add_lesson() {
         new AddLessonDialog().showAndWait().ifPresent(new_lesson -> {
-            try {
-                Lesson lesson = Context.getContext().getLessonResource().new_lesson(Context.getContext().getUser().get().getId(), new_lesson.getLessonName(), Context.MAPPER.writeValueAsString(new_lesson.getModel()), Context.MAPPER.writeValueAsString(new_lesson.getRoles()));
-                Context.getContext().add_lesson(lesson);
-            } catch (JsonProcessingException ex) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Exception");
-                alert.setHeaderText(ex.getLocalizedMessage());
-                alert.showAndWait();
-            }
+            Context.getContext().newLesson(new_lesson.getLessonName(), new_lesson.getModel(), new_lesson.getRoles());
         });
     }
 

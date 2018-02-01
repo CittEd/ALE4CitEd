@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.client.context.Context;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -74,7 +75,7 @@ public class AddTeachersDialog extends Dialog<User[]> {
 
         find_button.disableProperty().bind(find_field.textProperty().isEmpty());
         find_button.setOnAction((ActionEvent event) -> {
-            found_users.addAll(Context.getContext().getUserResource().find_users(find_field.getText()));
+            found_users.addAll(Context.getContext().findUsers(find_field.getText()));
         });
 
         getDialogPane().getButtonTypes().add(add_button);
