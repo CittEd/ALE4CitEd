@@ -226,6 +226,9 @@ public class LessonManager implements TemporalNetworkListener {
             }
         }
         t_now = t;
+        for (LessonManagerListener l : listeners) {
+            l.newTime(t_now);
+        }
     }
 
     public void addSolverListener(LessonManagerListener listener) {

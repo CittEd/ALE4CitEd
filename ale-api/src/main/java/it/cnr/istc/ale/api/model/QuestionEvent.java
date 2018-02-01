@@ -45,7 +45,7 @@ public class QuestionEvent extends Event {
         return Collections.unmodifiableCollection(answers);
     }
 
-    public class Answer {
+    public static class Answer {
 
         private final String answer;
         private final String event;

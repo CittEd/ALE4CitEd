@@ -23,9 +23,11 @@ import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.api.messages.EventUpdate;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Message;
+import it.cnr.istc.ale.api.messages.NewEvent;
 import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
@@ -112,14 +114,6 @@ public class Context {
      * value.
      */
     private final Map<Long, ObservableList<ParameterValue>> user_par_values = new HashMap<>();
-    /**
-     * For each lesson, the lesson's relative time.
-     */
-    private final Map<Long, LongProperty> lesson_time = new HashMap<>();
-    /**
-     * For each lesson, the lesson's events.
-     */
-    private final Map<Long, ObservableList<EventRow>> lesson_event = new HashMap<>();
     private Stage stage;
     /**
      * The current user.
@@ -141,6 +135,18 @@ public class Context {
      * The lessons followed as a teacher.
      */
     private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
+    /**
+     * For each lesson, the lesson's relative time.
+     */
+    private final Map<Long, LongProperty> lesson_time = new HashMap<>();
+    /**
+     * For each lesson, the lesson's events.
+     */
+    private final Map<Long, ObservableList<EventRow>> lesson_event = new HashMap<>();
+    /**
+     * For each lesson, the lesson's events mapped by their id.
+     */
+    private final Map<Long, Map<Long, EventRow>> lesson_id_event = new HashMap<>();
     /**
      * The following students.
      */
@@ -251,11 +257,20 @@ public class Context {
                 mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
                     Message m = MAPPER.readValue(message.getPayload(), Message.class);
                     if (m instanceof NewStudent) {
+                        // a new student has started to follow this user..
                         Platform.runLater(() -> add_student(ur.get_user(((NewStudent) m).getStudentId())));
                     } else if (m instanceof LostStudent) {
+                        // a student does not follow this user anymore..
                         Platform.runLater(() -> remove_student(students.stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get()));
                     } else if (m instanceof NewLesson) {
+                        // a new lesson has been created for this student..
                         Platform.runLater(() -> add_following_lesson(((NewLesson) m).getLesson()));
+                    } else if (m instanceof NewEvent) {
+                        // a new event has been created for a lesson of this teacher..
+                        Platform.runLater(() -> new_event_created(((NewEvent) m)));
+                    } else if (m instanceof EventUpdate) {
+                        // an event of a lesson of this teacher has been updated..
+                        Platform.runLater(() -> event_updated(((EventUpdate) m)));
                     } else {
                         throw new UnsupportedOperationException("Not supported yet: " + m);
                     }
@@ -354,11 +369,35 @@ public class Context {
     }
 
     public void add_lesson(Lesson lesson) {
+        lesson_time.put(lesson.getId(), new SimpleLongProperty());
         lessons.add(lesson);
+        try {
+            mqtt.subscribe(user.get().getId() + "/input/lesson-" + lesson.getId() + "/time", (String topic, MqttMessage message) -> {
+                lesson_time.get(lesson.getId()).setValue(Long.parseLong(new String(message.getPayload())));
+            });
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     public void remove_lesson(Lesson lesson) {
-        lessons.remove(lesson);
+        try {
+            mqtt.unsubscribe(user.get().getId() + "/input/lesson-" + lesson.getId() + "/time");
+            lessons.remove(lesson);
+            lesson_time.remove(lesson.getId());
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void new_event_created(NewEvent event) {
+        EventRow row = new EventRow(event.getTime(), event.getRefEvent());
+        lesson_event.get(event.getLessonId()).add(row);
+        lesson_id_event.get(event.getLessonId()).put(event.getId(), row);
+    }
+
+    public void event_updated(EventUpdate update) {
+        lesson_id_event.get(update.getLessonId()).get(update.getId()).time.set(update.getTime());
     }
 
     private void add_student(User student) {

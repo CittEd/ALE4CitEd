@@ -327,7 +327,7 @@ public class Context implements UserAPI, LessonAPI {
                 public void newToken(Token tk) {
                     try {
                         // we notify the teacher that a new event has been created..
-                        mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new NewEvent(tk.tp, l.getId(), tk.cause != null ? (long) tk.cause.tp : null, (long) lm.network.getValue(tk.tp), tk.event.getName())), 1, false);
+                        mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new NewEvent(l.getId(), tk.tp, tk.cause != null ? (long) tk.cause.tp : null, (long) lm.network.getValue(tk.tp), tk.event.getName())), 1, false);
                     } catch (JsonProcessingException | MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
@@ -337,7 +337,7 @@ public class Context implements UserAPI, LessonAPI {
                 public void movedToken(Token tk) {
                     try {
                         // we notify the teacher that an event has been updated..
-                        mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new EventUpdate(tk.tp, (long) lm.network.getValue(tk.tp))), 1, false);
+                        mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new EventUpdate(l.getId(), tk.tp, (long) lm.network.getValue(tk.tp))), 1, false);
                     } catch (JsonProcessingException | MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
@@ -359,18 +359,16 @@ public class Context implements UserAPI, LessonAPI {
                             throw new UnsupportedOperationException("Not supported yet.");
                         }
                         try {
-                            // we notify the teacher that a token has to be hidden..
+                            // we notify the teacher that a token has to be executed..
                             mqtt.publish(teacher_id + "/input", execute_event_bytes, 1, false);
                         } catch (MqttException ex) {
                             LOG.log(Level.SEVERE, null, ex);
                         }
-                        for (Long student_id : lesson_roles.values()) {
-                            try {
-                                // we notify all the students that a token has to be hidden..
-                                mqtt.publish(student_id + "/input", execute_event_bytes, 1, false);
-                            } catch (MqttException ex) {
-                                LOG.log(Level.SEVERE, null, ex);
-                            }
+                        try {
+                            // we notify the student associated to the token's role that a token has to be executed..
+                            mqtt.publish(lesson_roles.get(tk.event.getRole()) + "/input", execute_event_bytes, 1, false);
+                        } catch (MqttException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
                         }
                     } catch (JsonProcessingException ex) {
                         LOG.log(Level.SEVERE, null, ex);
@@ -387,15 +385,22 @@ public class Context implements UserAPI, LessonAPI {
                         } catch (MqttException ex) {
                             LOG.log(Level.SEVERE, null, ex);
                         }
-                        for (Long student_id : lesson_roles.values()) {
-                            try {
-                                // we notify all the students that a token has to be hidden..
-                                mqtt.publish(student_id + "/input", hide_event_bytes, 1, false);
-                            } catch (MqttException ex) {
-                                LOG.log(Level.SEVERE, null, ex);
-                            }
+                        try {
+                            // we notify the student associated to the token's role that a token has to be hidden..
+                            mqtt.publish(lesson_roles.get(tk.event.getRole()) + "/input", hide_event_bytes, 1, false);
+                        } catch (MqttException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
                         }
                     } catch (JsonProcessingException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+                @Override
+                public void newTime(long time) {
+                    try {
+                        mqtt.publish(teacher_id + "/input/lesson-" + l.getId() + "/time", Long.toString(time).getBytes(), 1, true);
+                    } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }
@@ -486,7 +491,13 @@ public class Context implements UserAPI, LessonAPI {
 
     @Override
     public void stop_lesson(long lesson_id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        lessons_lock.lock();
+        try {
+            running_lessons.put(lesson_id, Boolean.FALSE);
+            lessons.get(lesson_id).goTo(0);
+        } finally {
+            lessons_lock.unlock();
+        }
     }
 
     @Override

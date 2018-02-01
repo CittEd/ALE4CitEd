@@ -38,7 +38,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = LostStudent.class, name = "lost-student"),
     @JsonSubTypes.Type(value = NewLesson.class, name = "new-lesson"),
     @JsonSubTypes.Type(value = LostLesson.class, name = "lost-lesson"),
-    @JsonSubTypes.Type(value = NewEvent.class, name = "new-event"),
-    @JsonSubTypes.Type(value = Tick.class, name = "tick")})
+    @JsonSubTypes.Type(value = NewEvent.class, name = "new-event")})
 public abstract class Message {
 }

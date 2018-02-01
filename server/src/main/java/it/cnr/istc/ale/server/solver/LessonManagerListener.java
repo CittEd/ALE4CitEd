@@ -50,4 +50,11 @@ public interface LessonManagerListener {
      * @param tk the token that has to be hidden.
      */
     public void hideToken(final Token tk);
+
+    /**
+     * Notifies the listener that the current time has changed.
+     *
+     * @param time the new current time.
+     */
+    public void newTime(final long time);
 }
