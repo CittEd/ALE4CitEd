@@ -56,6 +56,28 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
+    public void remove_lesson(long lesson_id) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("remove_lesson")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form));
+    }
+
+    @Override
+    public void solve_lesson(long lesson_id) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("solve_lesson")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form));
+    }
+
+    @Override
     public Collection<Lesson> get_lessons(long teacher_id) {
         return client.target(rest_uri)
                 .path("lessons")

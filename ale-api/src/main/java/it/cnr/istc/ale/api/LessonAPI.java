@@ -40,6 +40,21 @@ public interface LessonAPI {
     public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles);
 
     /**
+     * Removes a lesson.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     */
+    public void remove_lesson(long lesson_id);
+
+    /**
+     * Solves the planning problem generating and placing in time the initial
+     * events.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     */
+    public void solve_lesson(long lesson_id);
+
+    /**
      * Given a teacher id, returns the collection of lessons followed as a
      * teacher.
      *

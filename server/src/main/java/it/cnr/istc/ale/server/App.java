@@ -16,8 +16,6 @@
  */
 package it.cnr.istc.ale.server;
 
-import it.cnr.istc.ale.server.resources.LessonResource;
-import it.cnr.istc.ale.server.resources.UserResource;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.ws.rs.core.UriBuilder;

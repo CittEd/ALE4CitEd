@@ -235,7 +235,11 @@ public class MainController implements Initializable {
         par_names.setCellValueFactory(new PropertyValueFactory("name"));
         par_vals.setCellValueFactory(new PropertyValueFactory("value"));
         par_vals.setCellFactory(TextFieldTableCell.forTableColumn());
-        par_vals.setOnEditCommit((TableColumn.CellEditEvent<ParameterValue, String> event) -> ((ParameterValue) event.getTableView().getItems().get(event.getTablePosition().getRow())).valueProperty().set(event.getNewValue()));
+        par_vals.setOnEditCommit((TableColumn.CellEditEvent<ParameterValue, String> event) -> {
+            ParameterValue par_value = (ParameterValue) event.getTableView().getItems().get(event.getTablePosition().getRow());
+            String[] par_name = par_value.nameProperty().get().split("\\.");
+            Context.getContext().getUserContext().setParameterValue(par_name[0], par_name[1], event.getNewValue());
+        });
     }
 
     public void login() {
@@ -294,5 +298,8 @@ public class MainController implements Initializable {
     }
 
     public void remove_selected_lessons() {
+        for (Lesson lesson : lessons.selectionModelProperty().get().getSelectedItems()) {
+            Context.getContext().removeLesson(lesson);
+        }
     }
 }

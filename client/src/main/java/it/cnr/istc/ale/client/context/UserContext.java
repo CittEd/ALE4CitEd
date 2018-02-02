@@ -28,9 +28,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
@@ -62,24 +60,19 @@ public class UserContext {
 
     UserContext(Context ctx) {
         this.ctx = ctx;
-        // everytime a parameter value is updated, the update is broadcasted for the listening teachers.
-        par_values.addListener((ListChangeListener.Change<? extends ParameterValue> c) -> {
-            while (c.next()) {
-                for (ParameterValue par_val : c.getAddedSubList()) {
-                    par_val.value.addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-                        Map<String, String> val = new HashMap<>();
-                        for (Map.Entry<String, StringProperty> v_val : parameter_values.get(par_val.name.get()).entrySet()) {
-                            val.put(v_val.getKey(), v_val.getValue().get());
-                        }
-                        try {
-                            ctx.mqtt.publish(user.get().getId() + "/output/" + par_val.name.get(), MAPPER.writeValueAsBytes(val), 1, true);
-                        } catch (JsonProcessingException | MqttException ex) {
-                            LOG.log(Level.SEVERE, null, ex);
-                        }
-                    });
-                }
-            }
-        });
+    }
+
+    public void setParameterValue(String par_name, String sub_par, String value) {
+        parameter_values.get(par_name).get(sub_par).set(value);
+        Map<String, String> val = new HashMap<>();
+        for (Map.Entry<String, StringProperty> v_val : parameter_values.get(par_name).entrySet()) {
+            val.put(v_val.getKey(), v_val.getValue().get());
+        }
+        try {
+            ctx.mqtt.publish(user.get().getId() + "/output/" + par_name, MAPPER.writeValueAsBytes(val), 1, true);
+        } catch (JsonProcessingException | MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     public ObjectProperty<User> getUser() {

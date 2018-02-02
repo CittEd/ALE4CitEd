@@ -31,6 +31,7 @@ import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.client.Config;
+import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import it.cnr.istc.ale.client.resources.LessonResource;
 import it.cnr.istc.ale.client.resources.UserResource;
 import java.io.IOException;
@@ -173,7 +174,7 @@ public class Context {
                         } else {
                             SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
                             user_ctx.parameter_values.get(value.getKey()).put(val.getKey(), val_prop);
-                            user_ctx.par_values.add(new UserContext.ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
+                            user_ctx.par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
                         }
                     }
                     mqtt.publish(u.getId() + "/output/" + value.getKey(), MAPPER.writeValueAsBytes(value.getValue()), 1, true);
@@ -217,11 +218,19 @@ public class Context {
 
     public void newLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {
         try {
+            // we create the lesson..
             Lesson lesson = lr.new_lesson(user_ctx.user.get().getId(), lesson_name, MAPPER.writeValueAsString(model), MAPPER.writeValueAsString(roles));
+            // we create the context for the lesson..
             teaching_ctx.addLesson(lesson);
+            // once created the context, we can solve the lesson..
+            lr.solve_lesson(lesson.getId());
         } catch (JsonProcessingException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void removeLesson(Lesson lesson) {
+        lr.remove_lesson(lesson.getId());
     }
 
     public Collection<User> findUsers(String search_string) {
