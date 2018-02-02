@@ -41,16 +41,4 @@ public class ConnectionContext {
     public BooleanProperty isOnline(User user) {
         return online_users.get(user.getId());
     }
-
-    public void login(String email, String password) {
-        ctx.setUser(ctx.ur.login(email, password));
-    }
-
-    public void newUser(String email, String password, String first_name, String last_name) {
-        ctx.setUser(ctx.ur.new_user(email, password, first_name, last_name));
-    }
-
-    public void logout() {
-        ctx.setUser(null);
-    }
 }

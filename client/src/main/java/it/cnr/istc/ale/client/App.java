@@ -46,7 +46,7 @@ public class App extends Application {
 
     @Override
     public void stop() throws Exception {
-        Context.getContext().getConnectionContext().logout();
+        Context.getContext().logout();
     }
 
     /**

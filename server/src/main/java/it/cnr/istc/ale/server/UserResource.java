@@ -22,7 +22,6 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.UserAPI;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.NewStudent;
-import it.cnr.istc.ale.server.Context;
 import static it.cnr.istc.ale.server.Context.EMF;
 import static it.cnr.istc.ale.server.Context.MAPPER;
 import it.cnr.istc.ale.server.db.UserEntity;

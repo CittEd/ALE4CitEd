@@ -245,7 +245,7 @@ public class MainController implements Initializable {
     public void login() {
         new LoginDialog().showAndWait().ifPresent(user -> {
             try {
-                Context.getContext().getConnectionContext().login(user.getEmail(), user.getPassword());
+                Context.getContext().login(user.getEmail(), user.getPassword());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Exception");
@@ -256,13 +256,13 @@ public class MainController implements Initializable {
     }
 
     public void logout() {
-        Context.getContext().getConnectionContext().logout();
+        Context.getContext().logout();
     }
 
     public void new_user() {
         new NewUserDialog().showAndWait().ifPresent(user -> {
             try {
-                Context.getContext().getConnectionContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
+                Context.getContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Exception");

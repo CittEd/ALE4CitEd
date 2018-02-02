@@ -104,106 +104,118 @@ public class Context {
         return user_ctx;
     }
 
-    public void setUser(User u) {
-        if (u != null) {
-            assert user_ctx.user.isNull().get();
-            assert mqtt == null;
+    public void login(String email, String password) {
+        set_user(ur.login(email, password));
+    }
+
+    public void newUser(String email, String password, String first_name, String last_name) {
+        set_user(ur.new_user(email, password, first_name, last_name));
+    }
+
+    private void set_user(User u) {
+        assert u != null;
+        assert user_ctx.user.isNull().get();
+        assert mqtt == null;
+        user_ctx.user.set(u);
+        try {
+            mqtt = new MqttClient("tcp://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort), String.valueOf(u.getId()), new MemoryPersistence());
+            mqtt.setCallback(new MqttCallback() {
+                @Override
+                public void connectionLost(Throwable cause) {
+                    LOG.log(Level.SEVERE, null, cause);
+                    set_user(null);
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    LOG.log(Level.WARNING, "message arrived: {0} - {1}", new Object[]{topic, message});
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                }
+            });
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setCleanSession(false);
+            options.setAutomaticReconnect(true);
+            mqtt.connect(options);
+            mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
+                Message m = MAPPER.readValue(message.getPayload(), Message.class);
+                if (m instanceof NewLesson) {
+                    // a new lesson has been created for this student..
+                    Platform.runLater(() -> learning_ctx.addLesson(((NewLesson) m).getLesson()));
+                } else if (m instanceof NewStudent) {
+                    // a new student has started to follow this user..
+                    Platform.runLater(() -> teaching_ctx.addStudent(ur.get_user(((NewStudent) m).getStudentId())));
+                } else if (m instanceof LostStudent) {
+                    // a student does not follow this user anymore..
+                    Platform.runLater(() -> teaching_ctx.removeStudent(teaching_ctx.getStudents().stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get()));
+                } else if (m instanceof NewEvent) {
+                    // a new event has been created for a lesson of this teacher..
+                    Platform.runLater(() -> teaching_ctx.newEvent(((NewEvent) m)));
+                } else if (m instanceof EventUpdate) {
+                    // an event of a lesson of this teacher has been updated..
+                    Platform.runLater(() -> teaching_ctx.updateEvent(((EventUpdate) m)));
+                } else {
+                    LOG.log(Level.WARNING, "Not supported yet: {0}", m);
+                }
+            });
             // the lessons followed as a student..
             lr.get_followed_lessons(u.getId()).stream().forEach(lesson -> learning_ctx.addLesson(lesson));
             // the lessons followed as a teacher..
             lr.get_lessons(u.getId()).stream().forEach(lesson -> teaching_ctx.addLesson(lesson));
-            try {
-                mqtt = new MqttClient("tcp://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort), String.valueOf(u.getId()), new MemoryPersistence());
-                mqtt.setCallback(new MqttCallback() {
-                    @Override
-                    public void connectionLost(Throwable cause) {
-                        LOG.log(Level.SEVERE, null, cause);
-                        setUser(null);
-                    }
+            // the followed teachers..
+            ur.get_teachers(u.getId()).forEach(teacher -> learning_ctx.addTeacher(teacher));
+            // the followed students..
+            ur.get_students(u.getId()).forEach(student -> teaching_ctx.addStudent(student));
 
-                    @Override
-                    public void messageArrived(String topic, MqttMessage message) throws Exception {
-                        LOG.log(Level.WARNING, "message arrived: {0} - {1}", new Object[]{topic, message});
-                    }
-
-                    @Override
-                    public void deliveryComplete(IMqttDeliveryToken token) {
-                    }
-                });
-                MqttConnectOptions options = new MqttConnectOptions();
-                options.setCleanSession(false);
-                options.setAutomaticReconnect(true);
-                mqtt.connect(options);
-                mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
-                    Message m = MAPPER.readValue(message.getPayload(), Message.class);
-                    if (m instanceof NewLesson) {
-                        // a new lesson has been created for this student..
-                        Platform.runLater(() -> learning_ctx.addLesson(((NewLesson) m).getLesson()));
-                    } else if (m instanceof NewStudent) {
-                        // a new student has started to follow this user..
-                        Platform.runLater(() -> teaching_ctx.addStudent(ur.get_user(((NewStudent) m).getStudentId())));
-                    } else if (m instanceof LostStudent) {
-                        // a student does not follow this user anymore..
-                        Platform.runLater(() -> teaching_ctx.removeStudent(teaching_ctx.getStudents().stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get()));
-                    } else if (m instanceof NewEvent) {
-                        // a new event has been created for a lesson of this teacher..
-                        Platform.runLater(() -> teaching_ctx.newEvent(((NewEvent) m)));
-                    } else if (m instanceof EventUpdate) {
-                        // an event of a lesson of this teacher has been updated..
-                        Platform.runLater(() -> teaching_ctx.updateEvent(((EventUpdate) m)));
+            Collection<Parameter> pars = MAPPER.readValue(getClass().getResourceAsStream("/parameters/types.json"), new TypeReference<Collection<Parameter>>() {
+            });
+            for (Parameter par : pars) {
+                user_ctx.parameter_types.put(par.getName(), par);
+                mqtt.publish(u.getId() + "/output", MAPPER.writeValueAsBytes(new NewParameter(par)), 1, false);
+            }
+            Map<String, Map<String, String>> values = MAPPER.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
+            });
+            for (Map.Entry<String, Map<String, String>> value : values.entrySet()) {
+                user_ctx.parameter_values.put(value.getKey(), new HashMap<>());
+                for (Map.Entry<String, String> val : value.getValue().entrySet()) {
+                    if (user_ctx.parameter_values.get(value.getKey()).containsKey(val.getKey())) {
+                        user_ctx.parameter_values.get(value.getKey()).get(val.getKey()).set(val.getValue());
                     } else {
-                        LOG.log(Level.WARNING, "Not supported yet: {0}", m);
+                        SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                        user_ctx.parameter_values.get(value.getKey()).put(val.getKey(), val_prop);
+                        user_ctx.par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
                     }
-                });
-                ur.get_teachers(u.getId()).forEach(teacher -> learning_ctx.addTeacher(teacher));
-                ur.get_students(u.getId()).forEach(student -> teaching_ctx.addStudent(student));
+                }
+                mqtt.publish(u.getId() + "/output/" + value.getKey(), MAPPER.writeValueAsBytes(value.getValue()), 1, true);
+            }
+        } catch (MqttException | IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
 
-                Collection<Parameter> pars = MAPPER.readValue(getClass().getResourceAsStream("/parameters/types.json"), new TypeReference<Collection<Parameter>>() {
-                });
-                for (Parameter par : pars) {
-                    user_ctx.parameter_types.put(par.getName(), par);
-                    mqtt.publish(u.getId() + "/output", MAPPER.writeValueAsBytes(new NewParameter(par)), 1, false);
-                }
-                Map<String, Map<String, String>> values = MAPPER.readValue(getClass().getResourceAsStream("/parameters/values.json"), new TypeReference<Map<String, Map<String, String>>>() {
-                });
-                for (Map.Entry<String, Map<String, String>> value : values.entrySet()) {
-                    user_ctx.parameter_values.put(value.getKey(), new HashMap<>());
-                    for (Map.Entry<String, String> val : value.getValue().entrySet()) {
-                        if (user_ctx.parameter_values.get(value.getKey()).containsKey(val.getKey())) {
-                            user_ctx.parameter_values.get(value.getKey()).get(val.getKey()).set(val.getValue());
-                        } else {
-                            SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
-                            user_ctx.parameter_values.get(value.getKey()).put(val.getKey(), val_prop);
-                            user_ctx.par_values.add(new ParameterValue(value.getKey() + "." + val.getKey(), val_prop));
-                        }
-                    }
-                    mqtt.publish(u.getId() + "/output/" + value.getKey(), MAPPER.writeValueAsBytes(value.getValue()), 1, true);
-                }
-            } catch (MqttException | IOException ex) {
+    public void logout() {
+        if (user_ctx.user.isNotNull().get()) {
+            assert mqtt != null;
+            assert mqtt.isConnected();
+            try {
+                mqtt.unsubscribe(user_ctx.user.get().getId() + "/input");
+                new ArrayList<>(teaching_ctx.getStudents()).stream().forEach(teacher -> teaching_ctx.removeStudent(teacher));
+                new ArrayList<>(learning_ctx.getTeachers()).stream().forEach(teacher -> learning_ctx.removeTeacher(teacher));
+                new ArrayList<>(teaching_ctx.getLessons()).stream().forEach(lesson -> teaching_ctx.removeLesson(lesson));
+                new ArrayList<>(learning_ctx.getLessons()).stream().forEach(lesson -> learning_ctx.removeLesson(lesson));
+                user_ctx.parameter_types.clear();
+                user_ctx.parameter_values.clear();
+                user_ctx.par_values.clear();
+                mqtt.disconnect();
+                mqtt.close();
+            } catch (MqttException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-        } else {
-            if (user_ctx.user.isNotNull().get()) {
-                assert mqtt != null;
-                assert mqtt.isConnected();
-                try {
-                    mqtt.unsubscribe(user_ctx.user.get().getId() + "/input");
-                    new ArrayList<>(teaching_ctx.getStudents()).stream().forEach(teacher -> teaching_ctx.removeStudent(teacher));
-                    new ArrayList<>(learning_ctx.getTeachers()).stream().forEach(teacher -> learning_ctx.removeTeacher(teacher));
-                    mqtt.disconnect();
-                    mqtt.close();
-                } catch (MqttException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
-            }
-            new ArrayList<>(teaching_ctx.getLessons()).stream().forEach(lesson -> teaching_ctx.removeLesson(lesson));
-            new ArrayList<>(learning_ctx.getLessons()).stream().forEach(lesson -> learning_ctx.removeLesson(lesson));
-            user_ctx.parameter_types.clear();
-            user_ctx.parameter_values.clear();
-            user_ctx.par_values.clear();
-            mqtt = null;
         }
-        user_ctx.user.set(u);
+        mqtt = null;
+        user_ctx.user.set(null);
     }
 
     public void addTeacher(User teacher) {
