@@ -64,18 +64,20 @@ public class UserContext {
         this.ctx = ctx;
         // everytime a parameter value is updated, the update is broadcasted for the listening teachers.
         par_values.addListener((ListChangeListener.Change<? extends ParameterValue> c) -> {
-            for (ParameterValue par_val : c.getAddedSubList()) {
-                par_val.value.addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-                    Map<String, String> val = new HashMap<>();
-                    for (Map.Entry<String, StringProperty> v_val : parameter_values.get(par_val.name.get()).entrySet()) {
-                        val.put(v_val.getKey(), v_val.getValue().get());
-                    }
-                    try {
-                        ctx.mqtt.publish(user.get().getId() + "/output/" + par_val.name.get(), MAPPER.writeValueAsBytes(val), 1, true);
-                    } catch (JsonProcessingException | MqttException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                });
+            while (c.next()) {
+                for (ParameterValue par_val : c.getAddedSubList()) {
+                    par_val.value.addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+                        Map<String, String> val = new HashMap<>();
+                        for (Map.Entry<String, StringProperty> v_val : parameter_values.get(par_val.name.get()).entrySet()) {
+                            val.put(v_val.getKey(), v_val.getValue().get());
+                        }
+                        try {
+                            ctx.mqtt.publish(user.get().getId() + "/output/" + par_val.name.get(), MAPPER.writeValueAsBytes(val), 1, true);
+                        } catch (JsonProcessingException | MqttException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
+                        }
+                    });
+                }
             }
         });
     }

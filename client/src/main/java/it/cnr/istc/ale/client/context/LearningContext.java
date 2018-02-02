@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -40,39 +39,40 @@ public class LearningContext {
     /**
      * The received events.
      */
-    final ObservableList<Event> events = FXCollections.observableArrayList();
+    private final ObservableList<Event> events = FXCollections.observableArrayList();
     /**
      * The lessons followed as a student.
      */
-    final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
+    private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
     /**
      * The followed teachers.
      */
-    final ObservableList<User> teachers = FXCollections.observableArrayList((User u) -> new Observable[]{Context.getContext().connection_ctx.online_users.get(u.getId())});
+    private final ObservableList<User> teachers = FXCollections.observableArrayList((User u) -> new Observable[]{Context.getContext().connection_ctx.online_users.get(u.getId())});
 
     LearningContext(Context ctx) {
         this.ctx = ctx;
-        teachers.addListener((ListChangeListener.Change<? extends User> c) -> {
-            for (User teacher : c.getAddedSubList()) {
-                addTeacher(teacher);
-            }
-            for (User teacher : c.getRemoved()) {
-                removeTeacher(teacher);
-            }
-        });
     }
 
     public ObservableList<Event> getEvents() {
         return events;
     }
 
+    void addLesson(Lesson lesson) {
+        lessons.add(lesson);
+    }
+
+    void removeLesson(Lesson lesson) {
+        lessons.remove(lesson);
+    }
+
     public ObservableList<Lesson> getLessons() {
         return lessons;
     }
 
-    private void addTeacher(User teacher) {
+    void addTeacher(User teacher) {
         try {
             ctx.connection_ctx.online_users.put(teacher.getId(), new SimpleBooleanProperty());
+            teachers.add(teacher);
             ctx.mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 ctx.connection_ctx.online_users.get(teacher.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -81,9 +81,10 @@ public class LearningContext {
         }
     }
 
-    private void removeTeacher(User teacher) {
+    void removeTeacher(User teacher) {
         try {
             ctx.mqtt.unsubscribe(teacher.getId() + "/output/on-line");
+            teachers.remove(teacher);
             ctx.connection_ctx.online_users.remove(teacher.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);

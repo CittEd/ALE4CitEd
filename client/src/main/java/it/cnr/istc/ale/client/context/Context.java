@@ -34,6 +34,7 @@ import it.cnr.istc.ale.client.Config;
 import it.cnr.istc.ale.client.resources.LessonResource;
 import it.cnr.istc.ale.client.resources.UserResource;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -107,15 +108,16 @@ public class Context {
             assert user_ctx.user.isNull().get();
             assert mqtt == null;
             // the lessons followed as a student..
-            lr.get_followed_lessons(u.getId()).stream().forEach(lesson -> learning_ctx.lessons.add(lesson));
+            lr.get_followed_lessons(u.getId()).stream().forEach(lesson -> learning_ctx.addLesson(lesson));
             // the lessons followed as a teacher..
-            lr.get_lessons(u.getId()).stream().forEach(lesson -> teaching_ctx.lessons.add(lesson));
+            lr.get_lessons(u.getId()).stream().forEach(lesson -> teaching_ctx.addLesson(lesson));
             try {
                 mqtt = new MqttClient("tcp://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort), String.valueOf(u.getId()), new MemoryPersistence());
                 mqtt.setCallback(new MqttCallback() {
                     @Override
                     public void connectionLost(Throwable cause) {
                         LOG.log(Level.SEVERE, null, cause);
+                        setUser(null);
                     }
 
                     @Override
@@ -135,13 +137,13 @@ public class Context {
                     Message m = MAPPER.readValue(message.getPayload(), Message.class);
                     if (m instanceof NewLesson) {
                         // a new lesson has been created for this student..
-                        Platform.runLater(() -> learning_ctx.lessons.add(((NewLesson) m).getLesson()));
+                        Platform.runLater(() -> learning_ctx.addLesson(((NewLesson) m).getLesson()));
                     } else if (m instanceof NewStudent) {
                         // a new student has started to follow this user..
-                        Platform.runLater(() -> teaching_ctx.students.add(ur.get_user(((NewStudent) m).getStudentId())));
+                        Platform.runLater(() -> teaching_ctx.addStudent(ur.get_user(((NewStudent) m).getStudentId())));
                     } else if (m instanceof LostStudent) {
                         // a student does not follow this user anymore..
-                        Platform.runLater(() -> teaching_ctx.students.remove(teaching_ctx.students.stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get()));
+                        Platform.runLater(() -> teaching_ctx.removeStudent(teaching_ctx.getStudents().stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get()));
                     } else if (m instanceof NewEvent) {
                         // a new event has been created for a lesson of this teacher..
                         Platform.runLater(() -> teaching_ctx.newEvent(((NewEvent) m)));
@@ -152,8 +154,8 @@ public class Context {
                         LOG.log(Level.WARNING, "Not supported yet: {0}", m);
                     }
                 });
-                ur.get_teachers(u.getId()).forEach(teacher -> learning_ctx.teachers.add(teacher));
-                ur.get_students(u.getId()).forEach(student -> teaching_ctx.students.add(student));
+                ur.get_teachers(u.getId()).forEach(teacher -> learning_ctx.addTeacher(teacher));
+                ur.get_students(u.getId()).forEach(student -> teaching_ctx.addStudent(student));
 
                 Collection<Parameter> pars = MAPPER.readValue(getClass().getResourceAsStream("/parameters/types.json"), new TypeReference<Collection<Parameter>>() {
                 });
@@ -185,37 +187,38 @@ public class Context {
                 assert mqtt.isConnected();
                 try {
                     mqtt.unsubscribe(user_ctx.user.get().getId() + "/input");
-                    teaching_ctx.students.clear();
-                    learning_ctx.teachers.clear();
+                    new ArrayList<>(teaching_ctx.getStudents()).stream().forEach(teacher -> teaching_ctx.removeStudent(teacher));
+                    new ArrayList<>(learning_ctx.getTeachers()).stream().forEach(teacher -> learning_ctx.removeTeacher(teacher));
                     mqtt.disconnect();
                     mqtt.close();
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
             }
-            learning_ctx.lessons.clear();
-            teaching_ctx.lessons.clear();
+            new ArrayList<>(teaching_ctx.getLessons()).stream().forEach(lesson -> teaching_ctx.removeLesson(lesson));
+            new ArrayList<>(learning_ctx.getLessons()).stream().forEach(lesson -> learning_ctx.removeLesson(lesson));
             user_ctx.parameter_types.clear();
             user_ctx.parameter_values.clear();
             user_ctx.par_values.clear();
             mqtt = null;
         }
+        user_ctx.user.set(u);
     }
 
     public void addTeacher(User teacher) {
         ur.add_teacher(Context.getContext().getUserContext().getUser().get().getId(), teacher.getId());
-        learning_ctx.teachers.add(teacher);
+        learning_ctx.addTeacher(teacher);
     }
 
     public void removeTeacher(User teacher) {
         ur.remove_teacher(Context.getContext().getUserContext().getUser().get().getId(), teacher.getId());
-        learning_ctx.teachers.remove(teacher);
+        learning_ctx.removeTeacher(teacher);
     }
 
     public void newLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {
         try {
-            Lesson lesson = lr.new_lesson(user_ctx.user.get().getId(), lesson_name, Context.MAPPER.writeValueAsString(model.getModel()), Context.MAPPER.writeValueAsString(roles));
-            teaching_ctx.lessons.add(lesson);
+            Lesson lesson = lr.new_lesson(user_ctx.user.get().getId(), lesson_name, MAPPER.writeValueAsString(model), MAPPER.writeValueAsString(roles));
+            teaching_ctx.addLesson(lesson);
         } catch (JsonProcessingException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

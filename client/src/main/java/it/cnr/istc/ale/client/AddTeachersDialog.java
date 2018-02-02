@@ -62,7 +62,9 @@ public class AddTeachersDialog extends Dialog<User[]> {
             @Override
             protected void updateItem(User user, boolean empty) {
                 super.updateItem(user, empty);
-                if (!empty) {
+                if (empty) {
+                    setText(null);
+                } else {
                     setText(user.getLastName() + " " + user.getFirstName());
                 }
             }

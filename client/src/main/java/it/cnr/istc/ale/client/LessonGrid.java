@@ -97,6 +97,8 @@ public class LessonGrid extends GridPane {
                 protected void updateItem(Long item, boolean empty) {
                     super.updateItem(item, empty);
                     if (!empty) {
+                        setText(null);
+                    } else {
                         setText(format(item));
                         if (item <= Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
                             setStyle("-fx-font-weight: bold;");

@@ -40,7 +40,6 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -56,7 +55,7 @@ public class TeachingContext {
     /**
      * The lessons followed as a teacher.
      */
-    final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
+    private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
     /**
      * For each lesson, the lesson's relative time.
      */
@@ -72,7 +71,7 @@ public class TeachingContext {
     /**
      * The following students.
      */
-    final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{Context.getContext().connection_ctx.online_users.get(u.getId())});
+    private final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{Context.getContext().connection_ctx.online_users.get(u.getId())});
     /**
      * For each user, the user's parameter types.
      */
@@ -90,26 +89,11 @@ public class TeachingContext {
 
     TeachingContext(Context ctx) {
         this.ctx = ctx;
-        lessons.addListener((ListChangeListener.Change<? extends Lesson> c) -> {
-            for (Lesson lesson : c.getAddedSubList()) {
-                addLesson(lesson);
-            }
-            for (Lesson lesson : c.getRemoved()) {
-                removeLesson(lesson);
-            }
-        });
-        students.addListener((ListChangeListener.Change<? extends User> c) -> {
-            for (User student : c.getAddedSubList()) {
-                addStudent(student);
-            }
-            for (User student : c.getRemoved()) {
-                removeStudent(student);
-            }
-        });
     }
 
-    private void addLesson(Lesson lesson) {
+    void addLesson(Lesson lesson) {
         lesson_time.put(lesson.getId(), new SimpleLongProperty());
+        lessons.add(lesson);
         try {
             ctx.mqtt.subscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time", (String topic, MqttMessage message) -> {
                 lesson_time.get(lesson.getId()).setValue(Long.parseLong(new String(message.getPayload())));
@@ -119,9 +103,10 @@ public class TeachingContext {
         }
     }
 
-    private void removeLesson(Lesson lesson) {
+    void removeLesson(Lesson lesson) {
         try {
             ctx.mqtt.unsubscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time");
+            lessons.remove(lesson);
             lesson_time.remove(lesson.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -162,9 +147,10 @@ public class TeachingContext {
         ctx.lr.go_at(lesson.getId(), time);
     }
 
-    private void addStudent(User student) {
+    void addStudent(User student) {
         try {
             ctx.connection_ctx.online_users.put(student.getId(), new SimpleBooleanProperty());
+            students.add(student);
             ctx.mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 ctx.connection_ctx.online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -229,13 +215,14 @@ public class TeachingContext {
         }
     }
 
-    private void removeStudent(User student) {
+    void removeStudent(User student) {
         try {
             ctx.mqtt.unsubscribe(student.getId() + "/output/on-line");
             ctx.mqtt.unsubscribe(student.getId() + "/output");
             for (String par : user_parameter_types.get(student.getId()).keySet()) {
                 ctx.mqtt.unsubscribe(student.getId() + "/output/" + par);
             }
+            students.remove(student);
             ctx.connection_ctx.online_users.remove(student.getId());
             user_parameter_types.remove(student.getId());
             user_parameter_values.remove(student.getId());

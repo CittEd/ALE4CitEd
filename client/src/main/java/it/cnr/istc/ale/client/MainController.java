@@ -118,7 +118,9 @@ public class MainController implements Initializable {
             @Override
             protected void updateItem(Lesson lesson, boolean empty) {
                 super.updateItem(lesson, empty);
-                if (!empty) {
+                if (empty) {
+                    setText(null);
+                } else {
                     setText(lesson.getName());
                 }
             }
@@ -128,7 +130,9 @@ public class MainController implements Initializable {
             @Override
             protected void updateItem(User user, boolean empty) {
                 super.updateItem(user, empty);
-                if (!empty) {
+                if (empty) {
+                    setText(null);
+                } else {
                     setText(user.getLastName() + " " + user.getFirstName());
                     if (Context.getContext().getConnectionContext().isOnline(user).get()) {
                         setStyle("-fx-text-fill: black;");
@@ -147,7 +151,9 @@ public class MainController implements Initializable {
             @Override
             protected void updateItem(Lesson lesson, boolean empty) {
                 super.updateItem(lesson, empty);
-                if (!empty) {
+                if (empty) {
+                    setText(null);
+                } else {
                     setText(lesson.getName());
                 }
             }
@@ -173,7 +179,9 @@ public class MainController implements Initializable {
             @Override
             protected void updateItem(User user, boolean empty) {
                 super.updateItem(user, empty);
-                if (!empty) {
+                if (empty) {
+                    setText(null);
+                } else {
                     setText(user.getLastName() + " " + user.getFirstName());
                     if (Context.getContext().getConnectionContext().isOnline(user).get()) {
                         setStyle("-fx-text-fill: black;");
