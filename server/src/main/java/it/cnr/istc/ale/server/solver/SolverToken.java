@@ -16,21 +16,21 @@
  */
 package it.cnr.istc.ale.server.solver;
 
-import it.cnr.istc.ale.api.model.Event;
+import it.cnr.istc.ale.api.model.EventTemplate;
 
 /**
  *
  * @author Riccardo De Benedictis
  */
-public class Token {
+public class SolverToken {
 
-    public final Token cause;
+    public final SolverToken cause;
     public final int tp;
-    public final Event event;
+    public final EventTemplate template;
 
-    Token(final Token cause, final int tp, final Event event) {
+    SolverToken(final SolverToken cause, final int tp, final EventTemplate event) {
         this.cause = cause;
         this.tp = tp;
-        this.event = event;
+        this.template = event;
     }
 }

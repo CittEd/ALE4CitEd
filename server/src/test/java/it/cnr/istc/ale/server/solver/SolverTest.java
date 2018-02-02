@@ -18,9 +18,9 @@ package it.cnr.istc.ale.server.solver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.cnr.istc.ale.api.model.LessonModel;
-import it.cnr.istc.ale.api.model.QuestionEvent;
+import it.cnr.istc.ale.api.model.QuestionEventTemplate;
 import it.cnr.istc.ale.api.model.Relation;
-import it.cnr.istc.ale.api.model.TextEvent;
+import it.cnr.istc.ale.api.model.TextEventTemplate;
 import it.cnr.istc.ale.server.Context;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,12 +63,11 @@ public class SolverTest {
         LessonModel lm = new LessonModel("Lesson one", Arrays.asList(
                 "Police officer",
                 "Firefighter"
-        ), Arrays.asList(
-                new TextEvent("police_0", "Police officer", null, null, Collections.emptyList(), Collections.emptyList(), "Hi police officer!\nThis is your first text event."),
-                new QuestionEvent("police_1", "Police officer", null, null, Collections.emptyList(), Collections.emptyList(), "This is your first question! Which is your answer?", Arrays.asList(new QuestionEvent.Answer("First choice", "police_1"))),
-                new TextEvent("police_2", "Police officer", null, null, Collections.emptyList(), Collections.emptyList(), "This is your second event."),
-                new TextEvent("fire_0", "Firefighter", null, null, Collections.emptyList(), Collections.emptyList(), "Hi firefighter!\nThis is your first text event."),
-                new TextEvent("fire_1", "Firefighter", null, null, Collections.emptyList(), Collections.emptyList(), "This is your second event.")
+        ), Arrays.asList(new TextEventTemplate("police_0", "Police officer", null, null, Collections.emptyList(), Collections.emptyList(), "Hi police officer!\nThis is your first text event."),
+                new QuestionEventTemplate("police_1", "Police officer", null, null, Collections.emptyList(), Collections.emptyList(), "This is your first question! Which is your answer?", Arrays.asList(new QuestionEventTemplate.Answer("First choice", "police_1"))),
+                new TextEventTemplate("police_2", "Police officer", null, null, Collections.emptyList(), Collections.emptyList(), "This is your second event."),
+                new TextEventTemplate("fire_0", "Firefighter", null, null, Collections.emptyList(), Collections.emptyList(), "Hi firefighter!\nThis is your first text event."),
+                new TextEventTemplate("fire_1", "Firefighter", null, null, Collections.emptyList(), Collections.emptyList(), "This is your second event.")
         ), Arrays.asList(
                 "police_0", "police_1", "fire_0"
         ), Arrays.asList(

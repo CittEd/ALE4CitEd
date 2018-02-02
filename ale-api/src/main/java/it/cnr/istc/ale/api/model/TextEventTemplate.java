@@ -24,12 +24,12 @@ import java.util.Collection;
  *
  * @author Riccardo De Benedictis
  */
-public class TextEvent extends Event {
+public class TextEventTemplate extends EventTemplate {
 
     private final String content;
 
     @JsonCreator
-    public TextEvent(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("content") String content) {
+    public TextEventTemplate(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("content") String content) {
         super(name, role, trigger_condition, execution_condition, events, relations);
         this.content = content;
     }

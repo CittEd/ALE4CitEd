@@ -18,7 +18,7 @@ package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.client.context.Context;
-import it.cnr.istc.ale.client.context.TeachingContext.EventRow;
+import it.cnr.istc.ale.client.context.TeachingContext.TokenRow;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -52,10 +52,10 @@ public class LessonGrid extends GridPane {
     private final Button stop_button = new Button("", new ImageView(new Image(getClass().getResourceAsStream("/images/stop.png"))));
     private final Label time_label = new Label("Time:");
     private final TextField relative_time = new TextField();
-    private final ObservableList<EventRow> events = FXCollections.observableArrayList();
-    private final TableView<EventRow> events_table_view = new TableView<>(events);
-    private final TableColumn<EventRow, Long> time_column = new TableColumn<>("Time");
-    private final TableColumn<EventRow, String> subject_column = new TableColumn<>("Subject");
+    private final ObservableList<TokenRow> events = FXCollections.observableArrayList();
+    private final TableView<TokenRow> events_table_view = new TableView<>(events);
+    private final TableColumn<TokenRow, Long> time_column = new TableColumn<>("Time");
+    private final TableColumn<TokenRow, String> subject_column = new TableColumn<>("Subject");
     private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> relative_time.setText(format(newValue.longValue()));
 
     @SuppressWarnings("unchecked")
@@ -91,8 +91,8 @@ public class LessonGrid extends GridPane {
         events_table_view.getColumns().addAll(time_column, subject_column);
         events_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         time_column.setCellValueFactory(new PropertyValueFactory("time"));
-        time_column.setCellFactory((TableColumn<EventRow, Long> param) -> {
-            return new TableCell<EventRow, Long>() {
+        time_column.setCellFactory((TableColumn<TokenRow, Long> param) -> {
+            return new TableCell<TokenRow, Long>() {
                 @Override
                 protected void updateItem(Long item, boolean empty) {
                     super.updateItem(item, empty);
@@ -110,12 +110,12 @@ public class LessonGrid extends GridPane {
             };
         });
         subject_column.setCellValueFactory(new PropertyValueFactory("subject"));
-        subject_column.setCellFactory((TableColumn<EventRow, String> param) -> new TableCell<EventRow, String>() {
+        subject_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (!empty) {
-                    EventRow row = getTableView().getItems().get(getIndex());
+                    TokenRow row = getTableView().getItems().get(getIndex());
                     if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
                         setStyle("-fx-font-weight: bold;");
                     } else {

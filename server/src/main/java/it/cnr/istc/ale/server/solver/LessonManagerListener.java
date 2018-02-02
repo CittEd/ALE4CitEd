@@ -27,7 +27,7 @@ public interface LessonManagerListener {
      *
      * @param tk the token that has been created.
      */
-    public void newToken(final Token tk);
+    public void newToken(final SolverToken tk);
 
     /**
      * Notifies the listener that the value of a token's temporal variable has
@@ -35,21 +35,21 @@ public interface LessonManagerListener {
      *
      * @param tk the token whose temporal variable has changed its value.
      */
-    public void movedToken(final Token tk);
+    public void movedToken(final SolverToken tk);
 
     /**
      * Notifies the listener that a token has to be executed.
      *
      * @param tk the token that has to be executed.
      */
-    public void executeToken(final Token tk);
+    public void executeToken(final SolverToken tk);
 
     /**
      * Notifies the listener that a token has to be hidden.
      *
      * @param tk the token that has to be hidden.
      */
-    public void hideToken(final Token tk);
+    public void hideToken(final SolverToken tk);
 
     /**
      * Notifies the listener that the current time has changed.

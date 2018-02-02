@@ -31,13 +31,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = Answer.class, name = "answer"),
     @JsonSubTypes.Type(value = Event.class, name = "event"),
     @JsonSubTypes.Type(value = HideEvent.class, name = "hide-event"),
-    @JsonSubTypes.Type(value = EventUpdate.class, name = "event-update"),
+    @JsonSubTypes.Type(value = TokenUpdate.class, name = "event-update"),
     @JsonSubTypes.Type(value = NewParameter.class, name = "new-parameter"),
     @JsonSubTypes.Type(value = LostParameter.class, name = "lost-parameter"),
     @JsonSubTypes.Type(value = NewStudent.class, name = "new-student"),
     @JsonSubTypes.Type(value = LostStudent.class, name = "lost-student"),
     @JsonSubTypes.Type(value = NewLesson.class, name = "new-lesson"),
     @JsonSubTypes.Type(value = LostLesson.class, name = "lost-lesson"),
-    @JsonSubTypes.Type(value = NewEvent.class, name = "new-event")})
+    @JsonSubTypes.Type(value = Token.class, name = "new-event")})
 public abstract class Message {
 }

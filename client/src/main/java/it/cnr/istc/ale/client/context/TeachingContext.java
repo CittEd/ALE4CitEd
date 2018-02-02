@@ -20,10 +20,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
-import it.cnr.istc.ale.api.messages.EventUpdate;
+import it.cnr.istc.ale.api.messages.TokenUpdate;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
-import it.cnr.istc.ale.api.messages.NewEvent;
+import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import static it.cnr.istc.ale.client.context.Context.MAPPER;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
@@ -57,17 +57,9 @@ public class TeachingContext {
      */
     private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
     /**
-     * For each lesson, the lesson's relative time.
+     * For each lesson, the lesson's context time.
      */
-    private final Map<Long, LongProperty> lesson_time = new HashMap<>();
-    /**
-     * For each lesson, the lesson's events.
-     */
-    private final Map<Long, ObservableList<EventRow>> lesson_event = new HashMap<>();
-    /**
-     * For each lesson, the lesson's events mapped by their id.
-     */
-    private final Map<Long, Map<Long, EventRow>> lesson_id_event = new HashMap<>();
+    private final Map<Long, LessonContext> lesson_context = new HashMap<>();
     /**
      * The following students.
      */
@@ -92,11 +84,11 @@ public class TeachingContext {
     }
 
     void addLesson(Lesson lesson) {
-        lesson_time.put(lesson.getId(), new SimpleLongProperty());
+        lesson_context.put(lesson.getId(), new LessonContext());
         lessons.add(lesson);
         try {
             ctx.mqtt.subscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time", (String topic, MqttMessage message) -> {
-                lesson_time.get(lesson.getId()).setValue(Long.parseLong(new String(message.getPayload())));
+                lesson_context.get(lesson.getId()).time.setValue(Long.parseLong(new String(message.getPayload())));
             });
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -107,7 +99,7 @@ public class TeachingContext {
         try {
             ctx.mqtt.unsubscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time");
             lessons.remove(lesson);
-            lesson_time.remove(lesson.getId());
+            lesson_context.remove(lesson.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -118,17 +110,15 @@ public class TeachingContext {
     }
 
     public LongProperty getLessonTime(Lesson lesson) {
-        return lesson_time.get(lesson.getId());
+        return lesson_context.get(lesson.getId()).time;
     }
 
-    void newEvent(NewEvent event) {
-        EventRow row = new EventRow(event.getTime(), event.getRefEvent());
-        lesson_event.get(event.getLessonId()).add(row);
-        lesson_id_event.get(event.getLessonId()).put(event.getId(), row);
+    void newToken(Token tk) {
+        lesson_context.get(tk.getLessonId()).tokens.add(new TokenRow(tk.getId(), tk.getTime(), tk.getRefEvent()));
     }
 
-    void updateEvent(EventUpdate update) {
-        lesson_id_event.get(update.getLessonId()).get(update.getId()).time.set(update.getTime());
+    void updateToken(TokenUpdate tk_update) {
+        lesson_context.get(tk_update.getLessonId()).getToken(tk_update.getId()).time.set(tk_update.getTime());
     }
 
     public void start(Lesson lesson) {
@@ -239,14 +229,20 @@ public class TeachingContext {
         return user_par_values.get(user_id);
     }
 
-    public static class EventRow {
+    public static class TokenRow {
 
+        private final int id;
         private final LongProperty time;
         private final StringProperty name;
 
-        private EventRow(long time, String name) {
+        private TokenRow(int id, long time, String name) {
+            this.id = id;
             this.time = new SimpleLongProperty(time);
             this.name = new SimpleStringProperty(name);
+        }
+
+        public int getId() {
+            return id;
         }
 
         public long getTime() {

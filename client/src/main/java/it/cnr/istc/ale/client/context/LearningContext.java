@@ -53,6 +53,14 @@ public class LearningContext {
         this.ctx = ctx;
     }
 
+    void addEvent(Event event) {
+        events.add(event);
+    }
+
+    void removeEvent(Event event) {
+        events.remove(event);
+    }
+
     public ObservableList<Event> getEvents() {
         return events;
     }

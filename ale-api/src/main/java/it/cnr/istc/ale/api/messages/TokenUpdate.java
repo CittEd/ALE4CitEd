@@ -23,14 +23,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class EventUpdate extends Message {
+public class TokenUpdate extends Message {
 
     private final long lesson_id;
-    private final long id;
+    private final int id;
     private final long time;
 
     @JsonCreator
-    public EventUpdate(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") long id, @JsonProperty("time") long time) {
+    public TokenUpdate(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") int id, @JsonProperty("time") long time) {
         this.lesson_id = lesson_id;
         this.id = id;
         this.time = time;
@@ -40,7 +40,7 @@ public class EventUpdate extends Message {
         return lesson_id;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 

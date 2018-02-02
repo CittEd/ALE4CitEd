@@ -29,12 +29,12 @@ public class LessonModel {
 
     private final String name;
     private final Collection<String> roles;
-    private final Collection<Event> model;
+    private final Collection<EventTemplate> model;
     private final Collection<String> events;
     private final Collection<Relation> relations;
 
     @JsonCreator
-    public LessonModel(@JsonProperty("name") String name, @JsonProperty("roles") Collection<String> roles, @JsonProperty("model") Collection<Event> model, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
+    public LessonModel(@JsonProperty("name") String name, @JsonProperty("roles") Collection<String> roles, @JsonProperty("model") Collection<EventTemplate> model, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
         this.name = name;
         this.roles = roles;
         this.model = model;
@@ -50,7 +50,7 @@ public class LessonModel {
         return Collections.unmodifiableCollection(roles);
     }
 
-    public Collection<Event> getModel() {
+    public Collection<EventTemplate> getModel() {
         return Collections.unmodifiableCollection(model);
     }
 

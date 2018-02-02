@@ -18,6 +18,8 @@ package it.cnr.istc.ale.client.resources;
 
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
+import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.client.Config;
 import java.util.Collection;
@@ -89,6 +91,17 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
+    public Collection<Token> get_tokens(long lesson_id) {
+        return client.target(rest_uri)
+                .path("lessons")
+                .path("get_tokens")
+                .queryParam("lesson_id", lesson_id)
+                .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<Collection<Token>>() {
+                });
+    }
+
+    @Override
     public Collection<LessonModel> get_models(long teacher_id) {
         return client.target(rest_uri)
                 .path("lessons")
@@ -107,6 +120,17 @@ public class LessonResource implements LessonAPI {
                 .queryParam("student_id", student_id)
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<Lesson>>() {
+                });
+    }
+
+    @Override
+    public Collection<Event> get_events(long lesson_id) {
+        return client.target(rest_uri)
+                .path("lessons")
+                .path("get_events")
+                .queryParam("lesson_id", lesson_id)
+                .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<Collection<Event>>() {
                 });
     }
 

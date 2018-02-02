@@ -33,10 +33,10 @@ import java.util.Collections;
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")
 @JsonSubTypes({
-    @Type(value = Event.class, name = "core"),
-    @Type(value = TextEvent.class, name = "text"),
-    @Type(value = QuestionEvent.class, name = "question")})
-public class Event {
+    @Type(value = EventTemplate.class, name = "core"),
+    @Type(value = TextEventTemplate.class, name = "text"),
+    @Type(value = QuestionEventTemplate.class, name = "question")})
+public class EventTemplate {
 
     private final String name;
     private final String role;
@@ -46,7 +46,7 @@ public class Event {
     private final Collection<Relation> relations;
 
     @JsonCreator
-    public Event(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
+    public EventTemplate(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations) {
         this.name = name;
         this.role = role;
         this.trigger_condition = trigger_condition;

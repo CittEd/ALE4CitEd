@@ -16,6 +16,8 @@
  */
 package it.cnr.istc.ale.api;
 
+import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.model.LessonModel;
 import java.util.Collection;
 
@@ -64,6 +66,14 @@ public interface LessonAPI {
     public Collection<Lesson> get_lessons(long teacher_id);
 
     /**
+     * Given a lesson id, returns all the tokens of the lesson.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     * @return a collection containing all the tokens of the lesson.
+     */
+    public Collection<Token> get_tokens(long lesson_id);
+
+    /**
      * Given a teacher id, returns the lesson models associated to the teacher.
      *
      * @param teacher_id a {@code long} representing the id of a teacher.
@@ -79,6 +89,14 @@ public interface LessonAPI {
      * @return the collection of lessons followed as a student.
      */
     public Collection<Lesson> get_followed_lessons(long student_id);
+
+    /**
+     * Given a lesson id, returns all the past events of the lesson.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     * @return a collection containing all the past events of the lesson.
+     */
+    public Collection<Event> get_events(long lesson_id);
 
     /**
      * Starts the execution of the lesson identified by the given lesson id.

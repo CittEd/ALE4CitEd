@@ -16,7 +16,7 @@
  */
 package it.cnr.istc.ale.server.solver;
 
-import it.cnr.istc.ale.api.model.Event;
+import it.cnr.istc.ale.api.model.EventTemplate;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.api.model.Relation;
 import java.util.ArrayDeque;
@@ -40,40 +40,40 @@ public class LessonManager implements TemporalNetworkListener {
     public static final String THIS = "this";
     private static final Logger LOG = Logger.getLogger(LessonManager.class.getName());
     public final TemporalNetwork network = new TemporalNetwork();
-    private final Map<String, Event> event_templates = new HashMap<>();
+    private final Map<String, EventTemplate> event_templates = new HashMap<>();
     /**
      * For each time point, the corresponding token.
      */
-    private final List<Token> tokens = new ArrayList<>();
+    private final List<SolverToken> tokens = new ArrayList<>();
     /**
      * A collection of triggerable tokens. These tokens are expanded whenever
      * their triggering condition becomes satisfied.
      */
-    private final Collection<Token> triggerable_tokens = new ArrayList<>();
-    private final Deque<Token> prop_q = new ArrayDeque<>();
+    private final Collection<SolverToken> triggerable_tokens = new ArrayList<>();
+    private final Deque<SolverToken> prop_q = new ArrayDeque<>();
     public final int origin = network.newVar();
     private final List<Long> lesson_timeline_pulses = new ArrayList<>();
-    private final List<Collection<Token>> lesson_timeline_values = new ArrayList<>();
+    private final List<Collection<SolverToken>> lesson_timeline_values = new ArrayList<>();
     private long t_now = 0;
     private int idx = 0;
     private final Collection<LessonManagerListener> listeners = new ArrayList<>();
 
     public LessonManager() {
-        tokens.add(new Token(null, origin, null));
+        tokens.add(new SolverToken(null, origin, null));
     }
 
     public void setModel(final LessonModel model) {
-        for (Event event_template : model.getModel()) {
+        for (EventTemplate event_template : model.getModel()) {
             if (event_templates.containsKey(event_template.getName())) {
                 LOG.log(Level.WARNING, "Renaming event {0}", event_template.getName());
             }
             event_templates.put(event_template.getName(), event_template);
         }
 
-        Map<String, Token> c_tks = new HashMap<>();
+        Map<String, SolverToken> c_tks = new HashMap<>();
         // we create the tokens..
         for (String id : model.getEvents()) {
-            Token tk = new Token(null, network.newVar(), event_templates.get(id));
+            SolverToken tk = new SolverToken(null, network.newVar(), event_templates.get(id));
             tokens.add(tk);
             for (LessonManagerListener l : listeners) {
                 l.newToken(tk);
@@ -100,11 +100,11 @@ public class LessonManager implements TemporalNetworkListener {
     private void extract_timeline() {
         lesson_timeline_pulses.clear();
         lesson_timeline_values.clear();
-        Map<Long, Collection<Token>> at = new HashMap<>();
-        for (Token tk : tokens) {
+        Map<Long, Collection<SolverToken>> at = new HashMap<>();
+        for (SolverToken tk : tokens) {
             long pulse = (long) network.getValue(tk.tp);
             lesson_timeline_pulses.add(pulse);
-            Collection<Token> tks = at.get(pulse);
+            Collection<SolverToken> tks = at.get(pulse);
             if (tks == null) {
                 tks = new ArrayList<>();
                 at.put(pulse, tks);
@@ -117,12 +117,12 @@ public class LessonManager implements TemporalNetworkListener {
         }
     }
 
-    private void expand_event(final Token tk) {
-        Map<String, Token> c_tks = new HashMap<>();
+    private void expand_event(final SolverToken tk) {
+        Map<String, SolverToken> c_tks = new HashMap<>();
         c_tks.put(THIS, tk);
         // we create the tokens..
-        for (String id : tk.event.getEvents()) {
-            Token c_tk = new Token(tk, network.newVar(), event_templates.get(id));
+        for (String id : tk.template.getEvents()) {
+            SolverToken c_tk = new SolverToken(tk, network.newVar(), event_templates.get(id));
             tokens.add(c_tk);
             for (LessonManagerListener l : listeners) {
                 l.newToken(tk);
@@ -132,7 +132,7 @@ public class LessonManager implements TemporalNetworkListener {
         }
 
         // we enforce the temporal relations..
-        for (Relation rel : tk.event.getRelations()) {
+        for (Relation rel : tk.template.getRelations()) {
             double lb = rel.getLb() != null ? rel.getUnit().convert(rel.getLb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
             double ub = rel.getUb() != null ? rel.getUnit().convert(rel.getUb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
             network.newTemporalRelation(c_tks.get(rel.getFrom()).tp, c_tks.get(rel.getTo()).tp, lb, ub);
@@ -141,8 +141,8 @@ public class LessonManager implements TemporalNetworkListener {
 
     private void build() {
         while (!prop_q.isEmpty()) {
-            Token tk = prop_q.pop();
-            if (tk.event.getTriggerCondition() != null) {
+            SolverToken tk = prop_q.pop();
+            if (tk.template.getTriggerCondition() != null) {
                 triggerable_tokens.add(tk);
             } else {
                 expand_event(tk);
@@ -157,11 +157,23 @@ public class LessonManager implements TemporalNetworkListener {
         extract_timeline();
     }
 
-    public Token getToken(final int var) {
+    public SolverToken getToken(final int var) {
         return tokens.get(var);
     }
 
-    public void moveToken(final Token tk, final double value) {
+    public List<SolverToken> getTokens() {
+        return Collections.unmodifiableList(tokens);
+    }
+
+    public List<SolverToken> getTokensUpToNow() {
+        List<SolverToken> tks = new ArrayList<>();
+        for (int i = 0; t_now >= lesson_timeline_pulses.get(i); i++) {
+            tks.addAll(lesson_timeline_values.get(i));
+        }
+        return tks;
+    }
+
+    public void moveToken(final SolverToken tk, final double value) {
         network.setValue(tk.tp, value);
         // we propagate the temporal network..
         network.propagate();
@@ -198,7 +210,7 @@ public class LessonManager implements TemporalNetworkListener {
             // we are moving forward..
             long next_pulse = lesson_timeline_pulses.get(idx);
             while (next_pulse <= t) {
-                for (Token tk : lesson_timeline_values.get(idx)) {
+                for (SolverToken tk : lesson_timeline_values.get(idx)) {
                     for (LessonManagerListener l : listeners) {
                         l.executeToken(tk);
                     }
@@ -211,7 +223,7 @@ public class LessonManager implements TemporalNetworkListener {
             // we are moving backward..
             long last_pulse = lesson_timeline_pulses.get(idx - 1);
             while (last_pulse > t) {
-                for (Token tk : lesson_timeline_values.get(idx - 1)) {
+                for (SolverToken tk : lesson_timeline_values.get(idx - 1)) {
                     for (LessonManagerListener l : listeners) {
                         l.hideToken(tk);
                     }

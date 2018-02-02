@@ -22,10 +22,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
-import it.cnr.istc.ale.api.messages.EventUpdate;
+import it.cnr.istc.ale.api.messages.TokenUpdate;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Message;
-import it.cnr.istc.ale.api.messages.NewEvent;
+import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
@@ -150,20 +150,26 @@ public class Context {
                 } else if (m instanceof LostStudent) {
                     // a student does not follow this user anymore..
                     Platform.runLater(() -> teaching_ctx.removeStudent(teaching_ctx.getStudents().stream().filter(s -> s.getId() == ((LostStudent) m).getStudentId()).findAny().get()));
-                } else if (m instanceof NewEvent) {
+                } else if (m instanceof Token) {
                     // a new event has been created for a lesson of this teacher..
-                    Platform.runLater(() -> teaching_ctx.newEvent(((NewEvent) m)));
-                } else if (m instanceof EventUpdate) {
+                    Platform.runLater(() -> teaching_ctx.newToken(((Token) m)));
+                } else if (m instanceof TokenUpdate) {
                     // an event of a lesson of this teacher has been updated..
-                    Platform.runLater(() -> teaching_ctx.updateEvent(((EventUpdate) m)));
+                    Platform.runLater(() -> teaching_ctx.updateToken(((TokenUpdate) m)));
                 } else {
                     LOG.log(Level.WARNING, "Not supported yet: {0}", m);
                 }
             });
             // the lessons followed as a student..
-            lr.get_followed_lessons(u.getId()).stream().forEach(lesson -> learning_ctx.addLesson(lesson));
+            lr.get_followed_lessons(u.getId()).stream().forEach(lesson -> {
+                learning_ctx.addLesson(lesson);
+                lr.get_events(lesson.getId()).forEach(e -> learning_ctx.addEvent(e));
+            });
             // the lessons followed as a teacher..
-            lr.get_lessons(u.getId()).stream().forEach(lesson -> teaching_ctx.addLesson(lesson));
+            lr.get_lessons(u.getId()).stream().forEach(lesson -> {
+                teaching_ctx.addLesson(lesson);
+                lr.get_tokens(lesson.getId()).stream().forEach(tk -> teaching_ctx.newToken(tk));
+            });
             // the followed teachers..
             ur.get_teachers(u.getId()).forEach(teacher -> learning_ctx.addTeacher(teacher));
             // the followed students..
