@@ -31,7 +31,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class SolverTest {
 

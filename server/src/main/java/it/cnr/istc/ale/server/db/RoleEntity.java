@@ -25,7 +25,7 @@ import javax.persistence.ManyToOne;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 @Entity
 public class RoleEntity implements Serializable {

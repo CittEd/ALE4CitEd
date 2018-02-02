@@ -18,7 +18,7 @@ package it.cnr.istc.ale.server.solver;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public interface LessonManagerListener {
 

@@ -22,7 +22,7 @@ import it.cnr.istc.ale.api.Parameter;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class NewParameter extends Message {
 

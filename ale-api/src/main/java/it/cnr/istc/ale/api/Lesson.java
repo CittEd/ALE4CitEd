@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class Lesson {
 

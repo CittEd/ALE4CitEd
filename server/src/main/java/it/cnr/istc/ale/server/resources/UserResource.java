@@ -40,7 +40,7 @@ import javax.ws.rs.core.Response;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 @Path("users")
 public class UserResource implements UserAPI {

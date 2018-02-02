@@ -33,7 +33,7 @@ import javax.ws.rs.core.MediaType;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 @Path("lessons")
 public class LessonResource implements LessonAPI {

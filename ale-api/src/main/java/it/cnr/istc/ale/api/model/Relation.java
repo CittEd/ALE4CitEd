@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class Relation {
 

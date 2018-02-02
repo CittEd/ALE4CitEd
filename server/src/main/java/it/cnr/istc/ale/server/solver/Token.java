@@ -20,7 +20,7 @@ import it.cnr.istc.ale.api.model.Event;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class Token {
 

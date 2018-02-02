@@ -31,7 +31,7 @@ import javax.persistence.OneToMany;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 @Entity
 public class UserEntity implements Serializable {

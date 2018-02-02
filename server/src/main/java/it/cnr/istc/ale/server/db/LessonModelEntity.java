@@ -25,7 +25,7 @@ import javax.persistence.Lob;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 @Entity
 public class LessonModelEntity implements Serializable {

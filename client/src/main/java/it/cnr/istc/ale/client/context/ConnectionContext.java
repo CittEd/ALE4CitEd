@@ -23,7 +23,7 @@ import javafx.beans.property.BooleanProperty;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class ConnectionContext {
 

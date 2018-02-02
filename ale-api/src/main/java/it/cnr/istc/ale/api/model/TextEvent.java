@@ -22,7 +22,7 @@ import java.util.Collection;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class TextEvent extends Event {
 

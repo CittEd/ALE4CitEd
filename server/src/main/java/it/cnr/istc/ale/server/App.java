@@ -33,7 +33,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class App {
 

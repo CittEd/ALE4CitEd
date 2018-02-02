@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class Config {
 

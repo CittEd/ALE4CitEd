@@ -23,6 +23,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -40,7 +41,7 @@ import javafx.scene.layout.Priority;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class LessonGrid extends GridPane {
 
@@ -72,8 +73,11 @@ public class LessonGrid extends GridPane {
         lesson_name.setEditable(false);
         add(lesson_name, 0, 0, 5, 1);
 
+        play_button.setOnAction((ActionEvent event) -> Context.getContext().getTeachingContext().start(lesson));
         add(play_button, 0, 1);
+        pause_button.setOnAction((ActionEvent event) -> Context.getContext().getTeachingContext().pause(lesson));
         add(pause_button, 1, 1);
+        stop_button.setOnAction((ActionEvent event) -> Context.getContext().getTeachingContext().stop(lesson));
         add(stop_button, 2, 1);
 
         add(time_label, 3, 1);

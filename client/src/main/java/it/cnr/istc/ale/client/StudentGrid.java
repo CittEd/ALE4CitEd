@@ -30,7 +30,7 @@ import javafx.scene.layout.Priority;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class StudentGrid extends GridPane {
 

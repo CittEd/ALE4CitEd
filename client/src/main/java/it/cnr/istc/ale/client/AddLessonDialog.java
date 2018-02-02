@@ -53,7 +53,7 @@ import javafx.util.StringConverter;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
 

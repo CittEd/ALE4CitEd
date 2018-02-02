@@ -30,7 +30,7 @@ import javax.ws.rs.core.MediaType;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class UserResource implements UserAPI {
 

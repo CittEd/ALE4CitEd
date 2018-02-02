@@ -23,7 +23,7 @@ import java.util.Collections;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class LessonModel {
 

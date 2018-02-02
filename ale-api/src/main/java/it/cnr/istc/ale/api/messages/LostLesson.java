@@ -21,18 +21,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class LostLesson extends Message {
 
-    private final long id;
+    private final long lesson_id;
 
     @JsonCreator
-    public LostLesson(@JsonProperty("id") long id) {
-        this.id = id;
+    public LostLesson(@JsonProperty("lessonId") long lesson_id) {
+        this.lesson_id = lesson_id;
     }
 
-    public long getId() {
-        return id;
+    public long getLessonId() {
+        return lesson_id;
     }
 }

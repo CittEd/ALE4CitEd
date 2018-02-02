@@ -27,7 +27,7 @@ import javafx.scene.layout.GridPane;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class LoginDialog extends Dialog<LoginDialog.LoginResult> {
 

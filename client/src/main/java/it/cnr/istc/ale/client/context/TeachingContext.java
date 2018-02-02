@@ -25,6 +25,7 @@ import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.NewEvent;
 import it.cnr.istc.ale.api.messages.NewParameter;
+import static it.cnr.istc.ale.client.context.Context.MAPPER;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,13 +40,14 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class TeachingContext {
 
@@ -88,11 +90,26 @@ public class TeachingContext {
 
     TeachingContext(Context ctx) {
         this.ctx = ctx;
+        lessons.addListener((ListChangeListener.Change<? extends Lesson> c) -> {
+            for (Lesson lesson : c.getAddedSubList()) {
+                addLesson(lesson);
+            }
+            for (Lesson lesson : c.getRemoved()) {
+                removeLesson(lesson);
+            }
+        });
+        students.addListener((ListChangeListener.Change<? extends User> c) -> {
+            for (User student : c.getAddedSubList()) {
+                addStudent(student);
+            }
+            for (User student : c.getRemoved()) {
+                removeStudent(student);
+            }
+        });
     }
 
-    void addLesson(Lesson lesson) {
+    private void addLesson(Lesson lesson) {
         lesson_time.put(lesson.getId(), new SimpleLongProperty());
-        lessons.add(lesson);
         try {
             ctx.mqtt.subscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time", (String topic, MqttMessage message) -> {
                 lesson_time.get(lesson.getId()).setValue(Long.parseLong(new String(message.getPayload())));
@@ -102,10 +119,9 @@ public class TeachingContext {
         }
     }
 
-    void removeLesson(Lesson lesson) {
+    private void removeLesson(Lesson lesson) {
         try {
             ctx.mqtt.unsubscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time");
-            lessons.remove(lesson);
             lesson_time.remove(lesson.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -130,10 +146,25 @@ public class TeachingContext {
         lesson_id_event.get(update.getLessonId()).get(update.getId()).time.set(update.getTime());
     }
 
-    void addStudent(User student) {
+    public void start(Lesson lesson) {
+        ctx.lr.start_lesson(lesson.getId());
+    }
+
+    public void pause(Lesson lesson) {
+        ctx.lr.pause_lesson(lesson.getId());
+    }
+
+    public void stop(Lesson lesson) {
+        ctx.lr.stop_lesson(lesson.getId());
+    }
+
+    public void goTo(Lesson lesson, long time) {
+        ctx.lr.go_at(lesson.getId(), time);
+    }
+
+    private void addStudent(User student) {
         try {
             ctx.connection_ctx.online_users.put(student.getId(), new SimpleBooleanProperty());
-            students.add(student);
             ctx.mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 ctx.connection_ctx.online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -145,7 +176,7 @@ public class TeachingContext {
                 user_parameter_types.get(student.getId()).put(par_type.getKey(), par_type.getValue());
                 user_parameter_values.get(student.getId()).put(par_type.getKey(), new HashMap<>());
                 ctx.mqtt.subscribe(student.getId() + "/output/" + par_type.getKey(), (String topic, MqttMessage message) -> {
-                    Map<String, String> value = Context.MAPPER.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
+                    Map<String, String> value = MAPPER.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
                     });
                     for (Map.Entry<String, String> val : value.entrySet()) {
                         if (user_parameter_values.get(student.getId()).get(par_type.getKey()).containsKey(val.getKey())) {
@@ -160,13 +191,13 @@ public class TeachingContext {
             }
 
             ctx.mqtt.subscribe(student.getId() + "/output", (String topic, MqttMessage message) -> {
-                Message m = Context.MAPPER.readValue(message.getPayload(), Message.class);
+                Message m = MAPPER.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewParameter) {
                     NewParameter np = (NewParameter) m;
                     Parameter par_type = np.getParameter();
                     user_parameter_types.get(student.getId()).put(par_type.getName(), par_type);
                     ctx.mqtt.subscribe(student.getId() + "/output/" + par_type.getName(), (String par_topic, MqttMessage par_value) -> {
-                        Map<String, String> value = Context.MAPPER.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
+                        Map<String, String> value = MAPPER.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         });
                         for (Map.Entry<String, String> val : value.entrySet()) {
                             if (user_parameter_values.get(student.getId()).get(par_type.getName()).containsKey(val.getKey())) {
@@ -198,14 +229,13 @@ public class TeachingContext {
         }
     }
 
-    void removeStudent(User student) {
+    private void removeStudent(User student) {
         try {
             ctx.mqtt.unsubscribe(student.getId() + "/output/on-line");
             ctx.mqtt.unsubscribe(student.getId() + "/output");
             for (String par : user_parameter_types.get(student.getId()).keySet()) {
                 ctx.mqtt.unsubscribe(student.getId() + "/output/" + par);
             }
-            students.remove(student);
             ctx.connection_ctx.online_users.remove(student.getId());
             user_parameter_types.remove(student.getId());
             user_parameter_values.remove(student.getId());

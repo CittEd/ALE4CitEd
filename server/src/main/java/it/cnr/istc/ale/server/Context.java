@@ -71,7 +71,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class Context implements UserAPI, LessonAPI {
 

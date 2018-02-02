@@ -19,6 +19,7 @@ package it.cnr.istc.ale.client.context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
+import static it.cnr.istc.ale.client.context.Context.MAPPER;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -35,7 +36,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 
 /**
  *
- * @author Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * @author Riccardo De Benedictis
  */
 public class UserContext {
 
@@ -70,7 +71,7 @@ public class UserContext {
                         val.put(v_val.getKey(), v_val.getValue().get());
                     }
                     try {
-                        ctx.mqtt.publish(user.get().getId() + "/output/" + par_val.name.get(), Context.MAPPER.writeValueAsBytes(val), 1, true);
+                        ctx.mqtt.publish(user.get().getId() + "/output/" + par_val.name.get(), MAPPER.writeValueAsBytes(val), 1, true);
                     } catch (JsonProcessingException | MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
