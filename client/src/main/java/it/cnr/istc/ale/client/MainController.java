@@ -286,20 +286,14 @@ public class MainController implements Initializable {
     }
 
     public void remove_selected_teachers() {
-        for (User user : teachers.selectionModelProperty().get().getSelectedItems()) {
-            Context.getContext().removeTeacher(user);
-        }
+        teachers.selectionModelProperty().get().getSelectedItems().forEach(user -> Context.getContext().removeTeacher(user));
     }
 
     public void add_lesson() {
-        new AddLessonDialog().showAndWait().ifPresent(new_lesson -> {
-            Context.getContext().newLesson(new_lesson.getLessonName(), new_lesson.getModel(), new_lesson.getRoles());
-        });
+        new AddLessonDialog().showAndWait().ifPresent(new_lesson -> Context.getContext().newLesson(new_lesson.getLessonName(), new_lesson.getModel(), new_lesson.getRoles()));
     }
 
     public void remove_selected_lessons() {
-        for (Lesson lesson : lessons.selectionModelProperty().get().getSelectedItems()) {
-            Context.getContext().removeLesson(lesson);
-        }
+        lessons.selectionModelProperty().get().getSelectedItems().forEach(lesson -> Context.getContext().removeLesson(lesson));
     }
 }

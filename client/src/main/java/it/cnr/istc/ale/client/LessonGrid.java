@@ -90,7 +90,7 @@ public class LessonGrid extends GridPane {
 
         events_table_view.getColumns().addAll(time_column, subject_column);
         events_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        time_column.setCellValueFactory(new PropertyValueFactory("time"));
+        time_column.setCellValueFactory(new PropertyValueFactory<TokenRow, Long>("time"));
         time_column.setCellFactory((TableColumn<TokenRow, Long> param) -> {
             return new TableCell<TokenRow, Long>() {
                 @Override
@@ -109,7 +109,7 @@ public class LessonGrid extends GridPane {
                 }
             };
         });
-        subject_column.setCellValueFactory(new PropertyValueFactory("subject"));
+        subject_column.setCellValueFactory(new PropertyValueFactory<TokenRow, String>("subject"));
         subject_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {

@@ -76,7 +76,7 @@ public class LessonResource implements LessonAPI {
                 .path("lessons")
                 .path("solve_lesson")
                 .request(MediaType.APPLICATION_JSON)
-                .post(Entity.form(form));
+                .put(Entity.form(form));
     }
 
     @Override
@@ -142,7 +142,7 @@ public class LessonResource implements LessonAPI {
                 .path("lessons")
                 .path("start_lesson")
                 .request(MediaType.APPLICATION_JSON)
-                .post(Entity.form(form));
+                .put(Entity.form(form));
     }
 
     @Override
@@ -153,7 +153,7 @@ public class LessonResource implements LessonAPI {
                 .path("lessons")
                 .path("pause_lesson")
                 .request(MediaType.APPLICATION_JSON)
-                .post(Entity.form(form));
+                .put(Entity.form(form));
     }
 
     @Override
@@ -164,7 +164,7 @@ public class LessonResource implements LessonAPI {
                 .path("lessons")
                 .path("stop_lesson")
                 .request(MediaType.APPLICATION_JSON)
-                .post(Entity.form(form));
+                .put(Entity.form(form));
     }
 
     @Override
@@ -176,6 +176,6 @@ public class LessonResource implements LessonAPI {
                 .path("lessons")
                 .path("go_at")
                 .request(MediaType.APPLICATION_JSON)
-                .post(Entity.form(form));
+                .put(Entity.form(form));
     }
 }

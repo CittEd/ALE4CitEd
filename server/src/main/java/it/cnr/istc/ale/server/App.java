@@ -16,8 +16,6 @@
  */
 package it.cnr.istc.ale.server;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.activemq.broker.Broker;
 import org.apache.activemq.broker.BrokerFilter;

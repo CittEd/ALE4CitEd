@@ -74,9 +74,7 @@ public class TemporalNetwork {
             throw new IllegalArgumentException("'var' is not a valid temporal variable");
         }
         values.set(var, value);
-        for (TemporalNetworkListener l : listeners) {
-            l.newValue(var);
-        }
+        listeners.forEach(l -> l.newValue(var));
         prop_q.push(var);
         propagate();
     }
@@ -152,15 +150,11 @@ public class TemporalNetwork {
             double from_val = values.get(from), to_val = values.get(to);
             if (to_val < from_val + lb) {
                 values.set(to, from_val + lb);
-                for (TemporalNetworkListener l : listeners) {
-                    l.newValue(to);
-                }
+                listeners.forEach(l -> l.newValue(to));
                 prop_q.push(to);
             } else if (to_val > from_val + ub) {
                 values.set(to, from_val + ub);
-                for (TemporalNetworkListener l : listeners) {
-                    l.newValue(to);
-                }
+                listeners.forEach(l -> l.newValue(to));
                 prop_q.push(to);
             }
         }
@@ -171,29 +165,21 @@ public class TemporalNetwork {
             if (var == from) {
                 if (to_val < from_val + lb) {
                     values.set(to, from_val + lb);
-                    for (TemporalNetworkListener l : listeners) {
-                        l.newValue(to);
-                    }
+                    listeners.forEach(l -> l.newValue(to));
                     prop_q.push(to);
                 } else if (to_val > from_val + ub) {
                     values.set(to, from_val + ub);
-                    for (TemporalNetworkListener l : listeners) {
-                        l.newValue(to);
-                    }
+                    listeners.forEach(l -> l.newValue(to));
                     prop_q.push(to);
                 }
             } else if (var == to) {
                 if (from_val < to_val - ub) {
                     values.set(from, to_val - ub);
-                    for (TemporalNetworkListener l : listeners) {
-                        l.newValue(from);
-                    }
+                    listeners.forEach(l -> l.newValue(from));
                     prop_q.push(from);
                 } else if (from_val > to_val - lb) {
                     values.set(from, to_val - lb);
-                    for (TemporalNetworkListener l : listeners) {
-                        l.newValue(from);
-                    }
+                    listeners.forEach(l -> l.newValue(from));
                     prop_q.push(from);
                 }
             }

@@ -106,11 +106,7 @@ public class Context {
         EXECUTOR.scheduleAtFixedRate(() -> {
             lessons_lock.lock();
             try {
-                for (Map.Entry<Long, LessonContext> lesson : lessons.entrySet()) {
-                    if (lesson.getValue().isRunning()) {
-                        lesson.getValue().getManager().tick();
-                    }
-                }
+                lessons.entrySet().stream().filter(lesson -> lesson.getValue().isRunning()).forEachOrdered(lesson -> lesson.getValue().getManager().tick());
             } finally {
                 lessons_lock.unlock();
             }

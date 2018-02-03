@@ -75,9 +75,7 @@ public class LessonManager implements TemporalNetworkListener {
         for (String id : model.getEvents()) {
             SolverToken tk = new SolverToken(null, network.newVar(), event_templates.get(id));
             tokens.add(tk);
-            for (LessonManagerListener l : listeners) {
-                l.newToken(tk);
-            }
+            listeners.forEach(l -> l.newToken(tk));
             c_tks.put(id, tk);
             prop_q.push(tk);
         }
@@ -124,9 +122,7 @@ public class LessonManager implements TemporalNetworkListener {
         for (String id : tk.template.getEvents()) {
             SolverToken c_tk = new SolverToken(tk, network.newVar(), event_templates.get(id));
             tokens.add(c_tk);
-            for (LessonManagerListener l : listeners) {
-                l.newToken(tk);
-            }
+            listeners.forEach(l -> l.newToken(tk));
             c_tks.put(id, c_tk);
             prop_q.push(c_tk);
         }
@@ -186,9 +182,7 @@ public class LessonManager implements TemporalNetworkListener {
 
     @Override
     public void newValue(int var) {
-        for (LessonManagerListener l : listeners) {
-            l.movedToken(tokens.get(var));
-        }
+        listeners.forEach(l -> l.movedToken(tokens.get(var)));
     }
 
     /**
@@ -210,11 +204,7 @@ public class LessonManager implements TemporalNetworkListener {
             // we are moving forward..
             long next_pulse = lesson_timeline_pulses.get(idx);
             while (next_pulse <= t) {
-                for (SolverToken tk : lesson_timeline_values.get(idx)) {
-                    for (LessonManagerListener l : listeners) {
-                        l.executeToken(tk);
-                    }
-                }
+                lesson_timeline_values.get(idx).forEach(tk -> listeners.forEach(l -> l.executeToken(tk)));
                 idx++;
                 next_pulse = lesson_timeline_pulses.get(idx);
             }
@@ -223,11 +213,7 @@ public class LessonManager implements TemporalNetworkListener {
             // we are moving backward..
             long last_pulse = lesson_timeline_pulses.get(idx - 1);
             while (last_pulse > t) {
-                for (SolverToken tk : lesson_timeline_values.get(idx - 1)) {
-                    for (LessonManagerListener l : listeners) {
-                        l.hideToken(tk);
-                    }
-                }
+                lesson_timeline_values.get(idx - 1).forEach(tk -> listeners.forEach(l -> l.hideToken(tk)));
                 idx--;
                 if (idx > 0) {
                     last_pulse = lesson_timeline_pulses.get(idx - 1);
@@ -238,9 +224,7 @@ public class LessonManager implements TemporalNetworkListener {
             }
         }
         t_now = t;
-        for (LessonManagerListener l : listeners) {
-            l.newTime(t_now);
-        }
+        listeners.forEach(l -> l.newTime(t_now));
     }
 
     public void addSolverListener(LessonManagerListener listener) {

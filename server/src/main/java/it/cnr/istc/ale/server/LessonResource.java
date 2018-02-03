@@ -43,7 +43,6 @@ import it.cnr.istc.ale.server.solver.SolverToken;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -214,7 +213,7 @@ public class LessonResource implements LessonAPI {
     @Override
     @PUT
     @Path("remove_lesson")
-    public void remove_lesson(long lesson_id) {
+    public void remove_lesson(@FormParam("lesson_id") long lesson_id) {
         EntityManager em = EMF.createEntityManager();
         LessonEntity lesson = em.find(LessonEntity.class, lesson_id);
         em.getTransaction().begin();
@@ -240,7 +239,7 @@ public class LessonResource implements LessonAPI {
     @Override
     @PUT
     @Path("solve_lesson")
-    public void solve_lesson(long lesson_id) {
+    public void solve_lesson(@FormParam("lesson_id") long lesson_id) {
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).getManager().setModel(Context.getContext().lessons.get(lesson_id).getModel());
@@ -275,13 +274,7 @@ public class LessonResource implements LessonAPI {
         EntityManager em = EMF.createEntityManager();
         UserEntity teacher = em.find(UserEntity.class, teacher_id);
         Collection<Lesson> lessons = new ArrayList<>(teacher.getLessons().size());
-        for (LessonEntity lesson : teacher.getLessons()) {
-            Map<String, Long> roles = new HashMap<>();
-            for (RoleEntity role : lesson.getRoles()) {
-                roles.put(role.getName(), role.getStudent().getId());
-            }
-            lessons.add(new Lesson(lesson.getId(), teacher_id, lesson.getName(), roles));
-        }
+        teacher.getLessons().forEach((lesson) -> lessons.add(new Lesson(lesson.getId(), teacher_id, lesson.getName(), lesson.getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())))));
         return lessons;
     }
 
@@ -292,7 +285,7 @@ public class LessonResource implements LessonAPI {
     public Collection<Token> get_tokens(@QueryParam("lesson_id") long lesson_id) {
         Context.getContext().lessons_lock.lock();
         try {
-            return Context.getContext().lessons.get(lesson_id).getManager().getTokens().stream().map(tk -> new Token(lesson_id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) Context.getContext().lessons.get(lesson_id).getManager().network.getValue(tk.tp), tk.template.getName())).collect(Collectors.toList());
+            return Context.getContext().lessons.get(lesson_id).getManager().getTokens().stream().filter(tk -> tk.template != null).map(tk -> new Token(lesson_id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) Context.getContext().lessons.get(lesson_id).getManager().network.getValue(tk.tp), tk.template.getName())).collect(Collectors.toList());
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -306,13 +299,7 @@ public class LessonResource implements LessonAPI {
         EntityManager em = EMF.createEntityManager();
         UserEntity student = em.find(UserEntity.class, student_id);
         Collection<Lesson> lessons = new ArrayList<>(student.getLessons().size());
-        for (RoleEntity role : student.getRoles()) {
-            Map<String, Long> roles = new HashMap<>();
-            for (RoleEntity r : role.getLesson().getRoles()) {
-                roles.put(r.getName(), r.getStudent().getId());
-            }
-            lessons.add(new Lesson(role.getLesson().getId(), role.getLesson().getId(), role.getLesson().getName(), roles));
-        }
+        student.getRoles().forEach((role) -> lessons.add(new Lesson(role.getLesson().getId(), role.getLesson().getId(), role.getLesson().getName(), role.getLesson().getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())))));
         return lessons;
     }
 

@@ -94,8 +94,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         roles_table_view.setEditable(true);
 
         roles_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        role_column.setCellValueFactory(new PropertyValueFactory("role"));
-        student_column.setCellValueFactory(new PropertyValueFactory("student"));
+        role_column.setCellValueFactory(new PropertyValueFactory<StudentRole, String>("role"));
+        student_column.setCellValueFactory(new PropertyValueFactory<StudentRole, User>("student"));
         student_column.setCellFactory(ComboBoxTableCell.forTableColumn(new StringConverter<User>() {
             @Override
             public String toString(User user) {
