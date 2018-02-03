@@ -106,7 +106,7 @@ public class LessonGrid extends GridPane {
                 }
             };
         });
-        subject_column.setCellValueFactory(new PropertyValueFactory<>("subject"));
+        subject_column.setCellValueFactory(new PropertyValueFactory<>("name"));
         subject_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
