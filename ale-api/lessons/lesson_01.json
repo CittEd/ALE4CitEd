@@ -1,0 +1,93 @@
+{
+    "name": "Lesson one",
+    "roles": [
+        "Police officer",
+        "Firefighter"
+    ],
+    "model": [
+        {
+            "type": "text",
+            "name": "police_0",
+            "role": "Police officer",
+            "triggerCondition": null,
+            "executionCondition": null,
+            "events": [],
+            "relations": [],
+            "content": "Hi police officer!\nThis is your first text event."
+        },
+        {
+            "type": "question",
+            "name": "police_1",
+            "role": "Police officer",
+            "triggerCondition": null,
+            "executionCondition": null,
+            "events": [],
+            "relations": [],
+            "question": "This is your first question! Which is your answer?",
+            "answers": [
+                {
+                    "answer": "First choice",
+                    "event": "police_1"
+                }
+            ]
+        },
+        {
+            "type": "text",
+            "name": "police_2",
+            "role": "Police officer",
+            "triggerCondition": null,
+            "executionCondition": null,
+            "events": [],
+            "relations": [],
+            "content": "This is your second event."
+        },
+        {
+            "type": "text",
+            "name": "fire_0",
+            "role": "Firefighter",
+            "triggerCondition": null,
+            "executionCondition": null,
+            "events": [],
+            "relations": [],
+            "content": "Hi firefighter!\nThis is your first text event."
+        },
+        {
+            "type": "text",
+            "name": "fire_1",
+            "role": "Firefighter",
+            "triggerCondition": null,
+            "executionCondition": null,
+            "events": [],
+            "relations": [],
+            "content": "This is your second event."
+        }
+    ],
+    "events": [
+        "police_0",
+        "police_1",
+        "fire_0"
+    ],
+    "relations": [
+        {
+            "from": "this",
+            "to": "police_0",
+            "lb": 5,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "police_0",
+            "to": "police_1",
+            "lb": 5,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "this",
+            "to": "fire_0",
+            "lb": 5,
+            "ub": 10,
+            "unit": "SECONDS"
+        }
+    ]
+}

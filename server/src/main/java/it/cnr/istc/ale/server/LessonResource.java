@@ -289,7 +289,7 @@ public class LessonResource implements LessonAPI {
     @GET
     @Path("get_tokens")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Token> get_tokens(long lesson_id) {
+    public Collection<Token> get_tokens(@QueryParam("lesson_id") long lesson_id) {
         Context.getContext().lessons_lock.lock();
         try {
             return Context.getContext().lessons.get(lesson_id).getManager().getTokens().stream().map(tk -> new Token(lesson_id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) Context.getContext().lessons.get(lesson_id).getManager().network.getValue(tk.tp), tk.template.getName())).collect(Collectors.toList());
@@ -320,7 +320,7 @@ public class LessonResource implements LessonAPI {
     @GET
     @Path("get_events")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Event> get_events(long lesson_id) {
+    public Collection<Event> get_events(@QueryParam("lesson_id") long lesson_id) {
         Context.getContext().lessons_lock.lock();
         try {
             return Context.getContext().lessons.get(lesson_id).getManager().getTokensUpToNow().stream().map(tk -> {
