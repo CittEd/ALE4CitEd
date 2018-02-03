@@ -21,12 +21,15 @@ import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.api.model.Relation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +62,7 @@ public class LessonManager implements TemporalNetworkListener {
     private final Collection<LessonManagerListener> listeners = new ArrayList<>();
 
     public LessonManager() {
-        tokens.add(new SolverToken(null, origin, null));
+        network.addTemporalNetworkListener(this);
     }
 
     public void setModel(final LessonModel model) {
@@ -82,8 +85,8 @@ public class LessonManager implements TemporalNetworkListener {
 
         // we enforce the temporal relations..
         for (Relation rel : model.getRelations()) {
-            double lb = rel.getLb() != null ? rel.getUnit().convert(rel.getLb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
-            double ub = rel.getUb() != null ? rel.getUnit().convert(rel.getUb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
+            double lb = rel.getLb() != null ? TimeUnit.MILLISECONDS.convert(rel.getLb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
+            double ub = rel.getUb() != null ? TimeUnit.MILLISECONDS.convert(rel.getUb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
             if (rel.getFrom().equals(THIS)) {
                 network.newTemporalRelation(origin, c_tks.get(rel.getTo()).tp, lb, ub);
             } else {
@@ -98,10 +101,11 @@ public class LessonManager implements TemporalNetworkListener {
     private void extract_timeline() {
         lesson_timeline_pulses.clear();
         lesson_timeline_values.clear();
+        Set<Long> c_pulses = new HashSet<>();
         Map<Long, Collection<SolverToken>> at = new HashMap<>();
         for (SolverToken tk : tokens) {
             long pulse = (long) network.getValue(tk.tp);
-            lesson_timeline_pulses.add(pulse);
+            c_pulses.add(pulse);
             Collection<SolverToken> tks = at.get(pulse);
             if (tks == null) {
                 tks = new ArrayList<>();
@@ -109,8 +113,10 @@ public class LessonManager implements TemporalNetworkListener {
             }
             tks.add(tk);
         }
-        Collections.sort(lesson_timeline_pulses);
-        for (Long pulse : lesson_timeline_pulses) {
+        Long[] c_arr_pulses = c_pulses.toArray(new Long[c_pulses.size()]);
+        Arrays.sort(c_arr_pulses);
+        for (Long pulse : c_arr_pulses) {
+            lesson_timeline_pulses.add(pulse);
             lesson_timeline_values.add(at.get(pulse));
         }
     }
@@ -129,8 +135,8 @@ public class LessonManager implements TemporalNetworkListener {
 
         // we enforce the temporal relations..
         for (Relation rel : tk.template.getRelations()) {
-            double lb = rel.getLb() != null ? rel.getUnit().convert(rel.getLb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
-            double ub = rel.getUb() != null ? rel.getUnit().convert(rel.getUb(), TimeUnit.MILLISECONDS) : Double.NEGATIVE_INFINITY;
+            double lb = rel.getLb() != null ? TimeUnit.MILLISECONDS.convert(rel.getLb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
+            double ub = rel.getUb() != null ? TimeUnit.MILLISECONDS.convert(rel.getUb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
             network.newTemporalRelation(c_tks.get(rel.getFrom()).tp, c_tks.get(rel.getTo()).tp, lb, ub);
         }
     }
@@ -154,7 +160,7 @@ public class LessonManager implements TemporalNetworkListener {
     }
 
     public SolverToken getToken(final int var) {
-        return tokens.get(var);
+        return tokens.get(var - 1);
     }
 
     public List<SolverToken> getTokens() {

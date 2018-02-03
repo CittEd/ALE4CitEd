@@ -16,17 +16,13 @@
  */
 package it.cnr.istc.ale.server.solver;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.api.model.QuestionEventTemplate;
 import it.cnr.istc.ale.api.model.Relation;
 import it.cnr.istc.ale.api.model.TextEventTemplate;
-import it.cnr.istc.ale.server.Context;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.Test;
 
 /**
@@ -39,7 +35,7 @@ public class SolverTest {
      * Test of getValue method, of class Solver.
      */
     @Test
-    public void testGetValue() {
+    public void testSolver() {
         TemporalNetwork s = new TemporalNetwork();
         int tp0 = s.newVar();
         int tp1 = s.newVar();
@@ -60,7 +56,7 @@ public class SolverTest {
         tp1_val = s.getValue(tp1);
         tp2_val = s.getValue(tp2);
 
-        LessonModel lm = new LessonModel("Lesson one", Arrays.asList(
+        LessonModel model = new LessonModel("Lesson one", Arrays.asList(
                 "Police officer",
                 "Firefighter"
         ), Arrays.asList(new TextEventTemplate("police_0", "Police officer", null, null, Collections.emptyList(), Collections.emptyList(), "Hi police officer!\nThis is your first text event."),
@@ -75,10 +71,8 @@ public class SolverTest {
                 new Relation("police_0", "police_1", 5l, 10l, TimeUnit.SECONDS),
                 new Relation("this", "fire_0", 5l, 10l, TimeUnit.SECONDS)
         ));
-        try {
-            System.out.println(Context.MAPPER.writeValueAsString(lm));
-        } catch (JsonProcessingException ex) {
-            Logger.getLogger(SolverTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
+        LessonManager manager = new LessonManager();
+        manager.setModel(model);
     }
 }

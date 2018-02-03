@@ -121,6 +121,10 @@ public class TeachingContext {
         lesson_context.get(tk_update.getLessonId()).getToken(tk_update.getId()).time.set(tk_update.getTime());
     }
 
+    public ObservableList<TokenRow> getTokens(Lesson lesson) {
+        return lesson_context.get(lesson.getId()).tokens;
+    }
+
     public void start(Lesson lesson) {
         ctx.lr.start_lesson(lesson.getId());
     }

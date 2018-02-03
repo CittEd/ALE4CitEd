@@ -232,8 +232,8 @@ public class MainController implements Initializable {
 
         par_values.setItems(Context.getContext().getUserContext().getParameterValues());
         par_values.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        par_names.setCellValueFactory(new PropertyValueFactory("name"));
-        par_vals.setCellValueFactory(new PropertyValueFactory("value"));
+        par_names.setCellValueFactory(new PropertyValueFactory<>("name"));
+        par_vals.setCellValueFactory(new PropertyValueFactory<>("value"));
         par_vals.setCellFactory(TextFieldTableCell.forTableColumn());
         par_vals.setOnEditCommit((TableColumn.CellEditEvent<ParameterValue, String> event) -> {
             ParameterValue par_value = (ParameterValue) event.getTableView().getItems().get(event.getTablePosition().getRow());

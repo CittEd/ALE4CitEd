@@ -21,8 +21,6 @@ import it.cnr.istc.ale.client.context.Context;
 import it.cnr.istc.ale.client.context.TeachingContext.TokenRow;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -52,8 +50,7 @@ public class LessonGrid extends GridPane {
     private final Button stop_button = new Button("", new ImageView(new Image(getClass().getResourceAsStream("/images/stop.png"))));
     private final Label time_label = new Label("Time:");
     private final TextField relative_time = new TextField();
-    private final ObservableList<TokenRow> events = FXCollections.observableArrayList();
-    private final TableView<TokenRow> events_table_view = new TableView<>(events);
+    private final TableView<TokenRow> tokens_table_view = new TableView<>();
     private final TableColumn<TokenRow, Long> time_column = new TableColumn<>("Time");
     private final TableColumn<TokenRow, String> subject_column = new TableColumn<>("Subject");
     private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> relative_time.setText(format(newValue.longValue()));
@@ -66,8 +63,8 @@ public class LessonGrid extends GridPane {
         setHgrow(lesson_name, Priority.ALWAYS);
         setHgrow(time_label, Priority.ALWAYS);
         setHalignment(time_label, HPos.RIGHT);
-        setVgrow(events_table_view, Priority.ALWAYS);
-        setHgrow(events_table_view, Priority.ALWAYS);
+        setVgrow(tokens_table_view, Priority.ALWAYS);
+        setHgrow(tokens_table_view, Priority.ALWAYS);
 
         lesson_name.setPromptText("Lesson name");
         lesson_name.setEditable(false);
@@ -88,15 +85,15 @@ public class LessonGrid extends GridPane {
         relative_time.setText(format(0));
         add(relative_time, 4, 1);
 
-        events_table_view.getColumns().addAll(time_column, subject_column);
-        events_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        time_column.setCellValueFactory(new PropertyValueFactory<TokenRow, Long>("time"));
+        tokens_table_view.getColumns().addAll(time_column, subject_column);
+        tokens_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        time_column.setCellValueFactory(new PropertyValueFactory<>("time"));
         time_column.setCellFactory((TableColumn<TokenRow, Long> param) -> {
             return new TableCell<TokenRow, Long>() {
                 @Override
                 protected void updateItem(Long item, boolean empty) {
                     super.updateItem(item, empty);
-                    if (!empty) {
+                    if (empty) {
                         setText(null);
                     } else {
                         setText(format(item));
@@ -109,7 +106,7 @@ public class LessonGrid extends GridPane {
                 }
             };
         });
-        subject_column.setCellValueFactory(new PropertyValueFactory<TokenRow, String>("subject"));
+        subject_column.setCellValueFactory(new PropertyValueFactory<>("subject"));
         subject_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -125,7 +122,7 @@ public class LessonGrid extends GridPane {
             }
         });
 
-        add(events_table_view, 0, 2, 5, 1);
+        add(tokens_table_view, 0, 2, 5, 1);
     }
 
     public void setLesson(final Lesson lesson) {
@@ -135,6 +132,7 @@ public class LessonGrid extends GridPane {
         this.lesson = lesson;
         lesson_name.setText(lesson.getName());
         Context.getContext().getTeachingContext().getLessonTime(lesson).addListener(TIME_LISTENER);
+        tokens_table_view.setItems(Context.getContext().getTeachingContext().getTokens(lesson));
     }
 
     public static String format(final long time) {

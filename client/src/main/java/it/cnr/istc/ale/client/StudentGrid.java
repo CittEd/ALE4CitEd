@@ -63,8 +63,8 @@ public class StudentGrid extends GridPane {
         parameters_table_view.getColumns().addAll(name_column, value_column);
 
         parameters_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        name_column.setCellValueFactory(new PropertyValueFactory("name"));
-        value_column.setCellValueFactory(new PropertyValueFactory("value"));
+        name_column.setCellValueFactory(new PropertyValueFactory<>("name"));
+        value_column.setCellValueFactory(new PropertyValueFactory<>("value"));
     }
 
     public void setUser(User user) {

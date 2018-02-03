@@ -139,7 +139,7 @@ public class LessonResource implements LessonAPI {
                             }
                             execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), answers));
                         } else {
-                            throw new UnsupportedOperationException("Not supported yet.");
+                            LOG.warning("Not supported yet.");
                         }
                         try {
                             // we notify the teacher that a token has to be executed..
@@ -240,12 +240,14 @@ public class LessonResource implements LessonAPI {
     @PUT
     @Path("solve_lesson")
     public void solve_lesson(@FormParam("lesson_id") long lesson_id) {
+        LOG.log(Level.INFO, "Solving lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).getManager().setModel(Context.getContext().lessons.get(lesson_id).getModel());
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
+        LOG.log(Level.INFO, "Lesson {0} solved", lesson_id);
     }
 
     @Override
@@ -285,7 +287,7 @@ public class LessonResource implements LessonAPI {
     public Collection<Token> get_tokens(@QueryParam("lesson_id") long lesson_id) {
         Context.getContext().lessons_lock.lock();
         try {
-            return Context.getContext().lessons.get(lesson_id).getManager().getTokens().stream().filter(tk -> tk.template != null).map(tk -> new Token(lesson_id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) Context.getContext().lessons.get(lesson_id).getManager().network.getValue(tk.tp), tk.template.getName())).collect(Collectors.toList());
+            return Context.getContext().lessons.get(lesson_id).getManager().getTokens().stream().map(tk -> new Token(lesson_id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) Context.getContext().lessons.get(lesson_id).getManager().network.getValue(tk.tp), tk.template.getName())).collect(Collectors.toList());
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -324,7 +326,8 @@ public class LessonResource implements LessonAPI {
                     }
                     return new QuestionEvent(lesson_id, tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), answers);
                 } else {
-                    throw new UnsupportedOperationException("Not supported yet.");
+                    LOG.warning("Not supported yet.");
+                    return null;
                 }
             }).collect(Collectors.toList());
         } finally {
@@ -336,30 +339,35 @@ public class LessonResource implements LessonAPI {
     @PUT
     @Path("start_lesson")
     public void start_lesson(@FormParam("lesson_id") long lesson_id) {
+        LOG.log(Level.INFO, "Starting lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).setRunning(true);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
+        LOG.log(Level.INFO, "Lesson {0} started", lesson_id);
     }
 
     @Override
     @PUT
     @Path("pause_lesson")
     public void pause_lesson(@FormParam("lesson_id") long lesson_id) {
+        LOG.log(Level.INFO, "Pausing lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).setRunning(false);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
+        LOG.log(Level.INFO, "Lesson {0} paused", lesson_id);
     }
 
     @Override
     @PUT
     @Path("stop_lesson")
     public void stop_lesson(@FormParam("lesson_id") long lesson_id) {
+        LOG.log(Level.INFO, "Stopping lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).setRunning(false);
@@ -367,17 +375,20 @@ public class LessonResource implements LessonAPI {
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
+        LOG.log(Level.INFO, "Lesson {0} stopped", lesson_id);
     }
 
     @Override
     @PUT
     @Path("go_at")
     public void go_at(@FormParam("lesson_id") long lesson_id, @FormParam("timestamp") long timestamp) {
+        LOG.log(Level.INFO, "Moving lesson {0} to time {1}", new Object[]{lesson_id, timestamp});
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).getManager().goTo(0);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
+        LOG.log(Level.INFO, "Lesson {0} moved to time {1}", new Object[]{lesson_id, timestamp});
     }
 }

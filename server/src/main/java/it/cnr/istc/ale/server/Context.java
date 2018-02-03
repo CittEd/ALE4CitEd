@@ -104,13 +104,14 @@ public class Context {
         }
 
         EXECUTOR.scheduleAtFixedRate(() -> {
+            LOG.info("tick");
             lessons_lock.lock();
             try {
-                lessons.entrySet().stream().filter(lesson -> lesson.getValue().isRunning()).forEachOrdered(lesson -> lesson.getValue().getManager().tick());
+                lessons.values().stream().filter(l -> l.isRunning()).forEach(l -> l.getManager().tick());
             } finally {
                 lessons_lock.unlock();
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 0, 5, TimeUnit.SECONDS);
     }
 
     public void addConnection(long user_id) {
@@ -141,7 +142,7 @@ public class Context {
                     parameter_types.get(user_id).remove(lp.getName());
                     parameter_values.get(user_id).remove(lp.getName());
                 } else {
-                    throw new UnsupportedOperationException("Not supported yet: " + m);
+                    LOG.log(Level.WARNING, "Not supported yet: {0}", m);
                 }
             });
         } catch (MqttException ex) {

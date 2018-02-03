@@ -94,8 +94,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         roles_table_view.setEditable(true);
 
         roles_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        role_column.setCellValueFactory(new PropertyValueFactory<StudentRole, String>("role"));
-        student_column.setCellValueFactory(new PropertyValueFactory<StudentRole, User>("student"));
+        role_column.setCellValueFactory(new PropertyValueFactory<>("role"));
+        student_column.setCellValueFactory(new PropertyValueFactory<>("student"));
         student_column.setCellFactory(ComboBoxTableCell.forTableColumn(new StringConverter<User>() {
             @Override
             public String toString(User user) {
@@ -131,9 +131,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
                 try {
                     lesson_model = Context.MAPPER.readValue(lesson_file, LessonModel.class);
                     lesson_type_name.setText(lesson_model.getName());
-                    for (String role : lesson_model.getRoles()) {
-                        roles.add(new StudentRole(role, null));
-                    }
+                    lesson_model.getRoles().forEach(role -> roles.add(new StudentRole(role, null)));
 
                     getDialogPane().lookupButton(add_button).disableProperty().unbind();
                     getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_type_name.textProperty().isEmpty().or(lesson_name.textProperty().isEmpty()).or(new StudentRoleBinding()));
@@ -151,9 +149,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
     public class StudentRoleBinding extends BooleanBinding {
 
         public StudentRoleBinding() {
-            for (StudentRole role : roles) {
-                bind(role.student);
-            }
+            roles.forEach(role -> bind(role.student));
         }
 
         @Override
