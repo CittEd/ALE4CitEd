@@ -18,6 +18,7 @@ package it.cnr.istc.ale.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.cnr.istc.ale.api.LessonState;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
@@ -107,7 +108,11 @@ public class Context {
             LOG.info("tick");
             lessons_lock.lock();
             try {
-                lessons.values().stream().filter(l -> l.isRunning()).forEach(l -> l.getManager().tick());
+                try {
+                    lessons.values().stream().filter(l -> l.getState() == LessonState.Running).forEach(l -> l.getManager().tick());
+                } catch (Exception ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             } finally {
                 lessons_lock.unlock();
             }

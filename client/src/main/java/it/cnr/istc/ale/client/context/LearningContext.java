@@ -19,6 +19,9 @@ package it.cnr.istc.ale.client.context;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.api.messages.HideEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.Observable;
@@ -45,6 +48,10 @@ public class LearningContext {
      */
     private final ObservableList<Lesson> lessons = FXCollections.observableArrayList();
     /**
+     * For each lesson, the received events.
+     */
+    private final Map<Long, ObservableList<Event>> lesson_events = new HashMap<>();
+    /**
      * The followed teachers.
      */
     private final ObservableList<User> teachers = FXCollections.observableArrayList((User u) -> new Observable[]{Context.getContext().connection_ctx.online_users.get(u.getId())});
@@ -55,10 +62,12 @@ public class LearningContext {
 
     void addEvent(Event event) {
         events.add(event);
+        lesson_events.get(event.getLessonId()).add(event);
     }
 
-    void removeEvent(Event event) {
-        events.remove(event);
+    void removeEvent(HideEvent event) {
+        events.removeIf(e -> e.getLessonId() == event.getLessonId() && e.getId() == event.getEventId());
+        lesson_events.get(event.getLessonId()).removeIf(e -> e.getId() == event.getEventId());
     }
 
     public ObservableList<Event> getEvents() {
@@ -66,11 +75,13 @@ public class LearningContext {
     }
 
     void addLesson(Lesson lesson) {
+        lesson_events.put(lesson.getId(), FXCollections.observableArrayList());
         lessons.add(lesson);
     }
 
     void removeLesson(Lesson lesson) {
         lessons.remove(lesson);
+        lesson_events.remove(lesson.getId());
     }
 
     public ObservableList<Lesson> getLessons() {

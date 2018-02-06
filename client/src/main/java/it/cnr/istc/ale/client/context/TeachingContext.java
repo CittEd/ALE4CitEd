@@ -18,6 +18,7 @@ package it.cnr.istc.ale.client.context;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import it.cnr.istc.ale.api.Lesson;
+import it.cnr.istc.ale.api.LessonState;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.TokenUpdate;
@@ -25,6 +26,7 @@ import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.model.LessonModel;
 import static it.cnr.istc.ale.client.context.Context.MAPPER;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -65,6 +68,10 @@ public class TeachingContext {
      */
     private final ObservableList<User> students = FXCollections.observableArrayList((User u) -> new Observable[]{Context.getContext().connection_ctx.online_users.get(u.getId())});
     /**
+     * The following students mapped by their id.
+     */
+    private final Map<Long, User> id_students = new HashMap<>();
+    /**
      * For each user, the user's parameter types.
      */
     private final Map<Long, Map<String, Parameter>> user_parameter_types = new HashMap<>();
@@ -83,12 +90,15 @@ public class TeachingContext {
         this.ctx = ctx;
     }
 
-    void addLesson(Lesson lesson) {
-        lesson_context.put(lesson.getId(), new LessonContext());
+    void addLesson(Lesson lesson, LessonModel model) {
+        lesson_context.put(lesson.getId(), new LessonContext(lesson, model));
         lessons.add(lesson);
         try {
             ctx.mqtt.subscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time", (String topic, MqttMessage message) -> {
                 lesson_context.get(lesson.getId()).time.setValue(Long.parseLong(new String(message.getPayload())));
+            });
+            ctx.mqtt.subscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/state", (String topic, MqttMessage message) -> {
+                lesson_context.get(lesson.getId()).state.setValue(LessonState.valueOf(new String(message.getPayload())));
             });
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -111,6 +121,14 @@ public class TeachingContext {
 
     public LongProperty getLessonTime(Lesson lesson) {
         return lesson_context.get(lesson.getId()).time;
+    }
+
+    public ObjectProperty<LessonState> getLessonState(Lesson lesson) {
+        return lesson_context.get(lesson.getId()).state;
+    }
+
+    public LessonModel getLessonModel(Lesson lesson) {
+        return lesson_context.get(lesson.getId()).model;
     }
 
     void newToken(Token tk) {
@@ -145,6 +163,7 @@ public class TeachingContext {
         try {
             ctx.connection_ctx.online_users.put(student.getId(), new SimpleBooleanProperty());
             students.add(student);
+            id_students.put(student.getId(), student);
             ctx.mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
                 ctx.connection_ctx.online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
             });
@@ -217,12 +236,17 @@ public class TeachingContext {
                 ctx.mqtt.unsubscribe(student.getId() + "/output/" + par);
             }
             students.remove(student);
+            id_students.remove(student.getId());
             ctx.connection_ctx.online_users.remove(student.getId());
             user_parameter_types.remove(student.getId());
             user_parameter_values.remove(student.getId());
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public User getStudent(long id) {
+        return id_students.get(id);
     }
 
     public ObservableList<User> getStudents() {

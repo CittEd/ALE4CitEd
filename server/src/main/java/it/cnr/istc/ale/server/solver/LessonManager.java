@@ -159,6 +159,10 @@ public class LessonManager implements TemporalNetworkListener {
         extract_timeline();
     }
 
+    public long getCurrentTime() {
+        return t_now;
+    }
+
     public SolverToken getToken(final int var) {
         return tokens.get(var - 1);
     }
@@ -188,7 +192,9 @@ public class LessonManager implements TemporalNetworkListener {
 
     @Override
     public void newValue(int var) {
-        listeners.forEach(l -> l.movedToken(tokens.get(var)));
+        if (var != origin) {
+            listeners.forEach(l -> l.movedToken(getToken(var)));
+        }
     }
 
     /**
@@ -206,13 +212,18 @@ public class LessonManager implements TemporalNetworkListener {
      * @param t the relative current time.
      */
     public void goTo(final long t) {
-        if (t > t_now) {
+        if (t > t_now && idx < lesson_timeline_pulses.size()) {
             // we are moving forward..
             long next_pulse = lesson_timeline_pulses.get(idx);
             while (next_pulse <= t) {
                 lesson_timeline_values.get(idx).forEach(tk -> listeners.forEach(l -> l.executeToken(tk)));
                 idx++;
-                next_pulse = lesson_timeline_pulses.get(idx);
+                if (idx < lesson_timeline_pulses.size()) {
+                    next_pulse = lesson_timeline_pulses.get(idx);
+                } else {
+                    // we have no more tokens to execute..
+                    break;
+                }
             }
         }
         if (t < t_now && idx > 0) {

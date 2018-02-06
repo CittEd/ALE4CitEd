@@ -39,7 +39,22 @@ public interface LessonAPI {
      * @param roles the mapping of the roles for the lesson instance.
      * @return a {@link Lesson} instance representing a specific lesson.
      */
-    public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles);
+    public Lesson new_lesson_by_model(long teacher_id, String lesson_name, String model, String roles);
+
+    /**
+     * Creates a new lesson given the id of the teacher that wants to follow the
+     * lesson, the name of the lesson instance, the model of the lesson and a
+     * map of roles containing, for each role, the corresponding student id.
+     *
+     * @param teacher_id a {@code long} representing the id of a teacher.
+     * @param lesson_name a {@code String} representing the name of the specific
+     * lesson instance.
+     * @param model_id a {@code long} representing the id of the model of the
+     * lesson.
+     * @param roles the mapping of the roles for the lesson instance.
+     * @return a {@link Lesson} instance representing a specific lesson.
+     */
+    public Lesson new_lesson_by_model_id(long teacher_id, String lesson_name, long model_id, String roles);
 
     /**
      * Removes a lesson.

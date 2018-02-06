@@ -20,6 +20,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonAPI;
+import static it.cnr.istc.ale.api.LessonState.Paused;
+import static it.cnr.istc.ale.api.LessonState.Running;
+import static it.cnr.istc.ale.api.LessonState.Stopped;
 import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.TokenUpdate;
 import it.cnr.istc.ale.api.messages.HideEvent;
@@ -69,24 +72,25 @@ public class LessonResource implements LessonAPI {
 
     @Override
     @POST
-    @Path("new_lesson")
+    @Path("new_lesson_by_model")
     @Produces(MediaType.APPLICATION_JSON)
-    public Lesson new_lesson(@FormParam("teacher_id") long teacher_id, @FormParam("lesson_name") String lesson_name, @FormParam("model") String model, @FormParam("roles") String roles) {
+    public Lesson new_lesson_by_model(@FormParam("teacher_id") long teacher_id, @FormParam("lesson_name") String lesson_name, @FormParam("model") String model, @FormParam("roles") String roles) {
         try {
             LessonModel lesson_model = MAPPER.readValue(model, LessonModel.class);
             Map<String, Long> lesson_roles = MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
             });
 
             EntityManager em = EMF.createEntityManager();
+            UserEntity teacher = em.find(UserEntity.class, teacher_id);
             em.getTransaction().begin();
             LessonModelEntity lme = new LessonModelEntity();
             lme.setModel(model);
             em.persist(lme);
-            UserEntity teacher = em.find(UserEntity.class, teacher_id);
             teacher.addModel(lme);
             LessonEntity le = new LessonEntity();
             le.setName(lesson_name);
             le.setTeacher(teacher);
+            le.setModel(lme);
             teacher.addLesson(le);
             for (Map.Entry<String, Long> role : lesson_roles.entrySet()) {
                 UserEntity student = em.find(UserEntity.class, role.getValue());
@@ -103,94 +107,70 @@ public class LessonResource implements LessonAPI {
             em.persist(teacher);
             em.getTransaction().commit();
 
-            Lesson l = new Lesson(le.getId(), teacher_id, lesson_name, lesson_roles);
+            Lesson l = new Lesson(le.getId(), teacher_id, lesson_name, null, lesson_roles);
             LessonManager lm = new LessonManager();
-            lm.addSolverListener(new LessonManagerListener() {
-                @Override
-                public void newToken(SolverToken tk) {
-                    try {
-                        // we notify the teacher that a new event has been created..
-                        Context.getContext().mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new Token(l.getId(), tk.tp, tk.cause != null ? tk.cause.tp : null, (long) lm.network.getValue(tk.tp), tk.template.getName())), 1, false);
-                    } catch (JsonProcessingException | MqttException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                @Override
-                public void movedToken(SolverToken tk) {
-                    try {
-                        // we notify the teacher that an event has been updated..
-                        Context.getContext().mqtt.publish(teacher_id + "/input", MAPPER.writeValueAsBytes(new TokenUpdate(l.getId(), tk.tp, (long) lm.network.getValue(tk.tp))), 1, false);
-                    } catch (JsonProcessingException | MqttException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                @Override
-                public void executeToken(SolverToken tk) {
-                    try {
-                        byte[] execute_event_bytes = null;
-                        if (tk.template instanceof TextEventTemplate) {
-                            execute_event_bytes = MAPPER.writeValueAsBytes(new TextEvent(l.getId(), tk.tp, ((TextEventTemplate) tk.template).getContent()));
-                        } else if (tk.template instanceof QuestionEventTemplate) {
-                            Collection<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
-                            for (QuestionEventTemplate.Answer answer : ((QuestionEventTemplate) tk.template).getAnswers()) {
-                                answers.add(MAPPER.writeValueAsString(answer));
-                            }
-                            execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), answers));
-                        } else {
-                            LOG.warning("Not supported yet.");
-                        }
-                        try {
-                            // we notify the teacher that a token has to be executed..
-                            Context.getContext().mqtt.publish(teacher_id + "/input", execute_event_bytes, 1, false);
-                        } catch (MqttException ex) {
-                            LOG.log(Level.SEVERE, null, ex);
-                        }
-                        try {
-                            // we notify the student associated to the token's role that a token has to be executed..
-                            Context.getContext().mqtt.publish(lesson_roles.get(tk.template.getRole()) + "/input", execute_event_bytes, 1, false);
-                        } catch (MqttException ex) {
-                            LOG.log(Level.SEVERE, null, ex);
-                        }
-                    } catch (JsonProcessingException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                @Override
-                public void hideToken(SolverToken tk) {
-                    try {
-                        byte[] hide_event_bytes = MAPPER.writeValueAsBytes(new HideEvent(l.getId(), tk.tp));
-                        try {
-                            // we notify the teacher that a token has to be hidden..
-                            Context.getContext().mqtt.publish(teacher_id + "/input", hide_event_bytes, 1, false);
-                        } catch (MqttException ex) {
-                            LOG.log(Level.SEVERE, null, ex);
-                        }
-                        try {
-                            // we notify the student associated to the token's role that a token has to be hidden..
-                            Context.getContext().mqtt.publish(lesson_roles.get(tk.template.getRole()) + "/input", hide_event_bytes, 1, false);
-                        } catch (MqttException ex) {
-                            LOG.log(Level.SEVERE, null, ex);
-                        }
-                    } catch (JsonProcessingException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                @Override
-                public void newTime(long time) {
-                    try {
-                        Context.getContext().mqtt.publish(teacher_id + "/input/lesson-" + l.getId() + "/time", Long.toString(time).getBytes(), 1, true);
-                    } catch (MqttException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
-                }
-            });
+            lm.addSolverListener(new LessonListener(l, lm));
             Context.getContext().lessons_lock.lock();
             try {
                 Context.getContext().lessons.put(l.getId(), new LessonContext(l, lesson_model, lm));
+            } finally {
+                Context.getContext().lessons_lock.unlock();
+            }
+
+            // we notify all the students that a new lesson has been created..
+            for (Long student_id : lesson_roles.values()) {
+                try {
+                    Context.getContext().mqtt.publish(student_id + "/input", MAPPER.writeValueAsBytes(new NewLesson(l)), 1, false);
+                } catch (JsonProcessingException | MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+            return l;
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    @Override
+    @POST
+    @Path("new_lesson_by_model_id")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Lesson new_lesson_by_model_id(@FormParam("teacher_id") long teacher_id, @FormParam("lesson_name") String lesson_name, @FormParam("model_id") long model_id, @FormParam("roles") String roles) {
+        try {
+            Map<String, Long> lesson_roles = MAPPER.readValue(roles, new TypeReference<Map<String, Long>>() {
+            });
+
+            EntityManager em = EMF.createEntityManager();
+            UserEntity teacher = em.find(UserEntity.class, teacher_id);
+            LessonModelEntity lme = em.find(LessonModelEntity.class, model_id);
+            em.getTransaction().begin();
+            LessonEntity le = new LessonEntity();
+            le.setName(lesson_name);
+            le.setTeacher(teacher);
+            le.setModel(lme);
+            teacher.addLesson(le);
+            for (Map.Entry<String, Long> role : lesson_roles.entrySet()) {
+                UserEntity student = em.find(UserEntity.class, role.getValue());
+                RoleEntity re = new RoleEntity();
+                re.setStudent(student);
+                re.setLesson(le);
+                re.setName(role.getKey());
+                student.addRole(re);
+                em.persist(re);
+                em.persist(student);
+            }
+            em.persist(le);
+            teacher.addLesson(le);
+            em.persist(teacher);
+            em.getTransaction().commit();
+
+            Lesson l = new Lesson(le.getId(), teacher_id, lesson_name, null, lesson_roles);
+            LessonManager lm = new LessonManager();
+            lm.addSolverListener(new LessonListener(l, lm));
+            Context.getContext().lessons_lock.lock();
+            try {
+                Context.getContext().lessons.put(l.getId(), new LessonContext(l, MAPPER.readValue(lme.getModel(), LessonModel.class), lm));
             } finally {
                 Context.getContext().lessons_lock.unlock();
             }
@@ -244,6 +224,12 @@ public class LessonResource implements LessonAPI {
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).getManager().setModel(Context.getContext().lessons.get(lesson_id).getModel());
+            try {
+                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/time", Long.toString(Context.getContext().lessons.get(lesson_id).getManager().getCurrentTime()).getBytes(), 1, true);
+                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Stopped.toString().getBytes(), 1, true);
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -276,7 +262,7 @@ public class LessonResource implements LessonAPI {
         EntityManager em = EMF.createEntityManager();
         UserEntity teacher = em.find(UserEntity.class, teacher_id);
         Collection<Lesson> lessons = new ArrayList<>(teacher.getLessons().size());
-        teacher.getLessons().forEach((lesson) -> lessons.add(new Lesson(lesson.getId(), teacher_id, lesson.getName(), lesson.getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())))));
+        teacher.getLessons().forEach((lesson) -> lessons.add(new Lesson(lesson.getId(), teacher_id, lesson.getName(), Context.getContext().lessons.get(lesson.getId()).getModel(), lesson.getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())))));
         return lessons;
     }
 
@@ -301,7 +287,7 @@ public class LessonResource implements LessonAPI {
         EntityManager em = EMF.createEntityManager();
         UserEntity student = em.find(UserEntity.class, student_id);
         Collection<Lesson> lessons = new ArrayList<>(student.getLessons().size());
-        student.getRoles().forEach((role) -> lessons.add(new Lesson(role.getLesson().getId(), role.getLesson().getId(), role.getLesson().getName(), role.getLesson().getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())))));
+        student.getRoles().forEach((role) -> lessons.add(new Lesson(role.getLesson().getId(), role.getLesson().getId(), role.getLesson().getName(), null, role.getLesson().getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())))));
         return lessons;
     }
 
@@ -342,7 +328,12 @@ public class LessonResource implements LessonAPI {
         LOG.log(Level.INFO, "Starting lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
-            Context.getContext().lessons.get(lesson_id).setRunning(true);
+            Context.getContext().lessons.get(lesson_id).setState(Running);
+            try {
+                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Running.toString().getBytes(), 1, true);
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -356,7 +347,12 @@ public class LessonResource implements LessonAPI {
         LOG.log(Level.INFO, "Pausing lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
-            Context.getContext().lessons.get(lesson_id).setRunning(false);
+            Context.getContext().lessons.get(lesson_id).setState(Paused);
+            try {
+                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Paused.toString().getBytes(), 1, true);
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -370,8 +366,13 @@ public class LessonResource implements LessonAPI {
         LOG.log(Level.INFO, "Stopping lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
-            Context.getContext().lessons.get(lesson_id).setRunning(false);
+            Context.getContext().lessons.get(lesson_id).setState(Stopped);
             Context.getContext().lessons.get(lesson_id).getManager().goTo(0);
+            try {
+                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Stopped.toString().getBytes(), 1, true);
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -390,5 +391,86 @@ public class LessonResource implements LessonAPI {
             Context.getContext().lessons_lock.unlock();
         }
         LOG.log(Level.INFO, "Lesson {0} moved to time {1}", new Object[]{lesson_id, timestamp});
+    }
+
+    private static class LessonListener implements LessonManagerListener {
+
+        private final Lesson l;
+        private final LessonManager lm;
+
+        private LessonListener(Lesson l, LessonManager lm) {
+            this.l = l;
+            this.lm = lm;
+        }
+
+        @Override
+        public void newToken(SolverToken tk) {
+            try {
+                // we notify the teacher that a new event has been created..
+                Context.getContext().mqtt.publish(l.getTeacherId() + "/input", MAPPER.writeValueAsBytes(new Token(l.getId(), tk.tp, tk.cause != null ? tk.cause.tp : null, (long) lm.network.getValue(tk.tp), tk.template.getName())), 1, false);
+            } catch (JsonProcessingException | MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        @Override
+        public void movedToken(SolverToken tk) {
+            try {
+                // we notify the teacher that an event has been updated..
+                Context.getContext().mqtt.publish(l.getTeacherId() + "/input", MAPPER.writeValueAsBytes(new TokenUpdate(l.getId(), tk.tp, (long) lm.network.getValue(tk.tp))), 1, false);
+            } catch (JsonProcessingException | MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        @Override
+        public void executeToken(SolverToken tk) {
+            try {
+                byte[] execute_event_bytes = null;
+                if (tk.template instanceof TextEventTemplate) {
+                    execute_event_bytes = MAPPER.writeValueAsBytes(new TextEvent(l.getId(), tk.tp, ((TextEventTemplate) tk.template).getContent()));
+                } else if (tk.template instanceof QuestionEventTemplate) {
+                    Collection<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
+                    for (QuestionEventTemplate.Answer answer : ((QuestionEventTemplate) tk.template).getAnswers()) {
+                        answers.add(MAPPER.writeValueAsString(answer));
+                    }
+                    execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), answers));
+                } else {
+                    LOG.warning("Not supported yet.");
+                }
+                try {
+                    // we notify the student associated to the token's role that a token has to be executed..
+                    Context.getContext().mqtt.publish(l.getRoles().get(tk.template.getRole()) + "/input", execute_event_bytes, 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+            } catch (JsonProcessingException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        @Override
+        public void hideToken(SolverToken tk) {
+            try {
+                byte[] hide_event_bytes = MAPPER.writeValueAsBytes(new HideEvent(l.getId(), tk.tp));
+                try {
+                    // we notify the student associated to the token's role that a token has to be hidden..
+                    Context.getContext().mqtt.publish(l.getRoles().get(tk.template.getRole()) + "/input", hide_event_bytes, 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+            } catch (JsonProcessingException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        @Override
+        public void newTime(long time) {
+            try {
+                Context.getContext().mqtt.publish(l.getTeacherId() + "/input/lesson-" + l.getId() + "/time", Long.toString(time).getBytes(), 1, true);
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
     }
 }

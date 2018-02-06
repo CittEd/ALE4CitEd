@@ -29,7 +29,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         property = "message-type")
 @JsonSubTypes({
     @JsonSubTypes.Type(value = Answer.class, name = "answer"),
-    @JsonSubTypes.Type(value = Event.class, name = "event"),
+    @JsonSubTypes.Type(value = TextEvent.class, name = "text-event"),
+    @JsonSubTypes.Type(value = QuestionEvent.class, name = "question-event"),
     @JsonSubTypes.Type(value = HideEvent.class, name = "hide-event"),
     @JsonSubTypes.Type(value = TokenUpdate.class, name = "event-update"),
     @JsonSubTypes.Type(value = NewParameter.class, name = "new-parameter"),

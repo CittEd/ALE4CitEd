@@ -44,7 +44,7 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
-    public Lesson new_lesson(long teacher_id, String lesson_name, String model, String roles) {
+    public Lesson new_lesson_by_model(long teacher_id, String lesson_name, String model, String roles) {
         Form form = new Form();
         form.param("teacher_id", Long.toString(teacher_id));
         form.param("lesson_name", lesson_name);
@@ -52,7 +52,21 @@ public class LessonResource implements LessonAPI {
         form.param("roles", roles);
         return client.target(rest_uri)
                 .path("lessons")
-                .path("new_lesson")
+                .path("new_lesson_by_model")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form), Lesson.class);
+    }
+
+    @Override
+    public Lesson new_lesson_by_model_id(long teacher_id, String lesson_name, long model_id, String roles) {
+        Form form = new Form();
+        form.param("teacher_id", Long.toString(teacher_id));
+        form.param("lesson_name", lesson_name);
+        form.param("model_id", Long.toString(model_id));
+        form.param("roles", roles);
+        return client.target(rest_uri)
+                .path("lessons")
+                .path("new_lesson_by_model_id")
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.form(form), Lesson.class);
     }

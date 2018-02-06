@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
+ * Copyright (C) 2018 sydde
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,31 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.ale.api.messages;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+package it.cnr.istc.ale.api;
 
 /**
  *
  * @author Riccardo De Benedictis
  */
-public abstract class Event extends Message {
-
-    private final long lesson_id;
-    private final long id;
-
-    @JsonCreator
-    public Event(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") long id) {
-        this.lesson_id = lesson_id;
-        this.id = id;
-    }
-
-    public long getLessonId() {
-        return lesson_id;
-    }
-
-    public long getId() {
-        return id;
-    }
+public enum LessonState {
+    Running, Paused, Stopped
 }

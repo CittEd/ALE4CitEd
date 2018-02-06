@@ -22,6 +22,7 @@ import org.apache.activemq.broker.BrokerFilter;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.ConnectionContext;
+import org.apache.activemq.broker.TransportConnector;
 import org.apache.activemq.command.ConnectionInfo;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -40,7 +41,8 @@ public class App {
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.ServicePort)).build(), new ResourceConfig(UserResource.class, LessonResource.class));
 
         BrokerService broker = new BrokerService();
-        broker.addConnector(UriBuilder.fromUri("mqtt://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort)).build());
+        TransportConnector connector = broker.addConnector(UriBuilder.fromUri("mqtt://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort)).build());
+        System.out.println(connector.isAllowLinkStealing());
         broker.setPlugins(new BrokerPlugin[]{new BrokerPlugin() {
             @Override
             public Broker installPlugin(Broker broker) throws Exception {

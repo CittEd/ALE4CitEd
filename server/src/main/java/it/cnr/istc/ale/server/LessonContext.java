@@ -17,6 +17,7 @@
 package it.cnr.istc.ale.server;
 
 import it.cnr.istc.ale.api.Lesson;
+import it.cnr.istc.ale.api.LessonState;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.server.solver.LessonManager;
 
@@ -29,7 +30,7 @@ public class LessonContext {
     private final Lesson lesson;
     private final LessonModel model;
     private final LessonManager manager;
-    private boolean running = false;
+    private LessonState state = LessonState.Paused;
 
     public LessonContext(Lesson lesson, LessonModel model, LessonManager manager) {
         this.lesson = lesson;
@@ -49,11 +50,11 @@ public class LessonContext {
         return manager;
     }
 
-    public boolean isRunning() {
-        return running;
+    public LessonState getState() {
+        return state;
     }
 
-    public void setRunning(boolean running) {
-        this.running = running;
+    public void setState(LessonState state) {
+        this.state = state;
     }
 }

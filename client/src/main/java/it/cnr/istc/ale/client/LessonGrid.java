@@ -17,10 +17,16 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.Lesson;
+import it.cnr.istc.ale.api.LessonState;
+import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.api.model.EventTemplate;
+import it.cnr.istc.ale.api.model.QuestionEventTemplate;
+import it.cnr.istc.ale.api.model.TextEventTemplate;
 import it.cnr.istc.ale.client.context.Context;
 import it.cnr.istc.ale.client.context.TeachingContext.TokenRow;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -52,8 +58,31 @@ public class LessonGrid extends GridPane {
     private final TextField relative_time = new TextField();
     private final TableView<TokenRow> tokens_table_view = new TableView<>();
     private final TableColumn<TokenRow, Long> time_column = new TableColumn<>("Time");
+    private final TableColumn<TokenRow, String> id_column = new TableColumn<>("ID");
+    private final TableColumn<TokenRow, String> role_column = new TableColumn<>("Role");
     private final TableColumn<TokenRow, String> subject_column = new TableColumn<>("Subject");
     private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> relative_time.setText(format(newValue.longValue()));
+    private final ChangeListener<LessonState> STATE_LISTENER = (ObservableValue<? extends LessonState> observable, LessonState oldValue, LessonState newValue) -> {
+        switch (newValue) {
+            case Running:
+                play_button.setDisable(true);
+                pause_button.setDisable(false);
+                stop_button.setDisable(false);
+                break;
+            case Paused:
+                play_button.setDisable(false);
+                pause_button.setDisable(true);
+                stop_button.setDisable(false);
+                break;
+            case Stopped:
+                play_button.setDisable(false);
+                pause_button.setDisable(true);
+                stop_button.setDisable(true);
+                break;
+            default:
+                throw new AssertionError(newValue.name());
+        }
+    };
 
     @SuppressWarnings("unchecked")
     public LessonGrid() {
@@ -85,8 +114,11 @@ public class LessonGrid extends GridPane {
         relative_time.setText(format(0));
         add(relative_time, 4, 1);
 
-        tokens_table_view.getColumns().addAll(time_column, subject_column);
-        tokens_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tokens_table_view.getColumns().addAll(time_column, id_column, role_column, subject_column);
+        time_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
+        id_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
+        role_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
+        subject_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.4));
         time_column.setCellValueFactory(new PropertyValueFactory<>("time"));
         time_column.setCellFactory((TableColumn<TokenRow, Long> param) -> {
             return new TableCell<TokenRow, Long>() {
@@ -106,12 +138,58 @@ public class LessonGrid extends GridPane {
                 }
             };
         });
+        id_column.setCellValueFactory(new PropertyValueFactory<>("name"));
+        id_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    TokenRow row = getTableView().getItems().get(getIndex());
+                    if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
+                        setStyle("-fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-font-weight: normal;");
+                    }
+                }
+            }
+        });
+        role_column.setCellValueFactory(new PropertyValueFactory<>("name"));
+        role_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                } else {
+                    EventTemplate et = Context.getContext().getTeachingContext().getLessonModel(lesson).getModel().stream().filter(templ -> templ.getName().equals(item)).findAny().get();
+                    User student = Context.getContext().getTeachingContext().getStudent(lesson.getRoles().get(et.getRole()));
+                    setText(et.getRole() + " (" + student.getFirstName() + " " + student.getLastName() + ")");
+                    TokenRow row = getTableView().getItems().get(getIndex());
+                    if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
+                        setStyle("-fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-font-weight: normal;");
+                    }
+                }
+            }
+        });
         subject_column.setCellValueFactory(new PropertyValueFactory<>("name"));
         subject_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (!empty) {
+                if (empty) {
+                    setText(null);
+                } else {
+                    EventTemplate et = Context.getContext().getTeachingContext().getLessonModel(lesson).getModel().stream().filter(templ -> templ.getName().equals(item)).findAny().get();
+                    if (et instanceof TextEventTemplate) {
+                        setText(((TextEventTemplate) et).getContent());
+                    } else if (et instanceof QuestionEventTemplate) {
+                        setText(((QuestionEventTemplate) et).getQuestion());
+                    }
                     TokenRow row = getTableView().getItems().get(getIndex());
                     if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
                         setStyle("-fx-font-weight: bold;");
@@ -128,11 +206,15 @@ public class LessonGrid extends GridPane {
     public void setLesson(final Lesson lesson) {
         if (this.lesson != null) {
             Context.getContext().getTeachingContext().getLessonTime(lesson).removeListener(TIME_LISTENER);
+            Context.getContext().getTeachingContext().getLessonState(lesson).removeListener(STATE_LISTENER);
         }
         this.lesson = lesson;
         lesson_name.setText(lesson.getName());
         Context.getContext().getTeachingContext().getLessonTime(lesson).addListener(TIME_LISTENER);
-        tokens_table_view.setItems(Context.getContext().getTeachingContext().getTokens(lesson));
+        TIME_LISTENER.changed(Context.getContext().getTeachingContext().getLessonTime(lesson), null, Context.getContext().getTeachingContext().getLessonTime(lesson).get());
+        Context.getContext().getTeachingContext().getLessonState(lesson).addListener(STATE_LISTENER);
+        STATE_LISTENER.changed(Context.getContext().getTeachingContext().getLessonState(lesson), null, Context.getContext().getTeachingContext().getLessonState(lesson).get());
+        tokens_table_view.setItems(new SortedList<>(Context.getContext().getTeachingContext().getTokens(lesson), (TokenRow r0, TokenRow r1) -> Long.compare(r0.getTime(), r1.getTime())));
     }
 
     public static String format(final long time) {

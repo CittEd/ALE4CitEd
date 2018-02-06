@@ -16,11 +16,17 @@
  */
 package it.cnr.istc.ale.client.context;
 
+import it.cnr.istc.ale.api.Lesson;
+import it.cnr.istc.ale.api.LessonState;
+import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.client.context.TeachingContext.TokenRow;
 import java.util.HashMap;
 import java.util.Map;
+import javafx.beans.Observable;
 import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -31,21 +37,34 @@ import javafx.collections.ObservableList;
  */
 public class LessonContext {
 
+    final Lesson lesson;
+    final LessonModel model;
+    final ObjectProperty<LessonState> state = new SimpleObjectProperty<>();
     final LongProperty time = new SimpleLongProperty(0);
-    final ObservableList<TokenRow> tokens = FXCollections.observableArrayList();
+    final ObservableList<TokenRow> tokens = FXCollections.observableArrayList((TokenRow row) -> new Observable[]{time});
     private final Map<Integer, TokenRow> id_tokens = new HashMap<>();
 
-    LessonContext() {
+    LessonContext(Lesson lesson, LessonModel model) {
+        this.lesson = lesson;
+        this.model = model;
         tokens.addListener((ListChangeListener.Change<? extends TokenRow> c) -> {
             while (c.next()) {
-                for (TokenRow tk : c.getAddedSubList()) {
-                    id_tokens.put(tk.getId(), tk);
-                }
-                for (TokenRow tk : c.getRemoved()) {
-                    id_tokens.remove(tk.getId());
-                }
+                c.getAddedSubList().forEach((tk) -> id_tokens.put(tk.getId(), tk));
+                c.getRemoved().forEach((tk) -> id_tokens.remove(tk.getId()));
             }
         });
+    }
+
+    public Lesson getLesson() {
+        return lesson;
+    }
+
+    public LessonModel getModel() {
+        return model;
+    }
+
+    public ObjectProperty<LessonState> getState() {
+        return state;
     }
 
     public LongProperty getTime() {

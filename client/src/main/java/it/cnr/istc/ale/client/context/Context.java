@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.Parameter;
 import it.cnr.istc.ale.api.User;
+import it.cnr.istc.ale.api.messages.HideEvent;
 import it.cnr.istc.ale.api.messages.TokenUpdate;
 import it.cnr.istc.ale.api.messages.LostStudent;
 import it.cnr.istc.ale.api.messages.Message;
@@ -29,6 +30,8 @@ import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
+import it.cnr.istc.ale.api.messages.QuestionEvent;
+import it.cnr.istc.ale.api.messages.TextEvent;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.client.Config;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
@@ -135,10 +138,12 @@ public class Context {
                 public void deliveryComplete(IMqttDeliveryToken token) {
                 }
             });
+
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(false);
             options.setAutomaticReconnect(true);
             mqtt.connect(options);
+
             mqtt.subscribe(u.getId() + "/input", (String topic, MqttMessage message) -> {
                 Message m = MAPPER.readValue(message.getPayload(), Message.class);
                 if (m instanceof NewLesson) {
@@ -156,6 +161,15 @@ public class Context {
                 } else if (m instanceof TokenUpdate) {
                     // an event of a lesson of this teacher has been updated..
                     Platform.runLater(() -> teaching_ctx.updateToken(((TokenUpdate) m)));
+                } else if (m instanceof TextEvent) {
+                    // a text event has been received..
+                    Platform.runLater(() -> learning_ctx.addEvent(((TextEvent) m)));
+                } else if (m instanceof QuestionEvent) {
+                    // a question event has been received..
+                    Platform.runLater(() -> learning_ctx.addEvent(((QuestionEvent) m)));
+                } else if (m instanceof HideEvent) {
+                    // a question event has been received..
+                    Platform.runLater(() -> learning_ctx.removeEvent(((HideEvent) m)));
                 } else {
                     LOG.log(Level.WARNING, "Not supported yet: {0}", m);
                 }
@@ -167,7 +181,7 @@ public class Context {
             });
             // the lessons followed as a teacher..
             lr.get_lessons(u.getId()).stream().forEach(lesson -> {
-                teaching_ctx.addLesson(lesson);
+                teaching_ctx.addLesson(lesson, lesson.getModel());
                 lr.get_tokens(lesson.getId()).stream().forEach(tk -> teaching_ctx.newToken(tk));
             });
             // the followed teachers..
@@ -237,9 +251,9 @@ public class Context {
     public void newLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {
         try {
             // we create the lesson..
-            Lesson lesson = lr.new_lesson(user_ctx.user.get().getId(), lesson_name, MAPPER.writeValueAsString(model), MAPPER.writeValueAsString(roles));
+            Lesson lesson = lr.new_lesson_by_model(user_ctx.user.get().getId(), lesson_name, MAPPER.writeValueAsString(model), MAPPER.writeValueAsString(roles));
             // we create the context for the lesson..
-            teaching_ctx.addLesson(lesson);
+            teaching_ctx.addLesson(lesson, model);
             // once created the context, we can solve the lesson..
             lr.solve_lesson(lesson.getId());
         } catch (JsonProcessingException ex) {

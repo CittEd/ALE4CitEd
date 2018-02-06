@@ -19,6 +19,8 @@ package it.cnr.istc.ale.client;
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
+import it.cnr.istc.ale.api.messages.QuestionEvent;
+import it.cnr.istc.ale.api.messages.TextEvent;
 import it.cnr.istc.ale.client.context.Context;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import java.net.URL;
@@ -44,6 +46,7 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
  *
@@ -113,6 +116,21 @@ public class MainController implements Initializable {
 
         learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
         events.setItems(Context.getContext().getLearningContext().getEvents());
+        events.setCellFactory((ListView<Event> param) -> new ListCell<Event>() {
+            @Override
+            protected void updateItem(Event event, boolean empty) {
+                super.updateItem(event, empty);
+                if (empty) {
+                    setText(null);
+                } else {
+                    if (event instanceof TextEvent) {
+                        setText(((TextEvent) event).getContent());
+                    } else if (event instanceof QuestionEvent) {
+                        setText(((QuestionEvent) event).getQuestion());
+                    }
+                }
+            }
+        });
         following_lessons.setItems(Context.getContext().getLearningContext().getLessons());
         following_lessons.setCellFactory((ListView<Lesson> param) -> new ListCell<Lesson>() {
             @Override
