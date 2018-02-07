@@ -140,7 +140,7 @@ public class Context {
             });
 
             MqttConnectOptions options = new MqttConnectOptions();
-            options.setCleanSession(false);
+            options.setCleanSession(true);
             options.setAutomaticReconnect(true);
             mqtt.connect(options);
 
