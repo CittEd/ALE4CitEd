@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -132,7 +133,7 @@ public class TeachingContext {
     }
 
     void newToken(Token tk) {
-        lesson_context.get(tk.getLessonId()).tokens.add(new TokenRow(tk.getId(), tk.getTime(), tk.getRefEvent()));
+        lesson_context.get(tk.getLessonId()).tokens.add(new TokenRow(tk.getId(), lesson_context.get(tk.getLessonId()).time, tk.getTime(), tk.getRefEvent()));
     }
 
     void updateToken(TokenUpdate tk_update) {
@@ -260,17 +261,28 @@ public class TeachingContext {
     public static class TokenRow {
 
         private final int id;
+        private final BooleanProperty executed;
         private final LongProperty time;
         private final StringProperty name;
 
-        private TokenRow(int id, long time, String name) {
+        private TokenRow(int id, LongProperty lesson_time, long time, String name) {
             this.id = id;
+            this.executed = new SimpleBooleanProperty(false);
             this.time = new SimpleLongProperty(time);
             this.name = new SimpleStringProperty(name);
+            executed.bind(lesson_time.greaterThanOrEqualTo(this.time));
         }
 
         public int getId() {
             return id;
+        }
+
+        public boolean getExecuted() {
+            return executed.get();
+        }
+
+        public BooleanProperty executedProperty() {
+            return executed;
         }
 
         public long getTime() {

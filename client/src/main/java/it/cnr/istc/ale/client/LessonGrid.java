@@ -24,6 +24,7 @@ import it.cnr.istc.ale.api.model.QuestionEventTemplate;
 import it.cnr.istc.ale.api.model.TextEventTemplate;
 import it.cnr.istc.ale.client.context.Context;
 import it.cnr.istc.ale.client.context.TeachingContext.TokenRow;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.transformation.SortedList;
@@ -35,6 +36,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -119,6 +121,7 @@ public class LessonGrid extends GridPane {
         id_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
         role_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
         subject_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.4));
+
         time_column.setCellValueFactory(new PropertyValueFactory<>("time"));
         time_column.setCellFactory((TableColumn<TokenRow, Long> param) -> {
             return new TableCell<TokenRow, Long>() {
@@ -127,13 +130,19 @@ public class LessonGrid extends GridPane {
                     super.updateItem(item, empty);
                     if (empty) {
                         setText(null);
+                        styleProperty().unbind();
+                        setStyle("");
                     } else {
                         setText(format(item));
-                        if (item <= Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
-                            setStyle("-fx-font-weight: bold;");
-                        } else {
-                            setStyle("-fx-font-weight: normal;");
-                        }
+
+                        TokenRow row = getTableView().getItems().get(getIndex());
+                        styleProperty().bind(Bindings.createStringBinding(() -> {
+                            if (row.getExecuted()) {
+                                return "-fx-font-weight: bold;";
+                            } else {
+                                return "";
+                            }
+                        }, row.executedProperty()));
                     }
                 }
             };
@@ -145,14 +154,19 @@ public class LessonGrid extends GridPane {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
+                    styleProperty().unbind();
+                    setStyle("");
                 } else {
                     setText(item);
+
                     TokenRow row = getTableView().getItems().get(getIndex());
-                    if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
-                        setStyle("-fx-font-weight: bold;");
-                    } else {
-                        setStyle("-fx-font-weight: normal;");
-                    }
+                    styleProperty().bind(Bindings.createStringBinding(() -> {
+                        if (row.getExecuted()) {
+                            return "-fx-font-weight: bold;";
+                        } else {
+                            return "";
+                        }
+                    }, row.executedProperty()));
                 }
             }
         });
@@ -163,16 +177,21 @@ public class LessonGrid extends GridPane {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
+                    styleProperty().unbind();
+                    setStyle("");
                 } else {
                     EventTemplate et = Context.getContext().getTeachingContext().getLessonModel(lesson).getModel().stream().filter(templ -> templ.getName().equals(item)).findAny().get();
                     User student = Context.getContext().getTeachingContext().getStudent(lesson.getRoles().get(et.getRole()));
                     setText(et.getRole() + " (" + student.getFirstName() + " " + student.getLastName() + ")");
+
                     TokenRow row = getTableView().getItems().get(getIndex());
-                    if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
-                        setStyle("-fx-font-weight: bold;");
-                    } else {
-                        setStyle("-fx-font-weight: normal;");
-                    }
+                    styleProperty().bind(Bindings.createStringBinding(() -> {
+                        if (row.getExecuted()) {
+                            return "-fx-font-weight: bold;";
+                        } else {
+                            return "";
+                        }
+                    }, row.executedProperty()));
                 }
             }
         });
@@ -183,6 +202,8 @@ public class LessonGrid extends GridPane {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
+                    styleProperty().unbind();
+                    setStyle("");
                 } else {
                     EventTemplate et = Context.getContext().getTeachingContext().getLessonModel(lesson).getModel().stream().filter(templ -> templ.getName().equals(item)).findAny().get();
                     if (et instanceof TextEventTemplate) {
@@ -190,12 +211,15 @@ public class LessonGrid extends GridPane {
                     } else if (et instanceof QuestionEventTemplate) {
                         setText(((QuestionEventTemplate) et).getQuestion());
                     }
+
                     TokenRow row = getTableView().getItems().get(getIndex());
-                    if (row.getTime() < Context.getContext().getTeachingContext().getLessonTime(lesson).get()) {
-                        setStyle("-fx-font-weight: bold;");
-                    } else {
-                        setStyle("-fx-font-weight: normal;");
-                    }
+                    styleProperty().bind(Bindings.createStringBinding(() -> {
+                        if (row.getExecuted()) {
+                            return "-fx-font-weight: bold;";
+                        } else {
+                            return "";
+                        }
+                    }, row.executedProperty()));
                 }
             }
         });
@@ -205,8 +229,8 @@ public class LessonGrid extends GridPane {
 
     public void setLesson(final Lesson lesson) {
         if (this.lesson != null) {
-            Context.getContext().getTeachingContext().getLessonTime(lesson).removeListener(TIME_LISTENER);
-            Context.getContext().getTeachingContext().getLessonState(lesson).removeListener(STATE_LISTENER);
+            Context.getContext().getTeachingContext().getLessonTime(this.lesson).removeListener(TIME_LISTENER);
+            Context.getContext().getTeachingContext().getLessonState(this.lesson).removeListener(STATE_LISTENER);
         }
         this.lesson = lesson;
         lesson_name.setText(lesson.getName());

@@ -116,7 +116,7 @@ public class Context {
             } finally {
                 lessons_lock.unlock();
             }
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     public void addConnection(long user_id) {
