@@ -17,6 +17,7 @@
 package it.cnr.istc.ale.server.db;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,7 @@ public class LessonEntity implements Serializable {
     @ManyToOne
     private UserEntity teacher;
     @OneToMany(mappedBy = "lesson")
-    private List<RoleEntity> roles;
+    private final List<RoleEntity> roles = new ArrayList<>();
     @ManyToOne
     private LessonModelEntity model;
 

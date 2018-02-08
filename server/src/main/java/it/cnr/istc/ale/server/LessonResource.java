@@ -98,6 +98,7 @@ public class LessonResource implements LessonAPI {
                 re.setStudent(student);
                 re.setLesson(le);
                 re.setName(role.getKey());
+                le.addRole(re);
                 student.addRole(re);
                 em.persist(re);
                 em.persist(student);
@@ -156,6 +157,7 @@ public class LessonResource implements LessonAPI {
                 re.setStudent(student);
                 re.setLesson(le);
                 re.setName(role.getKey());
+                le.addRole(re);
                 student.addRole(re);
                 em.persist(re);
                 em.persist(student);
