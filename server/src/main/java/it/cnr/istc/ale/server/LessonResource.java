@@ -401,7 +401,7 @@ public class LessonResource implements LessonAPI {
     public void set_time(@FormParam("lesson_id") long lesson_id, @FormParam("token_id") int token_id, @FormParam("timestamp") long timestamp) {
         Context.getContext().lessons_lock.lock();
         try {
-            Context.getContext().lessons.get(lesson_id).getManager().network.setValue(token_id, timestamp);
+            Context.getContext().lessons.get(lesson_id).getManager().setTime(token_id, timestamp);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }

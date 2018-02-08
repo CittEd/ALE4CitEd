@@ -167,6 +167,13 @@ public class LessonManager implements TemporalNetworkListener {
         return tokens.get(var - 1);
     }
 
+    public void setTime(final int var, final double value) {
+        network.setValue(var, value);
+
+        // we extract the lesson timeline..
+        extract_timeline();
+    }
+
     public List<SolverToken> getTokens() {
         return Collections.unmodifiableList(tokens);
     }

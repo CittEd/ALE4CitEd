@@ -117,7 +117,7 @@ public class LessonGrid extends GridPane {
         relative_time.setPromptText("Time");
         relative_time.setEditable(false);
         relative_time.setAlignment(Pos.CENTER_RIGHT);
-        relative_time.setText(TIME_STRING_CONVERTER.toString(0));
+        relative_time.setText(TIME_STRING_CONVERTER.toString(0l));
         add(relative_time, 4, 1);
 
         tokens_table_view.getColumns().addAll(time_column, id_column, role_column, subject_column);
