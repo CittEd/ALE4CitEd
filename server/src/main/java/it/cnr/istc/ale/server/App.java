@@ -41,6 +41,7 @@ public class App {
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(UriBuilder.fromUri("http://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.ServicePort)).build(), new ResourceConfig(UserResource.class, LessonResource.class));
 
         BrokerService broker = new BrokerService();
+        broker.setPersistent(false);
         TransportConnector connector = broker.addConnector(UriBuilder.fromUri("mqtt://" + Config.getInstance().getParam(Config.Param.Host) + ":" + Config.getInstance().getParam(Config.Param.MQTTPort)).build());
         System.out.println(connector.isAllowLinkStealing());
         broker.setPlugins(new BrokerPlugin[]{new BrokerPlugin() {
