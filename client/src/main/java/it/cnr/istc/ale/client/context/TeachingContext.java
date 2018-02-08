@@ -96,10 +96,10 @@ public class TeachingContext {
         lessons.add(lesson);
         try {
             ctx.mqtt.subscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/time", (String topic, MqttMessage message) -> {
-                lesson_context.get(lesson.getId()).time.setValue(Long.parseLong(new String(message.getPayload())));
+                Platform.runLater(() -> lesson_context.get(lesson.getId()).time.setValue(Long.parseLong(new String(message.getPayload()))));
             });
             ctx.mqtt.subscribe(ctx.user_ctx.user.get().getId() + "/input/lesson-" + lesson.getId() + "/state", (String topic, MqttMessage message) -> {
-                lesson_context.get(lesson.getId()).state.setValue(LessonState.valueOf(new String(message.getPayload())));
+                Platform.runLater(() -> lesson_context.get(lesson.getId()).state.setValue(LessonState.valueOf(new String(message.getPayload()))));
             });
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
@@ -166,7 +166,7 @@ public class TeachingContext {
             students.add(student);
             id_students.put(student.getId(), student);
             ctx.mqtt.subscribe(student.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
-                ctx.connection_ctx.online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
+                Platform.runLater(() -> ctx.connection_ctx.online_users.get(student.getId()).set(Boolean.parseBoolean(new String(message.getPayload()))));
             });
 
             user_parameter_types.put(student.getId(), new LinkedHashMap<>());
@@ -178,15 +178,17 @@ public class TeachingContext {
                 ctx.mqtt.subscribe(student.getId() + "/output/" + par_type.getKey(), (String topic, MqttMessage message) -> {
                     Map<String, String> value = MAPPER.readValue(new String(message.getPayload()), new TypeReference<Map<String, String>>() {
                     });
-                    for (Map.Entry<String, String> val : value.entrySet()) {
-                        if (user_parameter_values.get(student.getId()).get(par_type.getKey()).containsKey(val.getKey())) {
-                            Platform.runLater(() -> user_parameter_values.get(student.getId()).get(par_type.getKey()).get(val.getKey()).set(val.getValue()));
-                        } else {
-                            SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
-                            user_parameter_values.get(student.getId()).get(par_type.getKey()).put(val.getKey(), val_prop);
-                            Platform.runLater(() -> user_par_values.get(student.getId()).add(new ParameterValue(par_type.getKey() + "." + val.getKey(), val_prop)));
+                    Platform.runLater(() -> {
+                        for (Map.Entry<String, String> val : value.entrySet()) {
+                            if (user_parameter_values.get(student.getId()).get(par_type.getKey()).containsKey(val.getKey())) {
+                                user_parameter_values.get(student.getId()).get(par_type.getKey()).get(val.getKey()).set(val.getValue());
+                            } else {
+                                SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                                user_parameter_values.get(student.getId()).get(par_type.getKey()).put(val.getKey(), val_prop);
+                                user_par_values.get(student.getId()).add(new ParameterValue(par_type.getKey() + "." + val.getKey(), val_prop));
+                            }
                         }
-                    }
+                    });
                 });
             }
 
@@ -199,15 +201,17 @@ public class TeachingContext {
                     ctx.mqtt.subscribe(student.getId() + "/output/" + par_type.getName(), (String par_topic, MqttMessage par_value) -> {
                         Map<String, String> value = MAPPER.readValue(par_value.getPayload(), new TypeReference<Map<String, String>>() {
                         });
-                        for (Map.Entry<String, String> val : value.entrySet()) {
-                            if (user_parameter_values.get(student.getId()).get(par_type.getName()).containsKey(val.getKey())) {
-                                Platform.runLater(() -> user_parameter_values.get(student.getId()).get(par_type.getName()).get(val.getKey()).set(val.getValue()));
-                            } else {
-                                SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
-                                user_parameter_values.get(student.getId()).get(par_type.getName()).put(val.getKey(), val_prop);
-                                Platform.runLater(() -> user_par_values.get(student.getId()).add(new ParameterValue(par_type.getName() + "." + val.getKey(), val_prop)));
+                        Platform.runLater(() -> {
+                            for (Map.Entry<String, String> val : value.entrySet()) {
+                                if (user_parameter_values.get(student.getId()).get(par_type.getName()).containsKey(val.getKey())) {
+                                    user_parameter_values.get(student.getId()).get(par_type.getName()).get(val.getKey()).set(val.getValue());
+                                } else {
+                                    SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                                    user_parameter_values.get(student.getId()).get(par_type.getName()).put(val.getKey(), val_prop);
+                                    user_par_values.get(student.getId()).add(new ParameterValue(par_type.getName() + "." + val.getKey(), val_prop));
+                                }
                             }
-                        }
+                        });
                     });
                 } else if (m instanceof LostParameter) {
                     LostParameter lp = (LostParameter) m;

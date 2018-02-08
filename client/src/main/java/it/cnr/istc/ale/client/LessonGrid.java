@@ -36,7 +36,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -65,24 +64,26 @@ public class LessonGrid extends GridPane {
     private final TableColumn<TokenRow, String> subject_column = new TableColumn<>("Subject");
     private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> relative_time.setText(format(newValue.longValue()));
     private final ChangeListener<LessonState> STATE_LISTENER = (ObservableValue<? extends LessonState> observable, LessonState oldValue, LessonState newValue) -> {
-        switch (newValue) {
-            case Running:
-                play_button.setDisable(true);
-                pause_button.setDisable(false);
-                stop_button.setDisable(false);
-                break;
-            case Paused:
-                play_button.setDisable(false);
-                pause_button.setDisable(true);
-                stop_button.setDisable(false);
-                break;
-            case Stopped:
-                play_button.setDisable(false);
-                pause_button.setDisable(true);
-                stop_button.setDisable(true);
-                break;
-            default:
-                throw new AssertionError(newValue.name());
+        if (newValue != null) {
+            switch (newValue) {
+                case Running:
+                    play_button.setDisable(true);
+                    pause_button.setDisable(false);
+                    stop_button.setDisable(false);
+                    break;
+                case Paused:
+                    play_button.setDisable(false);
+                    pause_button.setDisable(true);
+                    stop_button.setDisable(false);
+                    break;
+                case Stopped:
+                    play_button.setDisable(false);
+                    pause_button.setDisable(true);
+                    stop_button.setDisable(true);
+                    break;
+                default:
+                    throw new AssertionError(newValue.name());
+            }
         }
     };
 

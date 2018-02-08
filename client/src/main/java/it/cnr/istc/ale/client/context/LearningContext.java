@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -93,7 +94,7 @@ public class LearningContext {
             ctx.connection_ctx.online_users.put(teacher.getId(), new SimpleBooleanProperty());
             teachers.add(teacher);
             ctx.mqtt.subscribe(teacher.getId() + "/output/on-line", (String topic, MqttMessage message) -> {
-                ctx.connection_ctx.online_users.get(teacher.getId()).set(Boolean.parseBoolean(new String(message.getPayload())));
+                Platform.runLater(() -> ctx.connection_ctx.online_users.get(teacher.getId()).set(Boolean.parseBoolean(new String(message.getPayload()))));
             });
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
