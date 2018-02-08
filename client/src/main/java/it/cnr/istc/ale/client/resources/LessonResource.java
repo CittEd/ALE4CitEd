@@ -192,4 +192,17 @@ public class LessonResource implements LessonAPI {
                 .request(MediaType.APPLICATION_JSON)
                 .put(Entity.form(form));
     }
+
+    @Override
+    public void set_time(long lesson_id, int token_id, long timestamp) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        form.param("token_id", Integer.toString(token_id));
+        form.param("timestamp", Long.toString(timestamp));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("set_time")
+                .request(MediaType.APPLICATION_JSON)
+                .put(Entity.form(form));
+    }
 }

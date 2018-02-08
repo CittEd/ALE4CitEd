@@ -41,7 +41,7 @@ public class LessonContext {
     final LessonModel model;
     final ObjectProperty<LessonState> state = new SimpleObjectProperty<>();
     final LongProperty time = new SimpleLongProperty(0);
-    final ObservableList<TokenRow> tokens = FXCollections.observableArrayList((TokenRow tk) -> new Observable[]{tk.executedProperty()});
+    final ObservableList<TokenRow> tokens = FXCollections.observableArrayList();
     private final Map<Integer, TokenRow> id_tokens = new HashMap<>();
 
     LessonContext(Lesson lesson, LessonModel model) {

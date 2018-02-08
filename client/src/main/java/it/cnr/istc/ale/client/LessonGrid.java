@@ -39,10 +39,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.util.StringConverter;
 
 /**
  *
@@ -62,7 +64,7 @@ public class LessonGrid extends GridPane {
     private final TableColumn<TokenRow, String> id_column = new TableColumn<>("ID");
     private final TableColumn<TokenRow, String> role_column = new TableColumn<>("Role");
     private final TableColumn<TokenRow, String> subject_column = new TableColumn<>("Subject");
-    private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> relative_time.setText(format(newValue.longValue()));
+    private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> relative_time.setText(TIME_STRING_CONVERTER.toString(newValue.longValue()));
     private final ChangeListener<LessonState> STATE_LISTENER = (ObservableValue<? extends LessonState> observable, LessonState oldValue, LessonState newValue) -> {
         if (newValue != null) {
             switch (newValue) {
@@ -86,6 +88,7 @@ public class LessonGrid extends GridPane {
             }
         }
     };
+    private static final StringConverter TIME_STRING_CONVERTER = new TimeStringConverter();
 
     @SuppressWarnings("unchecked")
     public LessonGrid() {
@@ -114,39 +117,21 @@ public class LessonGrid extends GridPane {
         relative_time.setPromptText("Time");
         relative_time.setEditable(false);
         relative_time.setAlignment(Pos.CENTER_RIGHT);
-        relative_time.setText(format(0));
+        relative_time.setText(TIME_STRING_CONVERTER.toString(0));
         add(relative_time, 4, 1);
 
         tokens_table_view.getColumns().addAll(time_column, id_column, role_column, subject_column);
+        tokens_table_view.setEditable(true);
         time_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
         id_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
         role_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.2));
         subject_column.prefWidthProperty().bind(tokens_table_view.widthProperty().multiply(0.4));
 
         time_column.setCellValueFactory(new PropertyValueFactory<>("time"));
-        time_column.setCellFactory((TableColumn<TokenRow, Long> param) -> {
-            return new TableCell<TokenRow, Long>() {
-                @Override
-                protected void updateItem(Long item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty) {
-                        setText(null);
-                        styleProperty().unbind();
-                        setStyle("");
-                    } else {
-                        setText(format(item));
-
-                        TokenRow row = getTableView().getItems().get(getIndex());
-                        styleProperty().bind(Bindings.createStringBinding(() -> {
-                            if (row.getExecuted()) {
-                                return "-fx-font-weight: bold;";
-                            } else {
-                                return "";
-                            }
-                        }, row.executedProperty()));
-                    }
-                }
-            };
+        time_column.setEditable(true);
+        time_column.setCellFactory((TableColumn<TokenRow, Long> param) -> new TimeTextFieldTableCell());
+        time_column.setOnEditCommit((TableColumn.CellEditEvent<TokenRow, Long> event) -> {
+            Context.getContext().getTeachingContext().setTime(lesson, event.getRowValue(), event.getNewValue());
         });
         id_column.setCellValueFactory(new PropertyValueFactory<>("name"));
         id_column.setCellFactory((TableColumn<TokenRow, String> param) -> new TableCell<TokenRow, String>() {
@@ -155,6 +140,7 @@ public class LessonGrid extends GridPane {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                     styleProperty().unbind();
                     setStyle("");
                 } else {
@@ -178,6 +164,7 @@ public class LessonGrid extends GridPane {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                     styleProperty().unbind();
                     setStyle("");
                 } else {
@@ -203,6 +190,7 @@ public class LessonGrid extends GridPane {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                     styleProperty().unbind();
                     setStyle("");
                 } else {
@@ -242,19 +230,34 @@ public class LessonGrid extends GridPane {
         tokens_table_view.setItems(new SortedList<>(Context.getContext().getTeachingContext().getTokens(lesson), (TokenRow r0, TokenRow r1) -> Long.compare(r0.getTime(), r1.getTime())));
     }
 
-    public static String format(final long time) {
-        long second = (time / 1000) % 60;
-        long minute = (time / (1000 * 60)) % 60;
-        long hour = (time / (1000 * 60 * 60)) % 24;
-        long days = (time / (1000 * 60 * 60 * 24));
-        if (days == 0) {
-            if (hour == 0) {
-                return String.format("%02d:%02d", minute, second);
+    private static class TimeTextFieldTableCell extends TextFieldTableCell<TokenRow, Long> {
+
+        public TimeTextFieldTableCell() {
+            super(TIME_STRING_CONVERTER);
+        }
+
+        @Override
+        public void updateItem(Long item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+                editableProperty().unbind();
+                styleProperty().unbind();
+                setStyle("");
             } else {
-                return String.format("%02d:%02d:%02d", hour, minute, second);
+                setText(TIME_STRING_CONVERTER.toString(item));
+
+                TokenRow row = getTableView().getItems().get(getIndex());
+                editableProperty().bind(row.executedProperty().not());
+                styleProperty().bind(Bindings.createStringBinding(() -> {
+                    if (row.getExecuted()) {
+                        return "-fx-font-weight: bold;";
+                    } else {
+                        return "";
+                    }
+                }, row.executedProperty()));
             }
-        } else {
-            return String.format("%03d:%02d:%02d:%02d", days, hour, minute, second);
         }
     }
 }

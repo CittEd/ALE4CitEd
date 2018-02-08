@@ -156,6 +156,11 @@ public class TeachingContext {
         ctx.lr.stop_lesson(lesson.getId());
     }
 
+    public void setTime(Lesson lesson, TokenRow row, long time) {
+        row.time.set(time);
+        ctx.lr.set_time(lesson.getId(), row.id, time);
+    }
+
     public void goTo(Lesson lesson, long time) {
         ctx.lr.go_at(lesson.getId(), time);
     }

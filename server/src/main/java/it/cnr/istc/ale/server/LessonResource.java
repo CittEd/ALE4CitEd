@@ -395,6 +395,18 @@ public class LessonResource implements LessonAPI {
         LOG.log(Level.INFO, "Lesson {0} moved to time {1}", new Object[]{lesson_id, timestamp});
     }
 
+    @Override
+    @PUT
+    @Path("set_time")
+    public void set_time(@FormParam("lesson_id") long lesson_id, @FormParam("token_id") int token_id, @FormParam("timestamp") long timestamp) {
+        Context.getContext().lessons_lock.lock();
+        try {
+            Context.getContext().lessons.get(lesson_id).getManager().network.setValue(token_id, timestamp);
+        } finally {
+            Context.getContext().lessons_lock.unlock();
+        }
+    }
+
     private static class LessonListener implements LessonManagerListener {
 
         private final Lesson l;

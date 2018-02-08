@@ -142,4 +142,15 @@ public interface LessonAPI {
      * @param timestamp a {@code long} representing the execution timestamp.
      */
     public void go_at(long lesson_id, long timestamp);
+
+    /**
+     * Sets the desired time for the current token, propagating the value to the
+     * other constrained tokens.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     * @param token_id a {@code long} representing the id of a token.
+     * @param timestamp a {@code long} representing the desired execution
+     * timestamp.
+     */
+    public void set_time(long lesson_id, int token_id, long timestamp);
 }
