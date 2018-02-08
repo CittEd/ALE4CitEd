@@ -36,6 +36,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -211,6 +212,17 @@ public class LessonGrid extends GridPane {
                     }, row.executedProperty()));
                 }
             }
+        });
+
+        tokens_table_view.setRowFactory((TableView<TokenRow> param) -> {
+            TableRow<TokenRow> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    TokenRow tr = row.getItem();
+                    Context.getContext().getTeachingContext().goTo(lesson, tr.getTime());
+                }
+            });
+            return row;
         });
 
         add(tokens_table_view, 0, 2, 5, 1);

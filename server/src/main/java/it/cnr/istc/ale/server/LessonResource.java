@@ -388,7 +388,7 @@ public class LessonResource implements LessonAPI {
         LOG.log(Level.INFO, "Moving lesson {0} to time {1}", new Object[]{lesson_id, timestamp});
         Context.getContext().lessons_lock.lock();
         try {
-            Context.getContext().lessons.get(lesson_id).getManager().goTo(0);
+            Context.getContext().lessons.get(lesson_id).getManager().goTo(timestamp);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
