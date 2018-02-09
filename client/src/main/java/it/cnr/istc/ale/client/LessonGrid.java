@@ -33,7 +33,10 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -216,10 +219,11 @@ public class LessonGrid extends GridPane {
 
         tokens_table_view.setRowFactory((TableView<TokenRow> param) -> {
             TableRow<TokenRow> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    TokenRow tr = row.getItem();
-                    Context.getContext().getTeachingContext().goTo(lesson, tr.getTime());
+            row.itemProperty().addListener((ObservableValue<? extends TokenRow> observable, TokenRow oldValue, TokenRow newValue) -> {
+                if (newValue == null) {
+                    row.setContextMenu(null);
+                } else {
+                    row.setContextMenu(new NavigateContextMenu(row));
                 }
             });
             return row;
@@ -270,6 +274,23 @@ public class LessonGrid extends GridPane {
                     }
                 }, row.executedProperty()));
             }
+        }
+    }
+
+    private class NavigateContextMenu extends ContextMenu {
+
+        private final MenuItem go_to = new MenuItem("Go to", new ImageView(new Image(getClass().getResourceAsStream("/images/goto_16.png"))));
+        private final MenuItem edit = new MenuItem("Edit time", new ImageView(new Image(getClass().getResourceAsStream("/images/edit_16.png"))));
+
+        public NavigateContextMenu(TableRow<TokenRow> row) {
+            go_to.setOnAction((ActionEvent event) -> {
+                Context.getContext().getTeachingContext().goTo(lesson, row.getItem().getTime());
+            });
+            edit.setOnAction((ActionEvent event) -> {
+                tokens_table_view.edit(row.getIndex(), tokens_table_view.getColumns().get(0));
+            });
+            edit.disableProperty().bind(row.getItem().executedProperty());
+            getItems().addAll(go_to, new SeparatorMenuItem(), edit);
         }
     }
 }
