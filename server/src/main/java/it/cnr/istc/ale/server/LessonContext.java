@@ -18,8 +18,12 @@ package it.cnr.istc.ale.server;
 
 import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.LessonState;
+import static it.cnr.istc.ale.api.LessonState.Stopped;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.server.solver.LessonManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 /**
  *
@@ -27,10 +31,11 @@ import it.cnr.istc.ale.server.solver.LessonManager;
  */
 public class LessonContext {
 
+    private static final Logger LOG = Logger.getLogger(LessonContext.class.getName());
     private final Lesson lesson;
     private final LessonModel model;
     private final LessonManager manager;
-    private LessonState state = LessonState.Paused;
+    private LessonState state = Stopped;
 
     public LessonContext(Lesson lesson, LessonModel model, LessonManager manager) {
         this.lesson = lesson;
@@ -56,5 +61,10 @@ public class LessonContext {
 
     public void setState(LessonState state) {
         this.state = state;
+        try {
+            Context.getContext().mqtt.publish(lesson.getTeacherId() + "/input/lesson-" + lesson.getId() + "/state", state.toString().getBytes(), 1, true);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 }

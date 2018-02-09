@@ -331,11 +331,6 @@ public class LessonResource implements LessonAPI {
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).setState(Running);
-            try {
-                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Running.toString().getBytes(), 1, true);
-            } catch (MqttException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -350,11 +345,6 @@ public class LessonResource implements LessonAPI {
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).setState(Paused);
-            try {
-                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Paused.toString().getBytes(), 1, true);
-            } catch (MqttException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -368,13 +358,8 @@ public class LessonResource implements LessonAPI {
         LOG.log(Level.INFO, "Stopping lesson {0}", lesson_id);
         Context.getContext().lessons_lock.lock();
         try {
-            Context.getContext().lessons.get(lesson_id).setState(Stopped);
             Context.getContext().lessons.get(lesson_id).getManager().goTo(0);
-            try {
-                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Stopped.toString().getBytes(), 1, true);
-            } catch (MqttException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+            Context.getContext().lessons.get(lesson_id).setState(Stopped);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -389,6 +374,9 @@ public class LessonResource implements LessonAPI {
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).getManager().goTo(timestamp);
+            if (Context.getContext().lessons.get(lesson_id).getState() == Stopped) {
+                Context.getContext().lessons.get(lesson_id).setState(Paused);
+            }
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
