@@ -138,11 +138,12 @@ public class LessonResource implements LessonAPI {
     }
 
     @Override
-    public Collection<Event> get_events(long lesson_id) {
+    public Collection<Event> get_events(long lesson_id, long student_id) {
         return client.target(rest_uri)
                 .path("lessons")
                 .path("get_events")
                 .queryParam("lesson_id", lesson_id)
+                .queryParam("student_id", student_id)
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<Collection<Event>>() {
                 });

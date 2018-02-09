@@ -110,6 +110,8 @@ public class MainController implements Initializable {
                 stage.setTitle("LECTurE (Learning Environment CiTtà Educante) - " + newValue.getFirstName());
             } else {
                 stage.setTitle("LECTurE (Learning Environment CiTtà Educante)");
+                learn_h_box.getChildren().removeIf(chld -> chld != learn_accord);
+                teach_h_box.getChildren().removeIf(chld -> chld != teach_accord);
             }
         });
 

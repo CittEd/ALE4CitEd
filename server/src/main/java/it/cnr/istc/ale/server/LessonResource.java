@@ -46,7 +46,6 @@ import it.cnr.istc.ale.server.solver.SolverToken;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -298,22 +297,18 @@ public class LessonResource implements LessonAPI {
     @GET
     @Path("get_events")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Event> get_events(@QueryParam("lesson_id") long lesson_id) {
+    public Collection<Event> get_events(@QueryParam("lesson_id") long lesson_id, @QueryParam("student_id") long student_id) {
         Context.getContext().lessons_lock.lock();
         try {
-            return Context.getContext().lessons.get(lesson_id).getManager().getTokensUpToNow().stream().map(tk -> {
+            EntityManager em = EMF.createEntityManager();
+            UserEntity student = em.find(UserEntity.class, student_id);
+            LessonEntity lesson = em.find(LessonEntity.class, lesson_id);
+            RoleEntity role = lesson.getRoles().stream().filter(r -> r.getStudent() == student).findAny().get();
+            return Context.getContext().lessons.get(lesson_id).getManager().getTokensUpToNow().stream().filter(tk -> tk.template.getRole().equals(role.getName())).map(tk -> {
                 if (tk.template instanceof TextEventTemplate) {
                     return new TextEvent(lesson_id, tk.tp, ((TextEventTemplate) tk.template).getContent());
                 } else if (tk.template instanceof QuestionEventTemplate) {
-                    List<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
-                    for (QuestionEventTemplate.Answer answer : ((QuestionEventTemplate) tk.template).getAnswers()) {
-                        try {
-                            answers.add(MAPPER.writeValueAsString(answer));
-                        } catch (JsonProcessingException ex) {
-                            LOG.log(Level.SEVERE, null, ex);
-                        }
-                    }
-                    return new QuestionEvent(lesson_id, tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), answers);
+                    return new QuestionEvent(lesson_id, tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList()));
                 } else {
                     LOG.warning("Not supported yet.");
                     return null;
@@ -433,9 +428,7 @@ public class LessonResource implements LessonAPI {
                 if (tk.template instanceof TextEventTemplate) {
                     execute_event_bytes = MAPPER.writeValueAsBytes(new TextEvent(l.getId(), tk.tp, ((TextEventTemplate) tk.template).getContent()));
                 } else if (tk.template instanceof QuestionEventTemplate) {
-                    List<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
-                    ((QuestionEventTemplate) tk.template).getAnswers().forEach((answer) -> answers.add(answer.getAnswer()));
-                    execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), answers));
+                    execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList())));
                 } else {
                     LOG.warning("Not supported yet.");
                 }

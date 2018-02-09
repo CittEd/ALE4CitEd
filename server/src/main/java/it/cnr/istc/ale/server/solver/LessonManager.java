@@ -180,7 +180,7 @@ public class LessonManager implements TemporalNetworkListener {
 
     public List<SolverToken> getTokensUpToNow() {
         List<SolverToken> tks = new ArrayList<>();
-        for (int i = 0; t_now >= lesson_timeline_pulses.get(i); i++) {
+        for (int i = 0; i < lesson_timeline_pulses.size() && t_now >= lesson_timeline_pulses.get(i); i++) {
             tks.addAll(lesson_timeline_values.get(i));
         }
         return tks;

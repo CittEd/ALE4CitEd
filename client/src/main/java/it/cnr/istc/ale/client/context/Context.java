@@ -38,7 +38,6 @@ import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import it.cnr.istc.ale.client.resources.LessonResource;
 import it.cnr.istc.ale.client.resources.UserResource;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,7 +176,7 @@ public class Context {
             // the lessons followed as a student..
             lr.get_followed_lessons(u.getId()).stream().forEach(lesson -> {
                 learning_ctx.addLesson(lesson);
-                lr.get_events(lesson.getId()).forEach(e -> learning_ctx.addEvent(e));
+                lr.get_events(lesson.getId(), u.getId()).forEach(e -> learning_ctx.addEvent(e));
             });
             // the lessons followed as a teacher..
             lr.get_lessons(u.getId()).stream().forEach(lesson -> {
@@ -221,10 +220,8 @@ public class Context {
             assert mqtt.isConnected();
             try {
                 mqtt.unsubscribe(user_ctx.user.get().getId() + "/input");
-                new ArrayList<>(teaching_ctx.getStudents()).stream().forEach(teacher -> teaching_ctx.removeStudent(teacher));
-                new ArrayList<>(learning_ctx.getTeachers()).stream().forEach(teacher -> learning_ctx.removeTeacher(teacher));
-                new ArrayList<>(teaching_ctx.getLessons()).stream().forEach(lesson -> teaching_ctx.removeLesson(lesson));
-                new ArrayList<>(learning_ctx.getLessons()).stream().forEach(lesson -> learning_ctx.removeLesson(lesson));
+                learning_ctx.clear();
+                teaching_ctx.clear();
                 user_ctx.parameter_types.clear();
                 user_ctx.parameter_values.clear();
                 user_ctx.par_values.clear();

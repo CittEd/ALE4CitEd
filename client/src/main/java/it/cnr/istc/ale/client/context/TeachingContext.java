@@ -29,6 +29,7 @@ import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.model.LessonModel;
 import static it.cnr.istc.ale.client.context.Context.MAPPER;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -265,6 +266,11 @@ public class TeachingContext {
 
     public ObservableList<ParameterValue> getParameterValues(long user_id) {
         return user_par_values.get(user_id);
+    }
+
+    void clear() {
+        new ArrayList<>(students).stream().forEach(student -> removeStudent(student));
+        new ArrayList<>(lessons).stream().forEach(lesson -> removeLesson(lesson));
     }
 
     public static class TokenRow {

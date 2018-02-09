@@ -20,6 +20,7 @@ import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.HideEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -117,5 +118,12 @@ public class LearningContext {
 
     public ObservableList<User> getTeachers() {
         return teachers;
+    }
+
+    void clear() {
+        events.clear();
+        lessons.clear();
+        lesson_events.clear();
+        new ArrayList<>(teachers).stream().forEach(teacher -> removeTeacher(teacher));
     }
 }

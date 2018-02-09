@@ -106,12 +106,14 @@ public interface LessonAPI {
     public Collection<Lesson> get_followed_lessons(long student_id);
 
     /**
-     * Given a lesson id, returns all the past events of the lesson.
+     * Given a lesson id and a student id, returns all the past events of the
+     * lesson sent to the student.
      *
      * @param lesson_id a {@code long} representing the id of a lesson.
+     * @param student_id a {@code long} representing the id of a student.
      * @return a collection containing all the past events of the lesson.
      */
-    public Collection<Event> get_events(long lesson_id);
+    public Collection<Event> get_events(long lesson_id, long student_id);
 
     /**
      * Starts the execution of the lesson identified by the given lesson id.
