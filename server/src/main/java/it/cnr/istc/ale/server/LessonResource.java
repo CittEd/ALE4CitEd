@@ -434,9 +434,7 @@ public class LessonResource implements LessonAPI {
                     execute_event_bytes = MAPPER.writeValueAsBytes(new TextEvent(l.getId(), tk.tp, ((TextEventTemplate) tk.template).getContent()));
                 } else if (tk.template instanceof QuestionEventTemplate) {
                     List<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
-                    for (QuestionEventTemplate.Answer answer : ((QuestionEventTemplate) tk.template).getAnswers()) {
-                        answers.add(MAPPER.writeValueAsString(answer));
-                    }
+                    ((QuestionEventTemplate) tk.template).getAnswers().forEach((answer) -> answers.add(answer.getAnswer()));
                     execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), answers));
                 } else {
                     LOG.warning("Not supported yet.");
