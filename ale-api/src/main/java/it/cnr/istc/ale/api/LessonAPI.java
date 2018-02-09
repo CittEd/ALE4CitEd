@@ -155,4 +155,16 @@ public interface LessonAPI {
      * timestamp.
      */
     public void set_time(long lesson_id, int token_id, long timestamp);
+
+    /**
+     * Notifies, introducing possible consequences in the lesson, of a student
+     * answering to a question.
+     *
+     * @param lesson_id a {@code long} representing the id of a lesson.
+     * @param question_id a {@code long} representing the id of a question in
+     * the {@code lesson_id} lesson.
+     * @param answer_id an {@code int} representing the id of an answer of the
+     * {@code question_id} question.
+     */
+    public void answer_question(long lesson_id, int question_id, int answer_id);
 }

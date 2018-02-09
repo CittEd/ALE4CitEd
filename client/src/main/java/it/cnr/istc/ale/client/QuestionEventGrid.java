@@ -17,8 +17,12 @@
 package it.cnr.istc.ale.client;
 
 import it.cnr.istc.ale.api.messages.QuestionEvent;
+import it.cnr.istc.ale.client.context.Context;
 import java.util.List;
+import javafx.event.ActionEvent;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
@@ -36,6 +40,7 @@ public class QuestionEventGrid extends GridPane {
     private QuestionEvent event;
     private final TextArea content = new TextArea();
     private final ToggleGroup group = new ToggleGroup();
+    private final Button send_answer = new Button("Send");
 
     public QuestionEventGrid() {
         setHgap(10);
@@ -46,10 +51,17 @@ public class QuestionEventGrid extends GridPane {
 
         content.setEditable(false);
         add(content, 0, 0);
+
+        send_answer.setOnAction((ActionEvent event1) -> {
+            Context.getContext().getLearningContext().answerQuestion(event, group.getToggles().indexOf(group.getSelectedToggle()));
+        });
+
+        setHalignment(send_answer, HPos.RIGHT);
     }
 
     public void setEvent(QuestionEvent event) {
         this.event = event;
+        send_answer.disableProperty().unbind();
         group.getToggles().clear();
         content.setText(event.getQuestion());
         getChildren().removeIf(chld -> chld != content);
@@ -60,5 +72,7 @@ public class QuestionEventGrid extends GridPane {
             setHgrow(ans, Priority.ALWAYS);
             add(ans, 0, i + 1);
         }
+        send_answer.disableProperty().bind(group.selectedToggleProperty().isNull());
+        add(send_answer, 0, answers.size() + 1);
     }
 }

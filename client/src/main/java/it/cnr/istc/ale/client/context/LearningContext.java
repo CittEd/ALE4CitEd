@@ -20,6 +20,7 @@ import it.cnr.istc.ale.api.Lesson;
 import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.HideEvent;
+import it.cnr.istc.ale.api.messages.QuestionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,6 +119,10 @@ public class LearningContext {
 
     public ObservableList<User> getTeachers() {
         return teachers;
+    }
+
+    public void answerQuestion(QuestionEvent question, int answer) {
+        ctx.lr.answer_question(question.getLessonId(), question.getId(), answer);
     }
 
     void clear() {

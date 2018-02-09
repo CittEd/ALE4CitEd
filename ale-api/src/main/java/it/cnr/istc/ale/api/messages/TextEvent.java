@@ -28,7 +28,7 @@ public class TextEvent extends Event {
     private final String content;
 
     @JsonCreator
-    public TextEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") long id, @JsonProperty("content") String content) {
+    public TextEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") int id, @JsonProperty("content") String content) {
         super(lesson_id, id);
         this.content = content;
     }

@@ -23,6 +23,7 @@ import it.cnr.istc.ale.api.LessonAPI;
 import static it.cnr.istc.ale.api.LessonState.Paused;
 import static it.cnr.istc.ale.api.LessonState.Running;
 import static it.cnr.istc.ale.api.LessonState.Stopped;
+import it.cnr.istc.ale.api.messages.Answer;
 import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.TokenUpdate;
 import it.cnr.istc.ale.api.messages.HideEvent;
@@ -226,12 +227,10 @@ public class LessonResource implements LessonAPI {
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).getManager().setModel(Context.getContext().lessons.get(lesson_id).getModel());
-            try {
-                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/time", Long.toString(Context.getContext().lessons.get(lesson_id).getManager().getCurrentTime()).getBytes(), 1, true);
-                Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Stopped.toString().getBytes(), 1, true);
-            } catch (MqttException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+            Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/time", Long.toString(Context.getContext().lessons.get(lesson_id).getManager().getCurrentTime()).getBytes(), 1, true);
+            Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input/lesson-" + lesson_id + "/state", Stopped.toString().getBytes(), 1, true);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -386,6 +385,21 @@ public class LessonResource implements LessonAPI {
         Context.getContext().lessons_lock.lock();
         try {
             Context.getContext().lessons.get(lesson_id).getManager().setTime(token_id, timestamp);
+        } finally {
+            Context.getContext().lessons_lock.unlock();
+        }
+    }
+
+    @Override
+    @PUT
+    @Path("answer_question")
+    public void answer_question(@FormParam("lesson_id") long lesson_id, @FormParam("question_id") int question_id, @FormParam("answer_id") int answer_id) {
+        Context.getContext().lessons_lock.lock();
+        try {
+            Context.getContext().mqtt.publish(Context.getContext().lessons.get(lesson_id).getLesson().getTeacherId() + "/input", MAPPER.writeValueAsBytes(new Answer(lesson_id, question_id, answer_id)), 1, false);
+            Context.getContext().lessons.get(lesson_id).getManager().answerQuestion(question_id, answer_id);
+        } catch (MqttException | JsonProcessingException ex) {
+            LOG.log(Level.SEVERE, null, ex);
         } finally {
             Context.getContext().lessons_lock.unlock();
         }

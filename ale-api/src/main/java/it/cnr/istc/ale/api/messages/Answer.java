@@ -20,24 +20,51 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * This message is intended to inform a teacher that a student has answered a
+ * question. Since the question was dispatched to a specific student, it is
+ * possible to retrieve the student who gave the answer by the id of the
+ * question.
  *
  * @author Riccardo De Benedictis
  */
 public class Answer extends Message {
 
-    private final long questionId;
+    private final long lessonId;
+    private final int questionId;
     private final int answer;
 
     @JsonCreator
-    public Answer(@JsonProperty("questionId") long questionId, @JsonProperty("answer") int answer) {
+    public Answer(@JsonProperty("lessonId") long lessonId, @JsonProperty("questionId") int questionId, @JsonProperty("answer") int answer) {
+        this.lessonId = lessonId;
         this.questionId = questionId;
         this.answer = answer;
     }
 
-    public long getQuestionId() {
+    /**
+     * Returns the id of the lesson whose question has been answered.
+     *
+     * @return a {@code long} representing the id of the lesson whose question
+     * has been answered.
+     */
+    public long getLessonId() {
+        return lessonId;
+    }
+
+    /**
+     * Represents the id of the question whose answer has been given.
+     *
+     * @return an {@code int} representing the id of the question whose answer
+     * has been given.
+     */
+    public int getQuestionId() {
         return questionId;
     }
 
+    /**
+     * Represents the given answer.
+     *
+     * @return an {@code int} representing the given answer.
+     */
     public int getAnswer() {
         return answer;
     }

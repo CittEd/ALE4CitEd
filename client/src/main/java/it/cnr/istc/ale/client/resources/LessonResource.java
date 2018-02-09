@@ -206,4 +206,17 @@ public class LessonResource implements LessonAPI {
                 .request(MediaType.APPLICATION_JSON)
                 .put(Entity.form(form));
     }
+
+    @Override
+    public void answer_question(long lesson_id, int question_id, int answer_id) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson_id));
+        form.param("question_id", Integer.toString(question_id));
+        form.param("answer_id", Integer.toString(answer_id));
+        client.target(rest_uri)
+                .path("lessons")
+                .path("answer_question")
+                .request(MediaType.APPLICATION_JSON)
+                .put(Entity.form(form));
+    }
 }

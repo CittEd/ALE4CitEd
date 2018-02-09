@@ -18,6 +18,7 @@ package it.cnr.istc.ale.server.solver;
 
 import it.cnr.istc.ale.api.model.EventTemplate;
 import it.cnr.istc.ale.api.model.LessonModel;
+import it.cnr.istc.ale.api.model.QuestionEventTemplate;
 import it.cnr.istc.ale.api.model.Relation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -121,7 +122,7 @@ public class LessonManager implements TemporalNetworkListener {
         }
     }
 
-    private void expand_event(final SolverToken tk) {
+    private void expand_token(final SolverToken tk) {
         Map<String, SolverToken> c_tks = new HashMap<>();
         c_tks.put(THIS, tk);
         // we create the tokens..
@@ -147,7 +148,7 @@ public class LessonManager implements TemporalNetworkListener {
             if (tk.template.getTriggerCondition() != null) {
                 triggerable_tokens.add(tk);
             } else {
-                expand_event(tk);
+                expand_token(tk);
             }
         }
         // we propagate the temporal network..
@@ -249,6 +250,19 @@ public class LessonManager implements TemporalNetworkListener {
         }
         t_now = t;
         listeners.forEach(l -> l.newTime(t_now));
+    }
+
+    public void answerQuestion(final int question_id, final int answer) {
+        SolverToken q_tk = getToken(question_id);
+        QuestionEventTemplate.Answer answr = ((QuestionEventTemplate) q_tk.template).getAnswers().get(answer);
+
+        // this token represents the effects of the answer on the lesson..
+        SolverToken c_tk = new SolverToken(null, network.newVar(), event_templates.get(answr.getEvent()));
+        tokens.add(c_tk);
+        listeners.forEach(l -> l.newToken(c_tk));
+        prop_q.push(c_tk);
+
+        build();
     }
 
     public void addSolverListener(LessonManagerListener listener) {
