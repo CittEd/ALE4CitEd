@@ -46,7 +46,6 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 /**
  *
@@ -62,6 +61,8 @@ public class MainController implements Initializable {
     private MenuItem new_user;
     @FXML
     private Accordion learn_accord;
+    @FXML
+    private HBox learn_h_box;
     @FXML
     private ListView<Event> events;
     @FXML
@@ -92,6 +93,8 @@ public class MainController implements Initializable {
     private TableColumn<ParameterValue, String> par_vals;
     private final LessonGrid lesson_grid = new LessonGrid();
     private final StudentGrid student_grid = new StudentGrid();
+    private final TextEventGrid text_event_grid = new TextEventGrid();
+    private final QuestionEventGrid question_event_grid = new QuestionEventGrid();
 
     /**
      * Initializes the controller class.
@@ -114,6 +117,8 @@ public class MainController implements Initializable {
         new_user.disableProperty().bind(user.isNotNull());
         logout.disableProperty().bind(user.isNull());
 
+        learn_h_box.setHgrow(text_event_grid, Priority.ALWAYS);
+        learn_h_box.setHgrow(question_event_grid, Priority.ALWAYS);
         learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
         events.setItems(Context.getContext().getLearningContext().getEvents());
         events.setCellFactory((ListView<Event> param) -> new ListCell<Event>() {
@@ -131,6 +136,28 @@ public class MainController implements Initializable {
                 }
             }
         });
+        events.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Event> observable, Event oldValue, Event newValue) -> {
+            if (newValue != null) {
+                if (newValue instanceof TextEvent) {
+                    if (learn_h_box.getChildren().size() == 1) {
+                        learn_h_box.getChildren().add(text_event_grid);
+                    } else if (learn_h_box.getChildren().get(1) != text_event_grid) {
+                        learn_h_box.getChildren().set(1, text_event_grid);
+                    }
+                    text_event_grid.setEvent((TextEvent) newValue);
+                } else if (newValue instanceof QuestionEvent) {
+                    if (learn_h_box.getChildren().size() == 1) {
+                        learn_h_box.getChildren().add(question_event_grid);
+                    } else if (learn_h_box.getChildren().get(1) != question_event_grid) {
+                        learn_h_box.getChildren().set(1, question_event_grid);
+                    }
+                    question_event_grid.setEvent((QuestionEvent) newValue);
+                } else {
+                    throw new UnsupportedOperationException("Not supported yet..");
+                }
+            }
+        });
+
         following_lessons.setItems(Context.getContext().getLearningContext().getLessons());
         following_lessons.setCellFactory((ListView<Lesson> param) -> new ListCell<Lesson>() {
             @Override

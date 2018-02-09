@@ -46,6 +46,7 @@ import it.cnr.istc.ale.server.solver.SolverToken;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -304,7 +305,7 @@ public class LessonResource implements LessonAPI {
                 if (tk.template instanceof TextEventTemplate) {
                     return new TextEvent(lesson_id, tk.tp, ((TextEventTemplate) tk.template).getContent());
                 } else if (tk.template instanceof QuestionEventTemplate) {
-                    Collection<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
+                    List<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
                     for (QuestionEventTemplate.Answer answer : ((QuestionEventTemplate) tk.template).getAnswers()) {
                         try {
                             answers.add(MAPPER.writeValueAsString(answer));
@@ -432,7 +433,7 @@ public class LessonResource implements LessonAPI {
                 if (tk.template instanceof TextEventTemplate) {
                     execute_event_bytes = MAPPER.writeValueAsBytes(new TextEvent(l.getId(), tk.tp, ((TextEventTemplate) tk.template).getContent()));
                 } else if (tk.template instanceof QuestionEventTemplate) {
-                    Collection<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
+                    List<String> answers = new ArrayList<>(((QuestionEventTemplate) tk.template).getAnswers().size());
                     for (QuestionEventTemplate.Answer answer : ((QuestionEventTemplate) tk.template).getAnswers()) {
                         answers.add(MAPPER.writeValueAsString(answer));
                     }

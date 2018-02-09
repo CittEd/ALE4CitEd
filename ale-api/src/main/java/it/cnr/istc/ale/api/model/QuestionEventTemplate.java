@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -28,10 +29,10 @@ import java.util.Collections;
 public class QuestionEventTemplate extends EventTemplate {
 
     private final String question;
-    private final Collection<Answer> answers;
+    private final List<Answer> answers;
 
     @JsonCreator
-    public QuestionEventTemplate(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("question") String question, @JsonProperty("answers") Collection<Answer> answers) {
+    public QuestionEventTemplate(@JsonProperty("name") String name, @JsonProperty("role") String role, @JsonProperty("triggerCondition") Condition trigger_condition, @JsonProperty("executionCondition") Condition execution_condition, @JsonProperty("events") Collection<String> events, @JsonProperty("relations") Collection<Relation> relations, @JsonProperty("question") String question, @JsonProperty("answers") List<Answer> answers) {
         super(name, role, trigger_condition, execution_condition, events, relations);
         this.question = question;
         this.answers = answers;
@@ -41,8 +42,8 @@ public class QuestionEventTemplate extends EventTemplate {
         return question;
     }
 
-    public Collection<Answer> getAnswers() {
-        return Collections.unmodifiableCollection(answers);
+    public List<Answer> getAnswers() {
+        return Collections.unmodifiableList(answers);
     }
 
     public static class Answer {

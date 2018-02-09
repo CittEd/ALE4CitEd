@@ -75,6 +75,10 @@ public class LearningContext {
         return events;
     }
 
+    public ObservableList<Event> getEvents(Lesson lesson) {
+        return lesson_events.get(lesson.getId());
+    }
+
     void addLesson(Lesson lesson) {
         lesson_events.put(lesson.getId(), FXCollections.observableArrayList());
         lessons.add(lesson);

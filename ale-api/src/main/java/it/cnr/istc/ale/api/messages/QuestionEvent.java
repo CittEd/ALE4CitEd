@@ -18,8 +18,8 @@ package it.cnr.istc.ale.api.messages;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -28,10 +28,10 @@ import java.util.Collections;
 public class QuestionEvent extends Event {
 
     private final String question;
-    private final Collection<String> answers;
+    private final List<String> answers;
 
     @JsonCreator
-    public QuestionEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") long id, @JsonProperty("question") String question, @JsonProperty("answers") Collection<String> answers) {
+    public QuestionEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") long id, @JsonProperty("question") String question, @JsonProperty("answers") List<String> answers) {
         super(lesson_id, id);
         this.question = question;
         this.answers = answers;
@@ -41,7 +41,7 @@ public class QuestionEvent extends Event {
         return question;
     }
 
-    public Collection<String> getAnswers() {
-        return Collections.unmodifiableCollection(answers);
+    public List<String> getAnswers() {
+        return Collections.unmodifiableList(answers);
     }
 }
