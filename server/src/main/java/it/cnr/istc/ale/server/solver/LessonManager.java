@@ -97,6 +97,9 @@ public class LessonManager implements TemporalNetworkListener {
 
         // we build the lesson..
         build();
+
+        // we extract the lesson timeline..
+        extract_timeline();
     }
 
     private void extract_timeline() {
@@ -155,9 +158,6 @@ public class LessonManager implements TemporalNetworkListener {
         network.propagate();
         // we guarantee that the origin is at 0..
         network.setValue(origin, 0);
-
-        // we extract the lesson timeline..
-        extract_timeline();
     }
 
     public long getCurrentTime() {
@@ -263,6 +263,12 @@ public class LessonManager implements TemporalNetworkListener {
         prop_q.push(c_tk);
 
         build();
+
+        // we guarantee that the origin is at 0..
+        network.setValue(c_tk.tp, t_now);
+
+        // we extract the lesson timeline..
+        extract_timeline();
     }
 
     public void addSolverListener(LessonManagerListener listener) {
