@@ -54,6 +54,8 @@ public class QuestionEventGrid extends GridPane {
 
         send_answer.setOnAction((ActionEvent event1) -> {
             Context.getContext().getLearningContext().answerQuestion(event, group.getToggles().indexOf(group.getSelectedToggle()));
+            send_answer.disableProperty().unbind();
+            getChildren().stream().filter(chld -> chld != content).forEach(chld -> chld.disableProperty().set(true));
         });
 
         setHalignment(send_answer, HPos.RIGHT);

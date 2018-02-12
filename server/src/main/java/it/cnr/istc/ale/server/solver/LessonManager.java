@@ -55,8 +55,8 @@ public class LessonManager implements TemporalNetworkListener {
      * their triggering condition becomes satisfied.
      */
     private final Collection<SolverToken> triggerable_tokens = new ArrayList<>();
-    private Set<SolverToken> c_answer_tokens = null;
-    private final Map<SolverToken, Set<SolverToken>> answer_tokens = new IdentityHashMap<>();
+    private AnswerContext answer_context = null;
+    private final Map<SolverToken, AnswerContext> answer_contexts = new IdentityHashMap<>();
     /**
      * For each question, the corresponding answer.
      */
@@ -128,8 +128,8 @@ public class LessonManager implements TemporalNetworkListener {
             network.newTemporalRelation(c_tks.get(rel.getFrom()).tp, c_tks.get(rel.getTo()).tp, lb, ub);
         }
 
-        if (c_answer_tokens != null) {
-            c_answer_tokens.add(tk);
+        if (answer_context != null) {
+            answer_context.tokens.add(tk);
         }
     }
 
@@ -252,10 +252,16 @@ public class LessonManager implements TemporalNetworkListener {
         if (t < t_now && idx > 0) {
             // we are moving backward..
             long last_pulse = lesson_timeline_pulses.get(idx - 1);
+            Collection<SolverToken> to_disable = new ArrayList<>();
             while (last_pulse > t) {
-                lesson_timeline_values.get(idx - 1).forEach(tk -> listeners.forEach(l -> l.hideToken(tk)));
-                // we disable the answers' consequencies..
-                lesson_timeline_values.get(idx - 1).stream().map(tk -> answer_tokens.get(tk)).filter(c_tks -> c_tks != null).forEach(c_tks -> c_tks.stream().forEach(tk -> tk.enabled = false));
+                for (SolverToken tk : lesson_timeline_values.get(idx - 1)) {
+                    listeners.forEach(l -> l.hideToken(tk));
+                    AnswerContext ctx = answer_contexts.remove(tk);
+                    if (ctx != null) {
+                        to_disable.addAll(ctx.tokens);
+                        answers.remove(ctx.getQuestion());
+                    }
+                }
                 idx--;
                 if (idx > 0) {
                     last_pulse = lesson_timeline_pulses.get(idx - 1);
@@ -263,6 +269,17 @@ public class LessonManager implements TemporalNetworkListener {
                     // we have no more tokens to hide..
                     break;
                 }
+            }
+
+            if (!to_disable.isEmpty()) {
+                // we remove these tokens and re-extract the lesson timeline..
+                for (SolverToken tk : to_disable) {
+                    tk.enabled = false;
+                    listeners.forEach(l -> l.removeToken(tk));
+                }
+
+                // we extract the lesson timeline..
+                extract_timeline();
             }
         }
         t_now = t;
@@ -274,7 +291,7 @@ public class LessonManager implements TemporalNetworkListener {
         answers.put(q_tk, answer);
         QuestionEventTemplate.Answer answr = ((QuestionEventTemplate) q_tk.template).getAnswers().get(answer);
 
-        c_answer_tokens = new HashSet<>();
+        answer_context = new AnswerContext(q_tk, answer);
 
         // this token represents the effects of the answer on the lesson..
         SolverToken c_tk = new SolverToken(null, network.newVar(), event_templates.get(answr.getEvent()));
@@ -284,11 +301,11 @@ public class LessonManager implements TemporalNetworkListener {
 
         build();
 
-        answer_tokens.put(c_tk, c_answer_tokens);
-        c_answer_tokens = null;
+        answer_contexts.put(c_tk, answer_context);
+        answer_context = null;
 
         // we guarantee that the origin is at 0..
-        network.setValue(c_tk.tp, t_now);
+        network.setValue(c_tk.tp, t_now + 1000);
 
         // we extract the lesson timeline..
         extract_timeline();
