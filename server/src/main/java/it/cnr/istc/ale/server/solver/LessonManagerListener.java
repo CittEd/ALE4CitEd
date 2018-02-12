@@ -52,6 +52,13 @@ public interface LessonManagerListener {
     public void hideToken(final SolverToken tk);
 
     /**
+     * Notifies the listener that a token has to be removed.
+     *
+     * @param tk the token that has to be removed.
+     */
+    public void removeToken(final SolverToken tk);
+
+    /**
      * Notifies the listener that the current time has changed.
      *
      * @param time the new current time.

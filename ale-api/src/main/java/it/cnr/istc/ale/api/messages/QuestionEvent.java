@@ -29,12 +29,14 @@ public class QuestionEvent extends Event {
 
     private final String question;
     private final List<String> answers;
+    private Integer answer;
 
     @JsonCreator
-    public QuestionEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") int id, @JsonProperty("question") String question, @JsonProperty("answers") List<String> answers) {
+    public QuestionEvent(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") int id, @JsonProperty("question") String question, @JsonProperty("answers") List<String> answers, @JsonProperty("answer") Integer answer) {
         super(lesson_id, id);
         this.question = question;
         this.answers = answers;
+        this.answer = answer;
     }
 
     public String getQuestion() {
@@ -43,5 +45,13 @@ public class QuestionEvent extends Event {
 
     public List<String> getAnswers() {
         return Collections.unmodifiableList(answers);
+    }
+
+    public Integer getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(Integer answer) {
+        this.answer = answer;
     }
 }

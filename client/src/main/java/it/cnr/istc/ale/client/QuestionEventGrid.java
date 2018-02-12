@@ -71,8 +71,15 @@ public class QuestionEventGrid extends GridPane {
             ans.setToggleGroup(group);
             setHgrow(ans, Priority.ALWAYS);
             add(ans, 0, i + 1);
+            if (event.getAnswer() != null) {
+                ans.disableProperty().set(true);
+            }
         }
-        send_answer.disableProperty().bind(group.selectedToggleProperty().isNull());
-        add(send_answer, 0, answers.size() + 1);
+        if (event.getAnswer() != null) {
+            group.selectToggle(group.getToggles().get(event.getAnswer()));
+        } else {
+            send_answer.disableProperty().bind(group.selectedToggleProperty().isNull());
+            add(send_answer, 0, answers.size() + 1);
+        }
     }
 }

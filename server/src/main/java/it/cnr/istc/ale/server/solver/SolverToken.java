@@ -24,9 +24,20 @@ import it.cnr.istc.ale.api.model.EventTemplate;
  */
 public class SolverToken {
 
+    /**
+     * This is the cause for having this token. It is the token whose expansion
+     * introduced this token.
+     */
     public final SolverToken cause;
+    /**
+     * This is the temporal variable associated to the token.
+     */
     public final int tp;
+    /**
+     * This is the template of the token.
+     */
     public final EventTemplate template;
+    boolean enabled = true;
 
     SolverToken(final SolverToken cause, final int tp, final EventTemplate event) {
         this.cause = cause;

@@ -31,6 +31,7 @@ import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.NewParameter;
 import it.cnr.istc.ale.api.messages.NewStudent;
 import it.cnr.istc.ale.api.messages.QuestionEvent;
+import it.cnr.istc.ale.api.messages.RemoveToken;
 import it.cnr.istc.ale.api.messages.TextEvent;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.client.Config;
@@ -160,6 +161,9 @@ public class Context {
                 } else if (m instanceof TokenUpdate) {
                     // an event of a lesson of this teacher has been updated..
                     Platform.runLater(() -> teaching_ctx.updateToken(((TokenUpdate) m)));
+                } else if (m instanceof RemoveToken) {
+                    // a question event has been received..
+                    Platform.runLater(() -> teaching_ctx.removeToken(((RemoveToken) m)));
                 } else if (m instanceof TextEvent) {
                     // a text event has been received..
                     Platform.runLater(() -> learning_ctx.addEvent(((TextEvent) m)));
@@ -168,7 +172,7 @@ public class Context {
                     Platform.runLater(() -> learning_ctx.addEvent(((QuestionEvent) m)));
                 } else if (m instanceof HideEvent) {
                     // a question event has been received..
-                    Platform.runLater(() -> learning_ctx.removeEvent(((HideEvent) m)));
+                    Platform.runLater(() -> learning_ctx.hideEvent(((HideEvent) m)));
                 } else {
                     LOG.log(Level.WARNING, "Not supported yet: {0}", m);
                 }

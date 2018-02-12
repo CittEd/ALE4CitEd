@@ -68,7 +68,7 @@ public class LearningContext {
         lesson_events.get(event.getLessonId()).add(event);
     }
 
-    void removeEvent(HideEvent event) {
+    void hideEvent(HideEvent event) {
         events.removeIf(e -> e.getLessonId() == event.getLessonId() && e.getId() == event.getEventId());
         lesson_events.get(event.getLessonId()).removeIf(e -> e.getId() == event.getEventId());
     }
@@ -123,6 +123,7 @@ public class LearningContext {
 
     public void answerQuestion(QuestionEvent question, int answer) {
         ctx.lr.answer_question(question.getLessonId(), question.getId(), answer);
+        question.setAnswer(answer);
     }
 
     void clear() {

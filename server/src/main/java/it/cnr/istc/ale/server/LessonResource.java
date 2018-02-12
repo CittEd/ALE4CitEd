@@ -31,6 +31,7 @@ import it.cnr.istc.ale.api.messages.LostLesson;
 import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.QuestionEvent;
+import it.cnr.istc.ale.api.messages.RemoveToken;
 import it.cnr.istc.ale.api.messages.TextEvent;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.api.model.QuestionEventTemplate;
@@ -307,7 +308,7 @@ public class LessonResource implements LessonAPI {
                 if (tk.template instanceof TextEventTemplate) {
                     return new TextEvent(lesson_id, tk.tp, ((TextEventTemplate) tk.template).getContent());
                 } else if (tk.template instanceof QuestionEventTemplate) {
-                    return new QuestionEvent(lesson_id, tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList()));
+                    return new QuestionEvent(lesson_id, tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList()), Context.getContext().lessons.get(lesson_id).getManager().getAnswer(tk));
                 } else {
                     LOG.warning("Not supported yet.");
                     return null;
@@ -442,17 +443,13 @@ public class LessonResource implements LessonAPI {
                 if (tk.template instanceof TextEventTemplate) {
                     execute_event_bytes = MAPPER.writeValueAsBytes(new TextEvent(l.getId(), tk.tp, ((TextEventTemplate) tk.template).getContent()));
                 } else if (tk.template instanceof QuestionEventTemplate) {
-                    execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList())));
+                    execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList()), null));
                 } else {
                     LOG.warning("Not supported yet.");
                 }
-                try {
-                    // we notify the student associated to the token's role that a token has to be executed..
-                    Context.getContext().mqtt.publish(l.getRoles().get(tk.template.getRole()) + "/input", execute_event_bytes, 1, false);
-                } catch (MqttException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
-            } catch (JsonProcessingException ex) {
+                // we notify the student associated to the token's role that a token has to be executed..
+                Context.getContext().mqtt.publish(l.getRoles().get(tk.template.getRole()) + "/input", execute_event_bytes, 1, false);
+            } catch (JsonProcessingException | MqttException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
@@ -461,13 +458,20 @@ public class LessonResource implements LessonAPI {
         public void hideToken(SolverToken tk) {
             try {
                 byte[] hide_event_bytes = MAPPER.writeValueAsBytes(new HideEvent(l.getId(), tk.tp));
-                try {
-                    // we notify the student associated to the token's role that a token has to be hidden..
-                    Context.getContext().mqtt.publish(l.getRoles().get(tk.template.getRole()) + "/input", hide_event_bytes, 1, false);
-                } catch (MqttException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
-            } catch (JsonProcessingException ex) {
+                // we notify the student associated to the token's role that a token has to be hidden..
+                Context.getContext().mqtt.publish(l.getRoles().get(tk.template.getRole()) + "/input", hide_event_bytes, 1, false);
+            } catch (JsonProcessingException | MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+
+        @Override
+        public void removeToken(SolverToken tk) {
+            try {
+                byte[] remove_event_bytes = MAPPER.writeValueAsBytes(new RemoveToken(l.getId(), tk.tp));
+                // we notify the teacher that a token has to be removed..
+                Context.getContext().mqtt.publish(l.getTeacherId() + "/input", remove_event_bytes, 1, false);
+            } catch (JsonProcessingException | MqttException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }

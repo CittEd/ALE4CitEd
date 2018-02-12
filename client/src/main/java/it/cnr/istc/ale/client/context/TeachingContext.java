@@ -26,6 +26,7 @@ import it.cnr.istc.ale.api.messages.LostParameter;
 import it.cnr.istc.ale.api.messages.Message;
 import it.cnr.istc.ale.api.messages.Token;
 import it.cnr.istc.ale.api.messages.NewParameter;
+import it.cnr.istc.ale.api.messages.RemoveToken;
 import it.cnr.istc.ale.api.model.LessonModel;
 import static it.cnr.istc.ale.client.context.Context.MAPPER;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
@@ -139,6 +140,10 @@ public class TeachingContext {
 
     void updateToken(TokenUpdate tk_update) {
         lesson_context.get(tk_update.getLessonId()).getToken(tk_update.getId()).time.set(tk_update.getTime());
+    }
+
+    void removeToken(RemoveToken tk_remove) {
+        lesson_context.get(tk_remove.getLessonId()).tokens.removeIf(tk -> tk.getId() == tk_remove.getEventId());
     }
 
     public ObservableList<TokenRow> getTokens(Lesson lesson) {
