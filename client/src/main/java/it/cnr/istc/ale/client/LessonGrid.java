@@ -37,6 +37,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -64,6 +65,8 @@ public class LessonGrid extends GridPane {
     private final Button stop_button = new Button("", new ImageView(new Image(getClass().getResourceAsStream("/images/stop.png"))));
     private final Label time_label = new Label("Time:");
     private final TextField relative_time = new TextField();
+    private final LessonTimeline lesson_timeline = new LessonTimeline();
+    private final ScrollPane lesson_timeline_scrollpane = new ScrollPane(lesson_timeline);
     private final TableView<TokenRow> tokens_table_view = new TableView<>();
     private final TableColumn<TokenRow, Long> time_column = new TableColumn<>("Time");
     private final TableColumn<TokenRow, String> id_column = new TableColumn<>("ID");
@@ -105,6 +108,7 @@ public class LessonGrid extends GridPane {
         setHalignment(time_label, HPos.RIGHT);
         setVgrow(tokens_table_view, Priority.ALWAYS);
         setHgrow(tokens_table_view, Priority.ALWAYS);
+        setHgrow(lesson_timeline_scrollpane, Priority.ALWAYS);
 
         lesson_name.setPromptText("Lesson name");
         lesson_name.setEditable(false);
@@ -124,6 +128,10 @@ public class LessonGrid extends GridPane {
         relative_time.setAlignment(Pos.CENTER_RIGHT);
         relative_time.setText(TIME_STRING_CONVERTER.toString(0l));
         add(relative_time, 4, 1);
+
+        lesson_timeline_scrollpane.setFitToHeight(true);
+        lesson_timeline_scrollpane.setFitToWidth(true);
+        add(lesson_timeline_scrollpane, 0, 2, 5, 1);
 
         tokens_table_view.getColumns().addAll(time_column, id_column, role_column, subject_column);
         tokens_table_view.setEditable(true);
@@ -232,7 +240,7 @@ public class LessonGrid extends GridPane {
             return row;
         });
 
-        add(tokens_table_view, 0, 2, 5, 1);
+        add(tokens_table_view, 0, 3, 5, 1);
     }
 
     public void setLesson(final Lesson lesson) {
@@ -247,6 +255,7 @@ public class LessonGrid extends GridPane {
         Context.getContext().getTeachingContext().getLessonState(lesson).addListener(STATE_LISTENER);
         STATE_LISTENER.changed(Context.getContext().getTeachingContext().getLessonState(lesson), null, Context.getContext().getTeachingContext().getLessonState(lesson).get());
         tokens_table_view.setItems(new SortedList<>(Context.getContext().getTeachingContext().getTokens(lesson), (TokenRow r0, TokenRow r1) -> Long.compare(r0.getTime(), r1.getTime())));
+        lesson_timeline.setLesson(lesson);
     }
 
     private static class TimeTextFieldTableCell extends TextFieldTableCell<TokenRow, Long> {

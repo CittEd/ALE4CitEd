@@ -30,14 +30,16 @@ public class Token extends Message {
     private final Integer cause;
     private final long time;
     private final String refEvent;
+    private final Integer question;
 
     @JsonCreator
-    public Token(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") int id, @JsonProperty("cause") Integer cause, @JsonProperty("time") long time, @JsonProperty("refEvent") String refEvent) {
+    public Token(@JsonProperty("lessonId") long lesson_id, @JsonProperty("id") int id, @JsonProperty("cause") Integer cause, @JsonProperty("time") long time, @JsonProperty("refEvent") String refEvent, @JsonProperty("question") Integer question) {
         this.lesson_id = lesson_id;
         this.id = id;
         this.cause = cause;
         this.time = time;
         this.refEvent = refEvent;
+        this.question = question;
     }
 
     public long getLessonId() {
@@ -58,5 +60,9 @@ public class Token extends Message {
 
     public String getRefEvent() {
         return refEvent;
+    }
+
+    public Integer getQuestion() {
+        return question;
     }
 }
