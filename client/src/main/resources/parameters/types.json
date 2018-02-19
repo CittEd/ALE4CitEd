@@ -25,5 +25,17 @@
             "y": "numeric",
             "z": "numeric"
         }
+    },
+    {
+        "name": "Photoplethysmograph",
+        "properties": {
+            "ppg": "numeric"
+        }
+    },
+    {
+        "name": "Electrodermal activity",
+        "properties": {
+            "μS": "numeric"
+        }
     }
 ]
