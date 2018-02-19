@@ -277,7 +277,7 @@ public class LessonResource implements LessonAPI {
     public Collection<Token> get_tokens(@QueryParam("lesson_id") long lesson_id) {
         Context.getContext().lessons_lock.lock();
         try {
-            return Context.getContext().lessons.get(lesson_id).getManager().getTokens().stream().map(tk -> new Token(lesson_id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) Context.getContext().lessons.get(lesson_id).getManager().network.getValue(tk.tp), tk.template.getName(), tk.question)).collect(Collectors.toList());
+            return Context.getContext().lessons.get(lesson_id).getManager().getTokens().stream().filter(tk -> tk.isEnabled()).map(tk -> new Token(lesson_id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) Context.getContext().lessons.get(lesson_id).getManager().network.getValue(tk.tp), tk.template.getName(), tk.question)).collect(Collectors.toList());
         } finally {
             Context.getContext().lessons_lock.unlock();
         }
@@ -306,7 +306,7 @@ public class LessonResource implements LessonAPI {
             UserEntity student = em.find(UserEntity.class, student_id);
             LessonEntity lesson = em.find(LessonEntity.class, lesson_id);
             RoleEntity role = lesson.getRoles().stream().filter(r -> r.getStudent() == student).findAny().get();
-            return Context.getContext().lessons.get(lesson_id).getManager().getTokensUpToNow().stream().filter(tk -> tk.template.getRole().equals(role.getName())).map(tk -> {
+            return Context.getContext().lessons.get(lesson_id).getManager().getTokensUpToNow().stream().filter(tk -> tk.isEnabled() && tk.template.getRole().equals(role.getName())).map(tk -> {
                 if (tk.template instanceof TextEventTemplate) {
                     return new TextEvent(lesson_id, tk.tp, ((TextEventTemplate) tk.template).getContent());
                 } else if (tk.template instanceof URLEventTemplate) {

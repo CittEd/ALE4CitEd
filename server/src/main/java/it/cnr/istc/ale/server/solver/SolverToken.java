@@ -50,4 +50,8 @@ public class SolverToken {
         this.template = event;
         this.question = question;
     }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
 }
