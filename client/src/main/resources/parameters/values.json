@@ -5,5 +5,13 @@
     },
     "Steps": {
         "per-minute": "40"
+    },
+    "Heart rate": {
+        "bpm": "55"
+    },
+    "Acceleration": {
+        "x": "0",
+        "y": "0",
+        "z": "0"
     }
 }

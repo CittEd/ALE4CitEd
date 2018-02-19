@@ -11,5 +11,19 @@
         "properties": {
             "per-minute": "numeric"
         }
+    },
+    {
+        "name": "Heart rate",
+        "properties": {
+            "bpm": "numeric"
+        }
+    },
+    {
+        "name": "Acceleration",
+        "properties": {
+            "x": "numeric",
+            "y": "numeric",
+            "z": "numeric"
+        }
     }
 ]
