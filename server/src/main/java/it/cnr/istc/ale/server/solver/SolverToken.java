@@ -37,11 +37,17 @@ public class SolverToken {
      * This is the template of the token.
      */
     public final EventTemplate template;
+    /**
+     * An {@code Integer} representing the id of the question, if any, or
+     * {@code null} if the token does not represent an answer to a question.
+     */
+    public final Integer question;
     boolean enabled = true;
 
-    SolverToken(final SolverToken cause, final int tp, final EventTemplate event) {
+    SolverToken(final SolverToken cause, final int tp, final EventTemplate event, Integer question) {
         this.cause = cause;
         this.tp = tp;
         this.template = event;
+        this.question = question;
     }
 }

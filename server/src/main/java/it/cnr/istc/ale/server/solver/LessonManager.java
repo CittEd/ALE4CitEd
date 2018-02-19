@@ -84,7 +84,7 @@ public class LessonManager implements TemporalNetworkListener {
         Map<String, SolverToken> c_tks = new HashMap<>();
         // we create the tokens..
         for (String id : model.getEvents()) {
-            SolverToken tk = new SolverToken(null, network.newVar(), event_templates.get(id));
+            SolverToken tk = new SolverToken(null, network.newVar(), event_templates.get(id), null);
             tokens.add(tk);
             listeners.forEach(l -> l.newToken(tk));
             c_tks.put(id, tk);
@@ -114,7 +114,7 @@ public class LessonManager implements TemporalNetworkListener {
         c_tks.put(THIS, tk);
         // we create the tokens..
         for (String id : tk.template.getEvents()) {
-            SolverToken c_tk = new SolverToken(tk, network.newVar(), event_templates.get(id));
+            SolverToken c_tk = new SolverToken(tk, network.newVar(), event_templates.get(id), null);
             tokens.add(c_tk);
             listeners.forEach(l -> l.newToken(tk));
             c_tks.put(id, c_tk);
@@ -198,6 +198,13 @@ public class LessonManager implements TemporalNetworkListener {
         return tks;
     }
 
+    /**
+     * Retrieves the answer given by some student to the given question.
+     *
+     * @param tk a token representing a question.
+     * @return an {@code Integer} representing the answer given to the given
+     * question or {@code null} if such an answer does not exist.
+     */
     public Integer getAnswer(final SolverToken tk) {
         return answers.get(tk);
     }
@@ -258,6 +265,7 @@ public class LessonManager implements TemporalNetworkListener {
                     listeners.forEach(l -> l.hideToken(tk));
                     AnswerContext ctx = answer_contexts.remove(tk);
                     if (ctx != null) {
+                        // token 'tk' is an answer, we remove all the consequences of the answer..
                         to_disable.addAll(ctx.tokens);
                         answers.remove(ctx.getQuestion());
                     }
@@ -294,7 +302,7 @@ public class LessonManager implements TemporalNetworkListener {
         answer_context = new AnswerContext(q_tk, answer);
 
         // this token represents the effects of the answer on the lesson..
-        SolverToken c_tk = new SolverToken(null, network.newVar(), event_templates.get(answr.getEvent()));
+        SolverToken c_tk = new SolverToken(null, network.newVar(), event_templates.get(answr.getEvent()), question_id);
         tokens.add(c_tk);
         listeners.forEach(l -> l.newToken(c_tk));
         prop_q.push(c_tk);
