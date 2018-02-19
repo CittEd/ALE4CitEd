@@ -24,12 +24,12 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import static javafx.scene.layout.GridPane.setHgrow;
 import static javafx.scene.layout.GridPane.setVgrow;
 import javafx.scene.layout.Priority;
+import javafx.scene.web.WebView;
 
 /**
  *
@@ -38,7 +38,7 @@ import javafx.scene.layout.Priority;
 public class QuestionEventGrid extends GridPane {
 
     private QuestionEvent event;
-    private final TextArea content = new TextArea();
+    private final WebView content = new WebView();
     private final ToggleGroup group = new ToggleGroup();
     private final Button send_answer = new Button("Send");
 
@@ -49,7 +49,6 @@ public class QuestionEventGrid extends GridPane {
         setHgrow(content, Priority.ALWAYS);
         setVgrow(content, Priority.ALWAYS);
 
-        content.setEditable(false);
         add(content, 0, 0);
 
         send_answer.setOnAction((ActionEvent event1) -> {
@@ -65,7 +64,7 @@ public class QuestionEventGrid extends GridPane {
         this.event = event;
         send_answer.disableProperty().unbind();
         group.getToggles().clear();
-        content.setText(event.getQuestion());
+        content.getEngine().loadContent(event.getQuestion());
         getChildren().removeIf(chld -> chld != content);
         List<String> answers = event.getAnswers();
         for (int i = 0; i < answers.size(); i++) {

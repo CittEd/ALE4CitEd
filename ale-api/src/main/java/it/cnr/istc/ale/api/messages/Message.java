@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = Answer.class, name = "answer"),
     @JsonSubTypes.Type(value = TextEvent.class, name = "text-event"),
+    @JsonSubTypes.Type(value = URLEvent.class, name = "url-event"),
     @JsonSubTypes.Type(value = QuestionEvent.class, name = "question-event"),
     @JsonSubTypes.Type(value = HideEvent.class, name = "hide-event"),
     @JsonSubTypes.Type(value = RemoveToken.class, name = "remove-event"),

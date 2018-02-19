@@ -22,6 +22,7 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.model.EventTemplate;
 import it.cnr.istc.ale.api.model.QuestionEventTemplate;
 import it.cnr.istc.ale.api.model.TextEventTemplate;
+import it.cnr.istc.ale.api.model.URLEventTemplate;
 import it.cnr.istc.ale.client.context.Context;
 import it.cnr.istc.ale.client.context.TeachingContext.TokenRow;
 import javafx.beans.binding.Bindings;
@@ -201,6 +202,8 @@ public class LessonGrid extends GridPane {
                     EventTemplate et = Context.getContext().getTeachingContext().getLessonModel(lesson).getModel().stream().filter(templ -> templ.getName().equals(item)).findAny().get();
                     if (et instanceof TextEventTemplate) {
                         setText(((TextEventTemplate) et).getContent());
+                    } else if (et instanceof URLEventTemplate) {
+                        setText(((URLEventTemplate) et).getUrl());
                     } else if (et instanceof QuestionEventTemplate) {
                         setText(((QuestionEventTemplate) et).getQuestion());
                     }

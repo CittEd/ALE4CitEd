@@ -21,6 +21,7 @@ import it.cnr.istc.ale.api.User;
 import it.cnr.istc.ale.api.messages.Event;
 import it.cnr.istc.ale.api.messages.QuestionEvent;
 import it.cnr.istc.ale.api.messages.TextEvent;
+import it.cnr.istc.ale.api.messages.URLEvent;
 import it.cnr.istc.ale.client.context.Context;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
 import java.net.URL;
@@ -94,6 +95,7 @@ public class MainController implements Initializable {
     private final LessonGrid lesson_grid = new LessonGrid();
     private final StudentGrid student_grid = new StudentGrid();
     private final TextEventGrid text_event_grid = new TextEventGrid();
+    private final URLEventGrid url_event_grid = new URLEventGrid();
     private final QuestionEventGrid question_event_grid = new QuestionEventGrid();
 
     /**
@@ -120,6 +122,7 @@ public class MainController implements Initializable {
         logout.disableProperty().bind(user.isNull());
 
         learn_h_box.setHgrow(text_event_grid, Priority.ALWAYS);
+        learn_h_box.setHgrow(url_event_grid, Priority.ALWAYS);
         learn_h_box.setHgrow(question_event_grid, Priority.ALWAYS);
         learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
         events.setItems(Context.getContext().getLearningContext().getEvents());
@@ -132,6 +135,8 @@ public class MainController implements Initializable {
                 } else {
                     if (event instanceof TextEvent) {
                         setText(((TextEvent) event).getContent());
+                    } else if (event instanceof URLEvent) {
+                        setText(((URLEvent) event).getContent());
                     } else if (event instanceof QuestionEvent) {
                         setText(((QuestionEvent) event).getQuestion());
                     }
@@ -147,6 +152,13 @@ public class MainController implements Initializable {
                         learn_h_box.getChildren().set(1, text_event_grid);
                     }
                     text_event_grid.setEvent((TextEvent) newValue);
+                } else if (newValue instanceof URLEvent) {
+                    if (learn_h_box.getChildren().size() == 1) {
+                        learn_h_box.getChildren().add(url_event_grid);
+                    } else if (learn_h_box.getChildren().get(1) != url_event_grid) {
+                        learn_h_box.getChildren().set(1, url_event_grid);
+                    }
+                    url_event_grid.setUrl((URLEvent) newValue);
                 } else if (newValue instanceof QuestionEvent) {
                     if (learn_h_box.getChildren().size() == 1) {
                         learn_h_box.getChildren().add(question_event_grid);

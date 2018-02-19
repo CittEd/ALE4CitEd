@@ -16,7 +16,7 @@
  */
 package it.cnr.istc.ale.client;
 
-import it.cnr.istc.ale.api.messages.TextEvent;
+import it.cnr.istc.ale.api.messages.URLEvent;
 import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import static javafx.scene.layout.GridPane.setHgrow;
@@ -28,12 +28,12 @@ import javafx.scene.web.WebView;
  *
  * @author Riccardo De Benedictis
  */
-public class TextEventGrid extends GridPane {
+public class URLEventGrid extends GridPane {
 
-    private TextEvent event;
+    private URLEvent event;
     private final WebView content = new WebView();
 
-    public TextEventGrid() {
+    public URLEventGrid() {
         setHgap(10);
         setVgap(10);
         setPadding(new Insets(10));
@@ -43,8 +43,8 @@ public class TextEventGrid extends GridPane {
         add(content, 0, 0);
     }
 
-    public void setEvent(TextEvent event) {
+    public void setUrl(URLEvent event) {
         this.event = event;
-        content.getEngine().loadContent(event.getContent());
+        content.getEngine().load(event.getUrl());
     }
 }

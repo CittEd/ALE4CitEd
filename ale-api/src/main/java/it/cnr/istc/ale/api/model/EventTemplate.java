@@ -35,6 +35,7 @@ import java.util.Collections;
 @JsonSubTypes({
     @Type(value = EventTemplate.class, name = "core"),
     @Type(value = TextEventTemplate.class, name = "text"),
+    @Type(value = URLEventTemplate.class, name = "url"),
     @Type(value = QuestionEventTemplate.class, name = "question")})
 public class EventTemplate {
 

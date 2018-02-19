@@ -33,6 +33,7 @@ import it.cnr.istc.ale.api.messages.NewStudent;
 import it.cnr.istc.ale.api.messages.QuestionEvent;
 import it.cnr.istc.ale.api.messages.RemoveToken;
 import it.cnr.istc.ale.api.messages.TextEvent;
+import it.cnr.istc.ale.api.messages.URLEvent;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.client.Config;
 import it.cnr.istc.ale.client.context.UserContext.ParameterValue;
@@ -167,6 +168,9 @@ public class Context {
                 } else if (m instanceof TextEvent) {
                     // a text event has been received..
                     Platform.runLater(() -> learning_ctx.addEvent(((TextEvent) m)));
+                } else if (m instanceof URLEvent) {
+                    // a text event has been received..
+                    Platform.runLater(() -> learning_ctx.addEvent(((URLEvent) m)));
                 } else if (m instanceof QuestionEvent) {
                     // a question event has been received..
                     Platform.runLater(() -> learning_ctx.addEvent(((QuestionEvent) m)));

@@ -33,9 +33,11 @@ import it.cnr.istc.ale.api.messages.NewLesson;
 import it.cnr.istc.ale.api.messages.QuestionEvent;
 import it.cnr.istc.ale.api.messages.RemoveToken;
 import it.cnr.istc.ale.api.messages.TextEvent;
+import it.cnr.istc.ale.api.messages.URLEvent;
 import it.cnr.istc.ale.api.model.LessonModel;
 import it.cnr.istc.ale.api.model.QuestionEventTemplate;
 import it.cnr.istc.ale.api.model.TextEventTemplate;
+import it.cnr.istc.ale.api.model.URLEventTemplate;
 import static it.cnr.istc.ale.server.Context.EMF;
 import static it.cnr.istc.ale.server.Context.MAPPER;
 import it.cnr.istc.ale.server.db.LessonEntity;
@@ -307,6 +309,8 @@ public class LessonResource implements LessonAPI {
             return Context.getContext().lessons.get(lesson_id).getManager().getTokensUpToNow().stream().filter(tk -> tk.template.getRole().equals(role.getName())).map(tk -> {
                 if (tk.template instanceof TextEventTemplate) {
                     return new TextEvent(lesson_id, tk.tp, ((TextEventTemplate) tk.template).getContent());
+                } else if (tk.template instanceof URLEventTemplate) {
+                    return new URLEvent(lesson_id, tk.tp, ((URLEventTemplate) tk.template).getContent(), ((URLEventTemplate) tk.template).getUrl());
                 } else if (tk.template instanceof QuestionEventTemplate) {
                     return new QuestionEvent(lesson_id, tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList()), Context.getContext().lessons.get(lesson_id).getManager().getAnswer(tk));
                 } else {
@@ -442,6 +446,8 @@ public class LessonResource implements LessonAPI {
                 byte[] execute_event_bytes = null;
                 if (tk.template instanceof TextEventTemplate) {
                     execute_event_bytes = MAPPER.writeValueAsBytes(new TextEvent(l.getId(), tk.tp, ((TextEventTemplate) tk.template).getContent()));
+                } else if (tk.template instanceof URLEventTemplate) {
+                    execute_event_bytes = MAPPER.writeValueAsBytes(new URLEvent(l.getId(), tk.tp, ((URLEventTemplate) tk.template).getContent(), ((URLEventTemplate) tk.template).getUrl()));
                 } else if (tk.template instanceof QuestionEventTemplate) {
                     execute_event_bytes = MAPPER.writeValueAsBytes(new QuestionEvent(l.getId(), tk.tp, ((QuestionEventTemplate) tk.template).getQuestion(), ((QuestionEventTemplate) tk.template).getAnswers().stream().map(ans -> ans.getAnswer()).collect(Collectors.toList()), null));
                 } else {
