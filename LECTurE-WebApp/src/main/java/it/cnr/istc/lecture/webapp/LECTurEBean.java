@@ -16,7 +16,11 @@
  */
 package it.cnr.istc.lecture.webapp;
 
+import it.cnr.istc.lecture.webapp.api.Lesson;
 import it.cnr.istc.lecture.webapp.api.Parameter;
+import it.cnr.istc.lecture.webapp.api.model.LessonModel;
+import it.cnr.istc.lecture.webapp.entities.UserEntity;
+import it.cnr.istc.lecture.webapp.solver.LessonManager;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +35,8 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.activemq.broker.Broker;
 import org.apache.activemq.broker.BrokerFilter;
@@ -70,19 +76,32 @@ public class LECTurEBean {
      * map.
      */
     private final Map<Long, Map<String, Map<String, String>>> parameter_values = new HashMap<>();
+    /**
+     * For each lesson, the context of the lesson.
+     */
+    private final Map<Long, LessonManager> lessons = new HashMap<>();
+    @PersistenceContext
+    private EntityManager em;
 
     @PostConstruct
     private void startup() {
         LOG.info("Starting LECTurE Server");
+
         try {
             properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties"));
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         final String mqtt_host = properties.getProperty("mqtt-host", "localhost");
-        final String mqtt_port = properties.getProperty("mqtt-port", "localhost");
+        final String mqtt_port = properties.getProperty("mqtt-port", "1883");
         final String mqtt_server_id = properties.getProperty("mqtt-server-id", "LECTurE-Server");
 
+        // we init the current state..
+        for (UserEntity ue : em.createQuery("SELECT u FROM UserEntity u", UserEntity.class).getResultList()) {
+            newUser(ue.getId());
+        }
+
+        // we start the MQTT broker..
         broker = new BrokerService();
         broker.setPersistent(false);
         try {
@@ -123,6 +142,7 @@ public class LECTurEBean {
             LOG.info("Starting MQTT Broker");
             broker.start();
 
+            // we connect an MQTT client..
             mqtt = new MqttClient("tcp://" + mqtt_host + ":" + mqtt_port, mqtt_server_id, new MemoryPersistence());
             mqtt.setCallback(new MqttCallback() {
                 @Override
@@ -158,6 +178,8 @@ public class LECTurEBean {
             mqtt.close();
             LOG.info("Stopping  MQTT Broker");
             broker.stop();
+            parameter_types.clear();
+            parameter_values.clear();
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -174,22 +196,34 @@ public class LECTurEBean {
     }
 
     @Lock(LockType.WRITE)
-    private void newParameter(long user_id, Parameter p) {
-        Map<String, Parameter> pars = parameter_types.get(user_id);
-        if (pars == null) {
-            pars = new HashMap<>();
-            parameter_types.put(user_id, pars);
-        }
-        pars.put(p.getName(), p);
+    void newUser(long user_id) {
+        parameter_types.put(user_id, new HashMap<>());
+        parameter_values.put(user_id, new HashMap<>());
     }
 
     @Lock(LockType.WRITE)
-    private void newParValue(long user_id, String par, Map<String, String> val) {
-        Map<String, Map<String, String>> vals = parameter_values.get(user_id);
-        if (vals == null) {
-            vals = new HashMap<>();
-            parameter_values.put(user_id, vals);
-        }
-        vals.put(par, val);
+    void deleteUser(long user_id) {
+        parameter_types.remove(user_id);
+        parameter_values.remove(user_id);
+    }
+
+    @Lock(LockType.WRITE)
+    void newParameter(long user_id, Parameter p) {
+        parameter_types.get(user_id).put(p.getName(), p);
+    }
+
+    @Lock(LockType.WRITE)
+    void newParameterValue(long user_id, String par, Map<String, String> val) {
+        parameter_values.get(user_id).put(par, val);
+    }
+
+    @Lock(LockType.WRITE)
+    void newLesson(Lesson lesson, LessonModel model) {
+        lessons.put(lesson.getId(), new LessonManager(lesson, model));
+    }
+
+    @Lock(LockType.READ)
+    LessonManager getLessonManager(long lesson_id) {
+        return lessons.get(lesson_id);
     }
 }

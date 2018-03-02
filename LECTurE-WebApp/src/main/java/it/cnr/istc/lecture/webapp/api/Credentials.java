@@ -16,6 +16,11 @@
  */
 package it.cnr.istc.lecture.webapp.api;
 
+import java.util.Collections;
+import java.util.Map;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
+
 /**
  *
  * @author Riccardo De Benedictis
@@ -24,10 +29,15 @@ public class Credentials {
 
     private final String email;
     private final String password;
+    private final Map<String, Parameter> parameter_types;
+    private final Map<String, Map<String, String>> parameter_values;
 
-    public Credentials(String email, String password) {
+    @JsonbCreator
+    public Credentials(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("parameterTypes") Map<String, Parameter> parameter_types, @JsonbProperty("parameterValues") Map<String, Map<String, String>> parameter_values) {
         this.email = email;
         this.password = password;
+        this.parameter_types = parameter_types;
+        this.parameter_values = parameter_values;
     }
 
     public String getEmail() {
@@ -36,5 +46,13 @@ public class Credentials {
 
     public String getPassword() {
         return password;
+    }
+
+    public Map<String, Parameter> getParameterTypes() {
+        return Collections.unmodifiableMap(parameter_types);
+    }
+
+    public Map<String, Map<String, String>> getParameterValues() {
+        return Collections.unmodifiableMap(parameter_values);
     }
 }

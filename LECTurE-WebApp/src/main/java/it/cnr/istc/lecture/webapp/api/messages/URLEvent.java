@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Riccardo De Benedictis
+ * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,10 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.lecture.webapp.api;
+package it.cnr.istc.lecture.webapp.api.messages;
 
-import java.util.Collections;
-import java.util.Map;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -25,22 +23,23 @@ import javax.json.bind.annotation.JsonbProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class Parameter {
+public class URLEvent extends Event {
 
-    private final String name;
-    private final Map<String, String> properties;
+    private final String content;
+    private final String url;
 
     @JsonbCreator
-    public Parameter(@JsonbProperty("name") String name, @JsonbProperty("properties") Map<String, String> properties) {
-        this.name = name;
-        this.properties = properties;
+    public URLEvent(@JsonbProperty("lessonId") long lesson_id, @JsonbProperty("eventId") int event_id, @JsonbProperty("role") String role, @JsonbProperty("content") String content, @JsonbProperty("url") String url) {
+        super(EventType.URLEvent, lesson_id, event_id, role);
+        this.content = content;
+        this.url = url;
     }
 
-    public String getName() {
-        return name;
+    public String getContent() {
+        return content;
     }
 
-    public Map<String, String> getProperties() {
-        return Collections.unmodifiableMap(properties);
+    public String getUrl() {
+        return url;
     }
 }

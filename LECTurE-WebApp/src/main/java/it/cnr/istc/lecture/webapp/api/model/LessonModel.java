@@ -27,6 +27,7 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 public class LessonModel {
 
+    private final long id;
     private final String name;
     private final Collection<String> roles;
     private final Collection<EventTemplate> model;
@@ -34,12 +35,17 @@ public class LessonModel {
     private final Collection<Relation> relations;
 
     @JsonbCreator
-    public LessonModel(@JsonbProperty("name") String name, @JsonbProperty("roles") Collection<String> roles, @JsonbProperty("model") Collection<EventTemplate> model, @JsonbProperty("events") Collection<String> events, @JsonbProperty("relations") Collection<Relation> relations) {
+    public LessonModel(@JsonbProperty("id") long id, @JsonbProperty("name") String name, @JsonbProperty("roles") Collection<String> roles, @JsonbProperty("model") Collection<EventTemplate> model, @JsonbProperty("events") Collection<String> events, @JsonbProperty("relations") Collection<Relation> relations) {
+        this.id = id;
         this.name = name;
         this.roles = roles;
         this.model = model;
         this.events = events;
         this.relations = relations;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getName() {

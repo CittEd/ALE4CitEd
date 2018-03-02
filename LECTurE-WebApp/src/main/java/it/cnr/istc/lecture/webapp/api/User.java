@@ -16,6 +16,11 @@
  */
 package it.cnr.istc.lecture.webapp.api;
 
+import java.util.Collections;
+import java.util.Map;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
+
 /**
  *
  * @author Riccardo De Benedictis
@@ -23,17 +28,28 @@ package it.cnr.istc.lecture.webapp.api;
 public class User {
 
     private final long id;
+    private final String email;
     private final String firstName;
     private final String lastName;
+    private final Map<String, Parameter> parameter_types;
+    private final Map<String, Map<String, String>> parameter_values;
 
-    public User(long id, String firstName, String lastName) {
+    @JsonbCreator
+    public User(@JsonbProperty("id") long id, @JsonbProperty("email") String email, @JsonbProperty("firstName") String firstName, @JsonbProperty("lastName") String lastName, @JsonbProperty("parameterTypes") Map<String, Parameter> parameter_types, @JsonbProperty("parameterValues") Map<String, Map<String, String>> parameter_values) {
         this.id = id;
+        this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.parameter_types = parameter_types;
+        this.parameter_values = parameter_values;
     }
 
     public long getId() {
         return id;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getFirstName() {
@@ -42,5 +58,13 @@ public class User {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public Map<String, Parameter> getParameterTypes() {
+        return Collections.unmodifiableMap(parameter_types);
+    }
+
+    public Map<String, Map<String, String>> getParameterValues() {
+        return Collections.unmodifiableMap(parameter_values);
     }
 }

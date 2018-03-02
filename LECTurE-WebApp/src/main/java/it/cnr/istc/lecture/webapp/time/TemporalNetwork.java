@@ -55,7 +55,7 @@ public class TemporalNetwork {
             dist[i][i] = 0;
         }
 
-        addConstraints(new TemporalConstraint(0, 1, 0, Double.POSITIVE_INFINITY));
+        addConstraint(0, 1, 0, Double.POSITIVE_INFINITY);
     }
 
     private TemporalNetwork(double[][] dist, int n_vars) {
@@ -71,12 +71,13 @@ public class TemporalNetwork {
         ensureCapacity(tp + 1);
         vals[tp] = 0;
         watches[tp] = new TemporalConstraintList();
-        addConstraints(new TemporalConstraint(0, tp, 0, Double.POSITIVE_INFINITY), new TemporalConstraint(tp, 1, 0, Double.POSITIVE_INFINITY));
+        addConstraint(0, tp, 0, Double.POSITIVE_INFINITY);
+        addConstraint(tp, 1, 0, Double.POSITIVE_INFINITY);
         return tp;
     }
 
-    public final void addConstraints(TemporalConstraint... constraints) {
-        this.constraints.addAll(Arrays.asList(constraints));
+    public final void addConstraint(int from, int to, double min, double max) {
+        this.constraints.add(new TemporalConstraint(from, to, min, max));
     }
 
     public boolean requiresPropagation() {
@@ -220,6 +221,28 @@ public class TemporalNetwork {
         return vals[tp];
     }
 
+    /**
+     * Sets the value of the {@code var} temporal value to {@code value} and
+     * propagates the constraints, potentially updating the other variables'
+     * values.
+     *
+     * @param tp an {@code int} representing a temporal variable.
+     * @param value a {@code double} representing the value of the {@code var}
+     * temporal variable.
+     */
+    public void setValue(final int tp, final double value) {
+        if (tp < 0 || tp >= n_vars) {
+            throw new IllegalArgumentException("'tp' is not a valid temporal variable");
+        }
+        if (value < lb(tp) || value > ub(tp)) {
+            throw new IllegalArgumentException("'value' must be within the 'tp' variable's bound");
+        }
+        vals[tp] = value;
+        listeners.forEach(l -> l.newValue(tp, value));
+        prop_q.push(tp);
+        propagate();
+    }
+
     public Bound bound(final int tp) {
         return new Bound(-dist[tp][0], dist[0][tp]);
     }
@@ -235,6 +258,14 @@ public class TemporalNetwork {
     @Override
     public TemporalNetwork clone() {
         return new TemporalNetwork(dist, n_vars);
+    }
+
+    public void addTemporalListener(TemporalListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeTemporalListener(TemporalListener listener) {
+        listeners.remove(listener);
     }
 
     @Override
@@ -269,12 +300,12 @@ public class TemporalNetwork {
      *
      * @author Riccardo De Benedictis
      */
-    public final class TemporalConstraint {
+    private final class TemporalConstraint {
 
         public final int from, to;
         public final double min, max;
 
-        public TemporalConstraint(int from, int to, double min, double max) {
+        private TemporalConstraint(int from, int to, double min, double max) {
             assert min <= max;
             this.from = from;
             this.to = to;

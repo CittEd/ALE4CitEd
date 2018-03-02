@@ -14,10 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.lecture.webapp.api;
+package it.cnr.istc.lecture.webapp.api.messages;
 
-import java.util.Collections;
-import java.util.Map;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -25,22 +23,23 @@ import javax.json.bind.annotation.JsonbProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class Parameter {
+public class RemoveToken extends Message {
 
-    private final String name;
-    private final Map<String, String> properties;
+    private final long lesson_id;
+    private final long event_id;
 
     @JsonbCreator
-    public Parameter(@JsonbProperty("name") String name, @JsonbProperty("properties") Map<String, String> properties) {
-        this.name = name;
-        this.properties = properties;
+    public RemoveToken(@JsonbProperty("lessonId") long lesson_id, @JsonbProperty("eventId") long event_id) {
+        super(MessageType.RemoveToken);
+        this.lesson_id = lesson_id;
+        this.event_id = event_id;
     }
 
-    public String getName() {
-        return name;
+    public long getLessonId() {
+        return lesson_id;
     }
 
-    public Map<String, String> getProperties() {
-        return Collections.unmodifiableMap(properties);
+    public long getEventId() {
+        return event_id;
     }
 }

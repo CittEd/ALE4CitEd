@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Riccardo De Benedictis
+ * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.lecture.webapp.api;
+package it.cnr.istc.lecture.webapp.api.messages;
 
-import java.util.Collections;
-import java.util.Map;
+import it.cnr.istc.lecture.webapp.api.Lesson;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -25,22 +24,17 @@ import javax.json.bind.annotation.JsonbProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class Parameter {
+public class NewLesson extends Message {
 
-    private final String name;
-    private final Map<String, String> properties;
+    private final Lesson lesson;
 
     @JsonbCreator
-    public Parameter(@JsonbProperty("name") String name, @JsonbProperty("properties") Map<String, String> properties) {
-        this.name = name;
-        this.properties = properties;
+    public NewLesson(@JsonbProperty("lesson") Lesson lesson) {
+        super(MessageType.NewLesson);
+        this.lesson = lesson;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Map<String, String> getProperties() {
-        return Collections.unmodifiableMap(properties);
+    public Lesson getLesson() {
+        return lesson;
     }
 }
