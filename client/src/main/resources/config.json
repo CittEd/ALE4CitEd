@@ -1,5 +1,0 @@
-{
-    "host": "localhost",
-    "service-port": "8080",
-    "mqtt-port": "1883"
-}
