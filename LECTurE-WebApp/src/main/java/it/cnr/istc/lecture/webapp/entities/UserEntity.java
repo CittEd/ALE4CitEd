@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Riccardo De Benedictis
+ * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,17 @@
 package it.cnr.istc.lecture.webapp.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -33,17 +40,24 @@ public class UserEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Column(unique = true)
     private String email;
     private String password;
-    private String firstName;
-    private String lastName;
+    private String first_name;
+    private String last_name;
+    @ManyToMany
+    private final Collection<UserEntity> teachers = new ArrayList<>();
+    @ManyToMany(mappedBy = "teachers")
+    private final Collection<UserEntity> students = new ArrayList<>();
+    @OneToMany(mappedBy = "teacher")
+    private final Collection<LessonEntity> lessons = new ArrayList<>();
+    @OneToMany(mappedBy = "student")
+    private List<RoleEntity> roles;
+    @OneToMany
+    private final Collection<LessonModelEntity> models = new ArrayList<>();
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getEmail() {
@@ -63,18 +77,78 @@ public class UserEntity implements Serializable {
     }
 
     public String getFirstName() {
-        return firstName;
+        return first_name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setFirstName(String first_name) {
+        this.first_name = first_name;
     }
 
     public String getLastName() {
-        return lastName;
+        return last_name;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setLastName(String last_name) {
+        this.last_name = last_name;
+    }
+
+    public Collection<UserEntity> getTeachers() {
+        return Collections.unmodifiableCollection(teachers);
+    }
+
+    public void addTeacher(UserEntity teacher) {
+        teachers.add(teacher);
+    }
+
+    public void removeTeacher(UserEntity teacher) {
+        teachers.remove(teacher);
+    }
+
+    public Collection<UserEntity> getStudents() {
+        return Collections.unmodifiableCollection(students);
+    }
+
+    public void addStudent(UserEntity student) {
+        students.add(student);
+    }
+
+    public void removeStudent(UserEntity student) {
+        students.remove(student);
+    }
+
+    public Collection<LessonEntity> getLessons() {
+        return Collections.unmodifiableCollection(lessons);
+    }
+
+    public void addLesson(LessonEntity lesson) {
+        lessons.add(lesson);
+    }
+
+    public void removeLesson(LessonEntity lesson) {
+        lessons.remove(lesson);
+    }
+
+    public Collection<RoleEntity> getRoles() {
+        return Collections.unmodifiableCollection(roles);
+    }
+
+    public void addRole(RoleEntity role) {
+        roles.add(role);
+    }
+
+    public void removeRole(RoleEntity role) {
+        roles.remove(role);
+    }
+
+    public Collection<LessonModelEntity> getModels() {
+        return Collections.unmodifiableCollection(models);
+    }
+
+    public void addModel(LessonModelEntity model) {
+        models.add(model);
+    }
+
+    public void removeModel(LessonModelEntity model) {
+        models.remove(model);
     }
 }
