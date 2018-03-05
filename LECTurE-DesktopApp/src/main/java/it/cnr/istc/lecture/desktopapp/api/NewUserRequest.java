@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.lecture.webapp.api;
+package it.cnr.istc.lecture.desktopapp.api;
 
 import java.util.Collections;
 import java.util.Map;
@@ -25,37 +25,37 @@ import javax.json.bind.annotation.JsonbProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class User {
+public class NewUserRequest {
 
-    private final long id;
     private final String email;
-    private final String firstName;
-    private final String lastName;
+    private final String password;
+    private final String first_name;
+    private final String last_name;
     private final Map<Parameter, Map<String, String>> parameters;
 
     @JsonbCreator
-    public User(@JsonbProperty("id") long id, @JsonbProperty("email") String email, @JsonbProperty("firstName") String firstName, @JsonbProperty("lastName") String lastName, @JsonbProperty("parameters") Map<Parameter, Map<String, String>> parameters) {
-        this.id = id;
+    public NewUserRequest(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("firstName") String first_name, @JsonbProperty("lastName") String last_name, @JsonbProperty("parameters") Map<Parameter, Map<String, String>> parameters) {
         this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.password = password;
+        this.first_name = first_name;
+        this.last_name = last_name;
         this.parameters = parameters;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public String getEmail() {
         return email;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     public String getFirstName() {
-        return firstName;
+        return first_name;
     }
 
     public String getLastName() {
-        return lastName;
+        return last_name;
     }
 
     public Map<Parameter, Map<String, String>> getParameters() {

@@ -186,44 +186,43 @@ public class LECTurEBean {
     }
 
     @Lock(LockType.READ)
-    public Map<String, Parameter> getParameters(long user_id) {
-        return parameter_types.get(user_id);
-    }
-
-    @Lock(LockType.READ)
-    public Map<String, Map<String, String>> getParameterValues(long user_id) {
-        return parameter_values.get(user_id);
+    public Map<Parameter, Map<String, String>> getParameters(long user_id) {
+        Map<Parameter, Map<String, String>> pars = new HashMap<>();
+        for (Map.Entry<String, Parameter> entry : parameter_types.get(user_id).entrySet()) {
+            pars.put(entry.getValue(), parameter_values.get(user_id).get(entry.getKey()));
+        }
+        return pars;
     }
 
     @Lock(LockType.WRITE)
-    void newUser(long user_id) {
+    public void newUser(long user_id) {
         parameter_types.put(user_id, new HashMap<>());
         parameter_values.put(user_id, new HashMap<>());
     }
 
     @Lock(LockType.WRITE)
-    void deleteUser(long user_id) {
+    public void deleteUser(long user_id) {
         parameter_types.remove(user_id);
         parameter_values.remove(user_id);
     }
 
     @Lock(LockType.WRITE)
-    void newParameter(long user_id, Parameter p) {
+    public void newParameter(long user_id, Parameter p) {
         parameter_types.get(user_id).put(p.getName(), p);
     }
 
     @Lock(LockType.WRITE)
-    void newParameterValue(long user_id, String par, Map<String, String> val) {
+    public void newParameterValue(long user_id, String par, Map<String, String> val) {
         parameter_values.get(user_id).put(par, val);
     }
 
     @Lock(LockType.WRITE)
-    void newLesson(Lesson lesson, LessonModel model) {
+    public void newLesson(Lesson lesson, LessonModel model) {
         lessons.put(lesson.getId(), new LessonManager(lesson, model));
     }
 
     @Lock(LockType.READ)
-    LessonManager getLessonManager(long lesson_id) {
+    public LessonManager getLessonManager(long lesson_id) {
         return lessons.get(lesson_id);
     }
 }

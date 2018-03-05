@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Riccardo De Benedictis
+ * Copyright (C) 2017 Riccardo De Benedictis <riccardo.debenedictis@istc.cnr.it>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,10 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.lecture.webapp.api;
+package it.cnr.istc.lecture.desktopapp.api.messages;
 
-import java.util.Collections;
-import java.util.Map;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -25,28 +23,29 @@ import javax.json.bind.annotation.JsonbProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class Credentials {
+public class TokenUpdate extends Message {
 
-    private final String email;
-    private final String password;
-    private final Map<Parameter, Map<String, String>> parameters;
+    private final long lesson_id;
+    private final int id;
+    private final long time;
 
     @JsonbCreator
-    public Credentials(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("parameters") Map<Parameter, Map<String, String>> parameters) {
-        this.email = email;
-        this.password = password;
-        this.parameters = parameters;
+    public TokenUpdate(@JsonbProperty("lessonId") long lesson_id, @JsonbProperty("id") int id, @JsonbProperty("time") long time) {
+        super(MessageType.TokenUpdate);
+        this.lesson_id = lesson_id;
+        this.id = id;
+        this.time = time;
     }
 
-    public String getEmail() {
-        return email;
+    public long getLessonId() {
+        return lesson_id;
     }
 
-    public String getPassword() {
-        return password;
+    public int getId() {
+        return id;
     }
 
-    public Map<Parameter, Map<String, String>> getParameters() {
-        return Collections.unmodifiableMap(parameters);
+    public long getTime() {
+        return time;
     }
 }

@@ -31,17 +31,15 @@ public class NewUserRequest {
     private final String password;
     private final String first_name;
     private final String last_name;
-    private final Map<String, Parameter> parameter_types;
-    private final Map<String, Map<String, String>> parameter_values;
+    private final Map<Parameter, Map<String, String>> parameters;
 
     @JsonbCreator
-    public NewUserRequest(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("firstName") String first_name, @JsonbProperty("lastName") String last_name, @JsonbProperty("parameterTypes") Map<String, Parameter> parameter_types, @JsonbProperty("parameterValues") Map<String, Map<String, String>> parameter_values) {
+    public NewUserRequest(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("firstName") String first_name, @JsonbProperty("lastName") String last_name, @JsonbProperty("parameters") Map<Parameter, Map<String, String>> parameters) {
         this.email = email;
         this.password = password;
         this.first_name = first_name;
         this.last_name = last_name;
-        this.parameter_types = parameter_types;
-        this.parameter_values = parameter_values;
+        this.parameters = parameters;
     }
 
     public String getEmail() {
@@ -60,11 +58,7 @@ public class NewUserRequest {
         return last_name;
     }
 
-    public Map<String, Parameter> getParameterTypes() {
-        return Collections.unmodifiableMap(parameter_types);
-    }
-
-    public Map<String, Map<String, String>> getParameterValues() {
-        return Collections.unmodifiableMap(parameter_values);
+    public Map<Parameter, Map<String, String>> getParameters() {
+        return Collections.unmodifiableMap(parameters);
     }
 }

@@ -14,10 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.lecture.webapp.api;
+package it.cnr.istc.lecture.desktopapp.api.messages;
 
-import java.util.Collections;
-import java.util.Map;
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
@@ -25,28 +23,23 @@ import javax.json.bind.annotation.JsonbProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class Credentials {
+public class RemoveToken extends Message {
 
-    private final String email;
-    private final String password;
-    private final Map<Parameter, Map<String, String>> parameters;
+    private final long lesson_id;
+    private final long event_id;
 
     @JsonbCreator
-    public Credentials(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("parameters") Map<Parameter, Map<String, String>> parameters) {
-        this.email = email;
-        this.password = password;
-        this.parameters = parameters;
+    public RemoveToken(@JsonbProperty("lessonId") long lesson_id, @JsonbProperty("eventId") long event_id) {
+        super(MessageType.RemoveToken);
+        this.lesson_id = lesson_id;
+        this.event_id = event_id;
     }
 
-    public String getEmail() {
-        return email;
+    public long getLessonId() {
+        return lesson_id;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public Map<Parameter, Map<String, String>> getParameters() {
-        return Collections.unmodifiableMap(parameters);
+    public long getEventId() {
+        return event_id;
     }
 }

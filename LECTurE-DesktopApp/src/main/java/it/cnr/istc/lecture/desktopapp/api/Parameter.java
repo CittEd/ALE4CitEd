@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package it.cnr.istc.lecture.webapp.api;
+package it.cnr.istc.lecture.desktopapp.api;
 
 import java.util.Collections;
 import java.util.Map;
@@ -25,28 +25,22 @@ import javax.json.bind.annotation.JsonbProperty;
  *
  * @author Riccardo De Benedictis
  */
-public class Credentials {
+public class Parameter {
 
-    private final String email;
-    private final String password;
-    private final Map<Parameter, Map<String, String>> parameters;
+    private final String name;
+    private final Map<String, String> properties;
 
     @JsonbCreator
-    public Credentials(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("parameters") Map<Parameter, Map<String, String>> parameters) {
-        this.email = email;
-        this.password = password;
-        this.parameters = parameters;
+    public Parameter(@JsonbProperty("name") String name, @JsonbProperty("properties") Map<String, String> properties) {
+        this.name = name;
+        this.properties = properties;
     }
 
-    public String getEmail() {
-        return email;
+    public String getName() {
+        return name;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public Map<Parameter, Map<String, String>> getParameters() {
-        return Collections.unmodifiableMap(parameters);
+    public Map<String, String> getProperties() {
+        return Collections.unmodifiableMap(properties);
     }
 }

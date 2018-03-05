@@ -20,14 +20,12 @@ import it.cnr.istc.lecture.webapp.api.Credentials;
 import it.cnr.istc.lecture.webapp.api.InitResponse;
 import it.cnr.istc.lecture.webapp.api.Lesson;
 import it.cnr.istc.lecture.webapp.api.NewUserRequest;
-import it.cnr.istc.lecture.webapp.api.Parameter;
 import it.cnr.istc.lecture.webapp.api.User;
 import it.cnr.istc.lecture.webapp.api.messages.Event;
 import it.cnr.istc.lecture.webapp.api.model.LessonModel;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -98,9 +96,13 @@ public class LECTurEResource {
             em.persist(u);
             utx.commit();
             ctx.newUser(u.getId());
-            new_user.getParameterTypes().values().forEach(par -> ctx.newParameter(u.getId(), par));
-            new_user.getParameterValues().entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
-            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParameters(u.getId()), ctx.getParameterValues(u.getId()));
+            new_user.getParameters().entrySet().forEach(entry -> {
+                ctx.newParameter(u.getId(), entry.getKey());
+                if (entry.getValue() != null) {
+                    ctx.newParameterValue(u.getId(), entry.getKey().getName(), entry.getValue());
+                }
+            });
+            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParameters(u.getId()));
         } catch (IllegalStateException | SecurityException | HeuristicMixedException | HeuristicRollbackException | NotSupportedException | RollbackException | SystemException ex) {
             try {
                 utx.rollback();
@@ -116,7 +118,7 @@ public class LECTurEResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> getUsers() {
         List<UserEntity> users = em.createQuery("SELECT u FROM UserEntity u", UserEntity.class).getResultList();
-        return users.stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParameters(u.getId()), ctx.getParameterValues(u.getId()))).collect(Collectors.toList());
+        return users.stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParameters(u.getId()))).collect(Collectors.toList());
     }
 
     @GET
@@ -125,7 +127,7 @@ public class LECTurEResource {
     public Collection<User> findUsers(@PathParam("search_string") String search_string) {
         TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.first_name LIKE :search_string OR u.last_name LIKE :search_string", UserEntity.class);
         query.setParameter("search_string", search_string);
-        return query.getResultList().stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, null)).collect(Collectors.toList());
+        return query.getResultList().stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null)).collect(Collectors.toList());
     }
 
     @GET
@@ -134,7 +136,7 @@ public class LECTurEResource {
     public User getUser(@PathParam("user_id") long user_id) {
         UserEntity u = em.find(UserEntity.class, user_id);
         if (u != null) {
-            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParameters(u.getId()), ctx.getParameterValues(u.getId()));
+            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParameters(u.getId()));
         } else {
             throw new WebApplicationException("Cannot find user id");
         }
@@ -170,39 +172,31 @@ public class LECTurEResource {
             query.setParameter("password", credentials.getPassword());
             UserEntity u = query.getSingleResult();
 
-            credentials.getParameterTypes().values().forEach(par -> ctx.newParameter(u.getId(), par));
-            credentials.getParameterValues().entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
+            credentials.getParameters().entrySet().forEach(entry -> {
+                ctx.newParameter(u.getId(), entry.getKey());
+                if (entry.getValue() != null) {
+                    ctx.newParameterValue(u.getId(), entry.getKey().getName(), entry.getValue());
+                }
+            });
 
-            User user = new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, null);
+            User user = new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null);
             Collection<LessonModel> models = u.getModels().stream().map(model -> JSONB.fromJson(model.getModel(), LessonModel.class)).collect(Collectors.toList());
             List<Lesson> following_lessons = u.getLessons().stream().map(lesson -> {
                 Lesson l = ctx.getLessonManager(lesson.getId()).getLesson();
                 return new Lesson(l.getId(), l.getTeacherId(), l.getName(), l.getState(), l.getTime(), l.getModel(), l.getRoles(), null, l.getTokens());
             }).collect(Collectors.toList());
-            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.getParameters(std.getId()), ctx.getParameterValues(std.getId()))).collect(Collectors.toList());
+            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.getParameters(std.getId()))).collect(Collectors.toList());
             List<Lesson> followed_lessons = u.getRoles().stream().map(role -> {
                 Lesson l = ctx.getLessonManager(role.getLesson().getId()).getLesson();
                 List<Event> events = l.getEvents().stream().filter(e -> e.getRole().equals(role.getName())).collect(Collectors.toList());
                 return new Lesson(l.getId(), l.getTeacherId(), l.getName(), l.getState(), l.getTime(), null, l.getRoles(), events, null);
             }).collect(Collectors.toList());
-            List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), null, null)).collect(Collectors.toList());
+            List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), null)).collect(Collectors.toList());
 
             InitResponse init = new InitResponse(user, models, following_lessons, students, followed_lessons, teachers);
             return init;
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.UNAUTHORIZED);
-        }
-    }
-
-    @GET
-    @Path("parameter_types/{user_id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, Parameter> getParameterTypes(@PathParam("user_id") long user_id) {
-        Map<String, Parameter> par_types = ctx.getParameters(user_id);
-        if (par_types != null) {
-            return par_types;
-        } else {
-            throw new WebApplicationException("Cannot find user id");
         }
     }
 }
