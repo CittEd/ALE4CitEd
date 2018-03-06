@@ -30,16 +30,6 @@
             <version>2.26</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-binding</artifactId>
-            <version>2.26</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse</groupId>
-            <artifactId>yasson</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
             <version>1.2.0</version>
@@ -48,6 +38,11 @@
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart-fx</artifactId>
             <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>LECTurE-API</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
     

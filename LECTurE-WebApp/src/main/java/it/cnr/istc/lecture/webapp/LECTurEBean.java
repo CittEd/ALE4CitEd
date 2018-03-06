@@ -16,12 +16,13 @@
  */
 package it.cnr.istc.lecture.webapp;
 
-import it.cnr.istc.lecture.webapp.api.Lesson;
-import it.cnr.istc.lecture.webapp.api.Parameter;
-import it.cnr.istc.lecture.webapp.api.model.LessonModel;
+import it.cnr.istc.lecture.api.Lesson;
+import it.cnr.istc.lecture.api.Parameter;
+import it.cnr.istc.lecture.api.model.LessonModel;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import it.cnr.istc.lecture.webapp.solver.LessonManager;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -186,12 +187,13 @@ public class LECTurEBean {
     }
 
     @Lock(LockType.READ)
-    public Map<Parameter, Map<String, String>> getParameters(long user_id) {
-        Map<Parameter, Map<String, String>> pars = new HashMap<>();
-        for (Map.Entry<String, Parameter> entry : parameter_types.get(user_id).entrySet()) {
-            pars.put(entry.getValue(), parameter_values.get(user_id).get(entry.getKey()));
-        }
-        return pars;
+    public Map<String, Parameter> getParTypes(long user_id) {
+        return Collections.unmodifiableMap(parameter_types.get(user_id));
+    }
+
+    @Lock(LockType.READ)
+    public Map<String, Map<String, String>> getParValues(long user_id) {
+        return Collections.unmodifiableMap(parameter_values.get(user_id));
     }
 
     @Lock(LockType.WRITE)

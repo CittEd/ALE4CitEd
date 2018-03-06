@@ -16,7 +16,7 @@
  */
 package it.cnr.istc.lecture.desktopapp;
 
-import it.cnr.istc.lecture.desktopapp.api.User;
+import it.cnr.istc.lecture.api.User;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;

@@ -16,7 +16,7 @@
  */
 package it.cnr.istc.lecture.webapp.solver;
 
-import it.cnr.istc.lecture.webapp.api.model.EventTemplate;
+import it.cnr.istc.lecture.api.model.EventTemplate;
 
 /**
  *

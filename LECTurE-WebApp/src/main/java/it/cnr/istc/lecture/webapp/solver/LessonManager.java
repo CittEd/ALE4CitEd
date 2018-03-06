@@ -16,10 +16,10 @@
  */
 package it.cnr.istc.lecture.webapp.solver;
 
-import it.cnr.istc.lecture.webapp.api.Lesson;
-import it.cnr.istc.lecture.webapp.api.model.EventTemplate;
-import it.cnr.istc.lecture.webapp.api.model.LessonModel;
-import it.cnr.istc.lecture.webapp.api.model.Relation;
+import it.cnr.istc.lecture.api.Lesson;
+import it.cnr.istc.lecture.api.model.EventTemplate;
+import it.cnr.istc.lecture.api.model.LessonModel;
+import it.cnr.istc.lecture.api.model.Relation;
 import it.cnr.istc.lecture.webapp.time.TemporalListener;
 import it.cnr.istc.lecture.webapp.time.TemporalNetwork;
 import java.util.ArrayDeque;
