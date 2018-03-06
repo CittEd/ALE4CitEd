@@ -16,8 +16,6 @@
  */
 package it.cnr.istc.lecture.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Map;
 
@@ -34,8 +32,7 @@ public class User {
     private final Map<String, Parameter> par_types;
     private final Map<String, Map<String, String>> par_values;
 
-    @JsonCreator
-    public User(@JsonProperty("id") long id, @JsonProperty("email") String email, @JsonProperty("firstName") String firstName, @JsonProperty("lastName") String lastName, @JsonProperty("parTypes") Map<String, Parameter> par_types, @JsonProperty("parValues") Map<String, Map<String, String>> par_values) {
+    public User(long id, String email, String firstName, String lastName, Map<String, Parameter> par_types, Map<String, Map<String, String>> par_values) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
