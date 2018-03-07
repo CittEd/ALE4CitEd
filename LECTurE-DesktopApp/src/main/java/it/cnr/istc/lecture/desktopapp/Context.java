@@ -21,6 +21,7 @@ import it.cnr.istc.lecture.api.InitResponse;
 import it.cnr.istc.lecture.api.NewUserRequest;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.User;
+import it.cnr.istc.lecture.api.messages.Event;
 import it.cnr.istc.lecture.api.messages.NewParameter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,12 +32,15 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javax.json.bind.Jsonb;
@@ -92,6 +96,30 @@ public class Context {
      * Notice that each parameter can aggregate more than a single value.
      */
     private final ObservableList<ParameterValue> par_values = FXCollections.observableArrayList();
+    /**
+     * The received events.
+     */
+    private final ObservableList<Event> events = FXCollections.observableArrayList();
+    /**
+     * The lessons followed as a student.
+     */
+    private final ObservableList<FollowingLessonContext> following_lessons = FXCollections.observableArrayList();
+    private final Map<Long, FollowingLessonContext> id_following_lessons = new HashMap<>();
+    /**
+     * The followed teachers.
+     */
+    private final ObservableList<TeacherContext> teachers = FXCollections.observableArrayList(tch_ctx -> new Observable[]{tch_ctx.onlineProperty()});
+    private final Map<Long, TeacherContext> id_teachers = new HashMap<>();
+    /**
+     * The lessons followed as a teacher.
+     */
+    private final ObservableList<TeachingLessonContext> teaching_lessons = FXCollections.observableArrayList();
+    private final Map<Long, TeachingLessonContext> id_teaching_lessons = new HashMap<>();
+    /**
+     * The following students.
+     */
+    private final ObservableList<StudentContext> students = FXCollections.observableArrayList(std_ctx -> new Observable[]{std_ctx.onlineProperty()});
+    private final Map<Long, StudentContext> id_students = new HashMap<>();
 
     private Context() {
         try {
@@ -160,6 +188,62 @@ public class Context {
                 }
             }
         });
+
+        following_lessons.addListener((ListChangeListener.Change<? extends FollowingLessonContext> c) -> {
+            while (c.next()) {
+                c.getAddedSubList().forEach(flc -> id_following_lessons.put(flc.getLesson().id, flc));
+                c.getRemoved().forEach(flc -> id_following_lessons.remove(flc.getLesson().id));
+            }
+        });
+
+        teachers.addListener((ListChangeListener.Change<? extends TeacherContext> c) -> {
+            while (c.next()) {
+                for (TeacherContext tch_ctx : c.getAddedSubList()) {
+                    try {
+                        mqtt.subscribe(tch_ctx.getTeacher().id + "/output/on-line", (String topic, MqttMessage message) -> Platform.runLater(() -> tch_ctx.onlineProperty().set(Boolean.parseBoolean(new String(message.getPayload())))));
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                    id_teachers.put(tch_ctx.getTeacher().id, tch_ctx);
+                }
+                for (TeacherContext tch_ctx : c.getRemoved()) {
+                    try {
+                        mqtt.unsubscribe(tch_ctx.getTeacher().id + "/output/on-line");
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                    id_teachers.remove(tch_ctx.getTeacher().id);
+                }
+            }
+        });
+
+        teaching_lessons.addListener((ListChangeListener.Change<? extends TeachingLessonContext> c) -> {
+            while (c.next()) {
+                c.getAddedSubList().forEach(tlc -> id_teaching_lessons.put(tlc.getLesson().id, tlc));
+                c.getRemoved().forEach(tlc -> id_teaching_lessons.remove(tlc.getLesson().id));
+            }
+        });
+
+        students.addListener((ListChangeListener.Change<? extends StudentContext> c) -> {
+            while (c.next()) {
+                for (StudentContext std_ctx : c.getAddedSubList()) {
+                    try {
+                        mqtt.subscribe(std_ctx.getStudent().id + "/output/on-line", (String topic, MqttMessage message) -> Platform.runLater(() -> std_ctx.onlineProperty().set(Boolean.parseBoolean(new String(message.getPayload())))));
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                    id_students.put(std_ctx.getStudent().id, std_ctx);
+                }
+                for (StudentContext std_ctx : c.getRemoved()) {
+                    try {
+                        mqtt.unsubscribe(std_ctx.getStudent().id + "/output/on-line");
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                    id_students.remove(std_ctx.getStudent().id);
+                }
+            }
+        });
     }
 
     public Stage getStage() {
@@ -190,6 +274,12 @@ public class Context {
         init.user.par_types = par_tps;
         init.user.par_values = par_vls;
         user.set(init.user);
+
+        // we add the teachers..
+        init.teachers.forEach((teacher) -> teachers.add(new TeacherContext(teacher)));
+
+        // we add the students..
+        init.students.forEach((student) -> students.add(new StudentContext(student)));
     }
 
     public void logout() {

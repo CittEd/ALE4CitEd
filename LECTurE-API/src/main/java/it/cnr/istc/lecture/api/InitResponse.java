@@ -26,21 +26,36 @@ import java.util.Collection;
 public class InitResponse {
 
     public User user;
-    public Collection<LessonModel> models;
+    /**
+     * The lessons followed as a student.
+     */
     public Collection<Lesson> following_lessons;
-    public Collection<User> students;
-    public Collection<Lesson> followed_lessons;
+    /**
+     * The followed teachers.
+     */
     public Collection<User> teachers;
+    /**
+     * The associated lesson models.
+     */
+    public Collection<LessonModel> models;
+    /**
+     * The lessons followed as a teacher.
+     */
+    public Collection<Lesson> teaching_lessons;
+    /**
+     * The followed students.
+     */
+    public Collection<User> students;
 
     public InitResponse() {
     }
 
-    public InitResponse(User user, Collection<LessonModel> models, Collection<Lesson> following_lessons, Collection<User> students, Collection<Lesson> followed_lessons, Collection<User> teachers) {
+    public InitResponse(User user, Collection<Lesson> following_lessons, Collection<User> teachers, Collection<LessonModel> models, Collection<Lesson> teaching_lessons, Collection<User> students) {
         this.user = user;
-        this.models = models;
         this.following_lessons = following_lessons;
-        this.students = students;
-        this.followed_lessons = followed_lessons;
         this.teachers = teachers;
+        this.models = models;
+        this.teaching_lessons = teaching_lessons;
+        this.students = students;
     }
 }

@@ -185,7 +185,7 @@ public class LECTurEResource {
             }).collect(Collectors.toList());
             List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), null, null)).collect(Collectors.toList());
 
-            InitResponse init = new InitResponse(user, models, following_lessons, students, followed_lessons, teachers);
+            InitResponse init = new InitResponse(user, followed_lessons, teachers, models, following_lessons, students);
             return init;
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.UNAUTHORIZED);

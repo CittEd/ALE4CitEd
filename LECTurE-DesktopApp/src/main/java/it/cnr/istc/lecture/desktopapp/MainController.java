@@ -103,5 +103,6 @@ public class MainController implements Initializable {
 
     @FXML
     private void exit(ActionEvent event) {
+        Context.getContext().logout();
     }
 }
