@@ -18,6 +18,8 @@ package it.cnr.istc.lecture.api;
 
 import java.util.Collections;
 import java.util.Map;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -28,7 +30,8 @@ public class Parameter {
     private final String name;
     private final Map<String, String> properties;
 
-    public Parameter(String name, Map<String, String> properties) {
+    @JsonbCreator
+    public Parameter(@JsonbProperty("name") String name, @JsonbProperty("properties") Map<String, String> properties) {
         this.name = name;
         this.properties = properties;
     }

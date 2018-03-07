@@ -19,6 +19,8 @@ package it.cnr.istc.lecture.api;
 import it.cnr.istc.lecture.api.model.LessonModel;
 import java.util.Collection;
 import java.util.Collections;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -33,7 +35,8 @@ public class InitResponse {
     private final Collection<Lesson> followed_lessons;
     private final Collection<User> teachers;
 
-    public InitResponse(User user, Collection<LessonModel> models, Collection<Lesson> following_lessons, Collection<User> students, Collection<Lesson> followed_lessons, Collection<User> teachers) {
+    @JsonbCreator
+    public InitResponse(@JsonbProperty("user") User user, @JsonbProperty("models") Collection<LessonModel> models, @JsonbProperty("followingLessons") Collection<Lesson> following_lessons, @JsonbProperty("students") Collection<User> students, @JsonbProperty("followedLessons") Collection<Lesson> followed_lessons, @JsonbProperty("teachers") Collection<User> teachers) {
         this.user = user;
         this.models = models;
         this.following_lessons = following_lessons;

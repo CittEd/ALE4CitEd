@@ -18,6 +18,8 @@ package it.cnr.istc.lecture.api;
 
 import java.util.Collections;
 import java.util.Map;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -30,7 +32,8 @@ public class Credentials {
     private final Map<String, Parameter> par_types;
     private final Map<String, Map<String, String>> par_values;
 
-    public Credentials(String email, String password, Map<String, Parameter> par_types, Map<String, Map<String, String>> par_values) {
+    @JsonbCreator
+    public Credentials(@JsonbProperty("email") String email, @JsonbProperty("password") String password, @JsonbProperty("parTypes") Map<String, Parameter> par_types, @JsonbProperty("parValues") Map<String, Map<String, String>> par_values) {
         this.email = email;
         this.password = password;
         this.par_types = par_types;

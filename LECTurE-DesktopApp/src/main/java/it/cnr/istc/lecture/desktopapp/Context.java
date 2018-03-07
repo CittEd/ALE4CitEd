@@ -22,14 +22,19 @@ import it.cnr.istc.lecture.api.NewUserRequest;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.User;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.stage.Stage;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -43,6 +48,7 @@ import javax.ws.rs.core.MediaType;
 public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
+    private static final Jsonb JSONB = JsonbBuilder.create();
     private static Context ctx;
 
     public static Context getContext() {
@@ -102,12 +108,14 @@ public class Context {
     }
 
     private static Map<String, Parameter> load_pars() {
-        Map<String, Parameter> pars = new HashMap<>();
-        return pars;
+        Collection<Parameter> pars = JSONB.fromJson(Context.class.getResourceAsStream("/parameters/types.json"), new ArrayList<Parameter>() {
+        }.getClass().getGenericSuperclass());
+        return pars.stream().collect(Collectors.toMap(Parameter::getName, p -> p));
     }
 
     private static Map<String, Map<String, String>> load_par_valss() {
-        Map<String, Map<String, String>> par_vals = new HashMap<>();
+        Map<String, Map<String, String>> par_vals = JSONB.fromJson(Context.class.getResourceAsStream("/parameters/values.json"), new HashMap<String, Map<String, String>>() {
+        }.getClass().getGenericSuperclass());
         return par_vals;
     }
 }

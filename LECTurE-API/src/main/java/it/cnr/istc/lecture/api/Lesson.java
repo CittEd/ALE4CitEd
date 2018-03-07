@@ -21,6 +21,8 @@ import it.cnr.istc.lecture.api.messages.Token;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -38,7 +40,8 @@ public class Lesson {
     private final Collection<Event> events;
     private final Collection<Token> tokens;
 
-    public Lesson(long id, long teacher_id, String name, LessonState state, long time, Long model, Map<String, Long> roles, Collection<Event> events, Collection<Token> tokens) {
+    @JsonbCreator
+    public Lesson(@JsonbProperty("id") long id, @JsonbProperty("teacherId") long teacher_id, @JsonbProperty("name") String name, @JsonbProperty("state") LessonState state, @JsonbProperty("time") long time, @JsonbProperty("model") Long model, @JsonbProperty("roles") Map<String, Long> roles, @JsonbProperty("events") Collection<Event> events, @JsonbProperty("tokens") Collection<Token> tokens) {
         this.id = id;
         this.teacher_id = teacher_id;
         this.name = name;
