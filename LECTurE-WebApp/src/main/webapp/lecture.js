@@ -19,22 +19,23 @@ $(document).ready(function () {
     $.ajax({
         url: "http://localhost:8080/LECTurE-WebApp/LECTurE/users"
     }).then(function (users) {
-        var tbl = document.getElementsByTagName('table')[0];
-        var tbdy = document.createElement('tbody');
+        document.getElementById("users_count").textContent = users.length;
+
+        var tbl = document.getElementById("users_table");
+        var tbdy = document.createElement("tbody");
         for (var i = 0; i < users.length; i++) {
-            var tr = document.createElement('tr');
-            var td_email = document.createElement('td');
+            var tr = document.createElement("tr");
+            var td_email = document.createElement("td");
             td_email.appendChild(document.createTextNode(users[i].email));
             tr.appendChild(td_email);
-            var td_first_name = document.createElement('td');
+            var td_first_name = document.createElement("td");
             td_first_name.appendChild(document.createTextNode(users[i].first_name));
             tr.appendChild(td_first_name);
-            var td_last_name = document.createElement('td');
+            var td_last_name = document.createElement("td");
             td_last_name.appendChild(document.createTextNode(users[i].last_name));
             tr.appendChild(td_last_name);
             tbdy.appendChild(tr);
         }
         tbl.appendChild(tbdy);
-        body.appendChild(tbl);
     });
 });
