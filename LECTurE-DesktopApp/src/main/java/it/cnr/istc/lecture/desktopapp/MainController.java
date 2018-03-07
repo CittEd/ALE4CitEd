@@ -27,8 +27,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TabPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -38,15 +36,11 @@ import javafx.stage.Stage;
 public class MainController implements Initializable {
 
     @FXML
-    private VBox root;
-    @FXML
     private MenuItem login;
     @FXML
     private MenuItem logout;
     @FXML
     private MenuItem new_user;
-    @FXML
-    private TabPane tab_pane;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -61,6 +55,10 @@ public class MainController implements Initializable {
                 stage.setTitle("LECTurE (Learning Environment CiTtà Educante)");
             }
         });
+
+        login.disableProperty().bind(user.isNotNull());
+        new_user.disableProperty().bind(user.isNotNull());
+        logout.disableProperty().bind(user.isNull());
     }
 
     @FXML
@@ -74,7 +72,7 @@ public class MainController implements Initializable {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
                 alert.setTitle("Exception");
-                alert.setHeaderText(e.getLocalizedMessage());
+                alert.setHeaderText(e.getMessage());
                 alert.showAndWait();
             }
         });
@@ -82,6 +80,7 @@ public class MainController implements Initializable {
 
     @FXML
     private void logout(ActionEvent event) {
+        Context.getContext().logout();
     }
 
     @FXML
@@ -95,7 +94,7 @@ public class MainController implements Initializable {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
                 alert.setTitle("Exception");
-                alert.setHeaderText(e.getLocalizedMessage());
+                alert.setHeaderText(e.getMessage());
                 alert.showAndWait();
             }
         }
