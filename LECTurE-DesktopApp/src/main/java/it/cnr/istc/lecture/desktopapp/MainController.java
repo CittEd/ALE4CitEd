@@ -89,7 +89,7 @@ public class MainController implements Initializable {
         new_user_dialog.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
         new_user_dialog.showAndWait().ifPresent(user -> {
             try {
-                Context.getContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getPassword());
+                Context.getContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
