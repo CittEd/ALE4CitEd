@@ -95,7 +95,7 @@ public class Context {
     public void login(String email, String password) {
         Credentials credentials = new Credentials(email, password, load_pars(), load_par_valss());
         InitResponse init = target.path("login").request(MediaType.APPLICATION_JSON).post(Entity.json(credentials), InitResponse.class);
-        user.set(init.getUser());
+        user.set(init.user);
     }
 
     public void logout() {
@@ -110,7 +110,7 @@ public class Context {
     private static Map<String, Parameter> load_pars() {
         Collection<Parameter> pars = JSONB.fromJson(Context.class.getResourceAsStream("/parameters/types.json"), new ArrayList<Parameter>() {
         }.getClass().getGenericSuperclass());
-        return pars.stream().collect(Collectors.toMap(Parameter::getName, p -> p));
+        return pars.stream().collect(Collectors.toMap(p -> p.name, p -> p));
     }
 
     private static Map<String, Map<String, String>> load_par_valss() {

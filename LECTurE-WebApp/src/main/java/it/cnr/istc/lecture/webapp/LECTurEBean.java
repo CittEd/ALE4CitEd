@@ -210,7 +210,7 @@ public class LECTurEBean {
 
     @Lock(LockType.WRITE)
     public void newParameter(long user_id, Parameter p) {
-        parameter_types.get(user_id).put(p.getName(), p);
+        parameter_types.get(user_id).put(p.name, p);
     }
 
     @Lock(LockType.WRITE)
@@ -220,7 +220,7 @@ public class LECTurEBean {
 
     @Lock(LockType.WRITE)
     public void newLesson(Lesson lesson, LessonModel model) {
-        lessons.put(lesson.getId(), new LessonManager(lesson, model));
+        lessons.put(lesson.id, new LessonManager(lesson, model));
     }
 
     @Lock(LockType.READ)

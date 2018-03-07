@@ -56,7 +56,7 @@ public class MainController implements Initializable {
         ObjectProperty<User> user = Context.getContext().userProperty();
         user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
             if (newValue != null) {
-                stage.setTitle("LECTurE (Learning Environment CiTtà Educante) - " + newValue.getFirstName());
+                stage.setTitle("LECTurE (Learning Environment CiTtà Educante) - " + newValue.first_name);
             } else {
                 stage.setTitle("LECTurE (Learning Environment CiTtà Educante)");
             }

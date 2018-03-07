@@ -16,10 +16,7 @@
  */
 package it.cnr.istc.lecture.api;
 
-import java.util.Collections;
 import java.util.Map;
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -27,44 +24,22 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 public class User {
 
-    private final long id;
-    private final String email;
-    private final String firstName;
-    private final String lastName;
-    private final Map<String, Parameter> par_types;
-    private final Map<String, Map<String, String>> par_values;
+    public long id;
+    public String email;
+    public String first_name;
+    public String last_name;
+    public Map<String, Parameter> par_types;
+    public Map<String, Map<String, String>> par_values;
 
-    @JsonbCreator
-    public User(@JsonbProperty("id") long id, @JsonbProperty("email") String email, @JsonbProperty("firstName") String firstName, @JsonbProperty("lastName") String lastName, @JsonbProperty("parTypes") Map<String, Parameter> par_types, @JsonbProperty("parValues") Map<String, Map<String, String>> par_values) {
+    public User() {
+    }
+
+    public User(long id, String email, String firstName, String lastName, Map<String, Parameter> par_types, Map<String, Map<String, String>> par_values) {
         this.id = id;
         this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.first_name = firstName;
+        this.last_name = lastName;
         this.par_types = par_types;
         this.par_values = par_values;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public Map<String, Parameter> getParTypes() {
-        return Collections.unmodifiableMap(par_types);
-    }
-
-    public Map<String, Map<String, String>> getParValues() {
-        return Collections.unmodifiableMap(par_values);
     }
 }

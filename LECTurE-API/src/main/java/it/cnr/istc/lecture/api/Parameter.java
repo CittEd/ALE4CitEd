@@ -16,10 +16,7 @@
  */
 package it.cnr.istc.lecture.api;
 
-import java.util.Collections;
 import java.util.Map;
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -27,20 +24,6 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 public class Parameter {
 
-    private final String name;
-    private final Map<String, String> properties;
-
-    @JsonbCreator
-    public Parameter(@JsonbProperty("name") String name, @JsonbProperty("properties") Map<String, String> properties) {
-        this.name = name;
-        this.properties = properties;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Map<String, String> getProperties() {
-        return Collections.unmodifiableMap(properties);
-    }
+    public String name;
+    public Map<String, String> properties;
 }

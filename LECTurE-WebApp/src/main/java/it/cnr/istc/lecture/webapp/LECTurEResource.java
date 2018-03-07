@@ -89,15 +89,15 @@ public class LECTurEResource {
         try {
             utx.begin();
             UserEntity u = new UserEntity();
-            u.setEmail(new_user.getEmail());
-            u.setPassword(new_user.getPassword());
-            u.setFirstName(new_user.getFirstName());
-            u.setLastName(new_user.getLastName());
+            u.setEmail(new_user.email);
+            u.setPassword(new_user.password);
+            u.setFirstName(new_user.first_name);
+            u.setLastName(new_user.last_name);
             em.persist(u);
             utx.commit();
             ctx.newUser(u.getId());
-            new_user.getParTypes().values().forEach(par -> ctx.newParameter(u.getId(), par));
-            new_user.getParValues().entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
+            new_user.par_types.values().forEach(par -> ctx.newParameter(u.getId(), par));
+            new_user.par_values.entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
             return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()));
         } catch (IllegalStateException | SecurityException | HeuristicMixedException | HeuristicRollbackException | NotSupportedException | RollbackException | SystemException ex) {
             try {
@@ -164,24 +164,24 @@ public class LECTurEResource {
     public InitResponse login(Credentials credentials) {
         try {
             TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.email = :email AND u.password = :password", UserEntity.class);
-            query.setParameter("email", credentials.getEmail());
-            query.setParameter("password", credentials.getPassword());
+            query.setParameter("email", credentials.email);
+            query.setParameter("password", credentials.password);
             UserEntity u = query.getSingleResult();
 
-            credentials.getParTypes().values().forEach(par -> ctx.newParameter(u.getId(), par));
-            credentials.getParValues().entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
+            credentials.par_types.values().forEach(par -> ctx.newParameter(u.getId(), par));
+            credentials.par_values.entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
 
             User user = new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, null);
             Collection<LessonModel> models = u.getModels().stream().map(model -> JSONB.fromJson(model.getModel(), LessonModel.class)).collect(Collectors.toList());
             List<Lesson> following_lessons = u.getLessons().stream().map(lesson -> {
                 Lesson l = ctx.getLessonManager(lesson.getId()).getLesson();
-                return new Lesson(l.getId(), l.getTeacherId(), l.getName(), l.getState(), l.getTime(), l.getModel(), l.getRoles(), null, l.getTokens());
+                return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, l.model, l.roles, null, l.tokens);
             }).collect(Collectors.toList());
             List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
             List<Lesson> followed_lessons = u.getRoles().stream().map(role -> {
                 Lesson l = ctx.getLessonManager(role.getLesson().getId()).getLesson();
-                List<Event> events = l.getEvents().stream().filter(e -> e.getRole().equals(role.getName())).collect(Collectors.toList());
-                return new Lesson(l.getId(), l.getTeacherId(), l.getName(), l.getState(), l.getTime(), null, l.getRoles(), events, null);
+                List<Event> events = l.events.stream().filter(e -> e.getRole().equals(role.getName())).collect(Collectors.toList());
+                return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, null, l.roles, events, null);
             }).collect(Collectors.toList());
             List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), null, null)).collect(Collectors.toList());
 

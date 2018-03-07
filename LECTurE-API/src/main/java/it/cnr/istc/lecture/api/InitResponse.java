@@ -18,9 +18,6 @@ package it.cnr.istc.lecture.api;
 
 import it.cnr.istc.lecture.api.model.LessonModel;
 import java.util.Collection;
-import java.util.Collections;
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -28,44 +25,22 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 public class InitResponse {
 
-    private final User user;
-    private final Collection<LessonModel> models;
-    private final Collection<Lesson> following_lessons;
-    private final Collection<User> students;
-    private final Collection<Lesson> followed_lessons;
-    private final Collection<User> teachers;
+    public User user;
+    public Collection<LessonModel> models;
+    public Collection<Lesson> following_lessons;
+    public Collection<User> students;
+    public Collection<Lesson> followed_lessons;
+    public Collection<User> teachers;
 
-    @JsonbCreator
-    public InitResponse(@JsonbProperty("user") User user, @JsonbProperty("models") Collection<LessonModel> models, @JsonbProperty("followingLessons") Collection<Lesson> following_lessons, @JsonbProperty("students") Collection<User> students, @JsonbProperty("followedLessons") Collection<Lesson> followed_lessons, @JsonbProperty("teachers") Collection<User> teachers) {
+    public InitResponse() {
+    }
+
+    public InitResponse(User user, Collection<LessonModel> models, Collection<Lesson> following_lessons, Collection<User> students, Collection<Lesson> followed_lessons, Collection<User> teachers) {
         this.user = user;
         this.models = models;
         this.following_lessons = following_lessons;
         this.students = students;
         this.followed_lessons = followed_lessons;
         this.teachers = teachers;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public Collection<LessonModel> getModels() {
-        return Collections.unmodifiableCollection(models);
-    }
-
-    public Collection<Lesson> getFollowingLessons() {
-        return Collections.unmodifiableCollection(following_lessons);
-    }
-
-    public Collection<User> getStudents() {
-        return Collections.unmodifiableCollection(students);
-    }
-
-    public Collection<Lesson> getFollowedLessons() {
-        return Collections.unmodifiableCollection(followed_lessons);
-    }
-
-    public Collection<User> getTeachers() {
-        return Collections.unmodifiableCollection(teachers);
     }
 }

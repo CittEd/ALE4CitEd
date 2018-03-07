@@ -19,10 +19,7 @@ package it.cnr.istc.lecture.api;
 import it.cnr.istc.lecture.api.messages.Event;
 import it.cnr.istc.lecture.api.messages.Token;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
 
 /**
  *
@@ -30,18 +27,20 @@ import javax.json.bind.annotation.JsonbProperty;
  */
 public class Lesson {
 
-    private final long id;
-    private final long teacher_id;
-    private final String name;
-    private final LessonState state;
-    private final long time;
-    private final Long model;
-    private final Map<String, Long> roles;
-    private final Collection<Event> events;
-    private final Collection<Token> tokens;
+    public long id;
+    public long teacher_id;
+    public String name;
+    public LessonState state;
+    public long time;
+    public Long model;
+    public Map<String, Long> roles;
+    public Collection<Event> events;
+    public Collection<Token> tokens;
 
-    @JsonbCreator
-    public Lesson(@JsonbProperty("id") long id, @JsonbProperty("teacherId") long teacher_id, @JsonbProperty("name") String name, @JsonbProperty("state") LessonState state, @JsonbProperty("time") long time, @JsonbProperty("model") Long model, @JsonbProperty("roles") Map<String, Long> roles, @JsonbProperty("events") Collection<Event> events, @JsonbProperty("tokens") Collection<Token> tokens) {
+    public Lesson() {
+    }
+
+    public Lesson(long id, long teacher_id, String name, LessonState state, long time, Long model, Map<String, Long> roles, Collection<Event> events, Collection<Token> tokens) {
         this.id = id;
         this.teacher_id = teacher_id;
         this.name = name;
@@ -51,42 +50,6 @@ public class Lesson {
         this.roles = roles;
         this.events = events;
         this.tokens = tokens;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public long getTeacherId() {
-        return teacher_id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public LessonState getState() {
-        return state;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
-    public Long getModel() {
-        return model;
-    }
-
-    public Map<String, Long> getRoles() {
-        return Collections.unmodifiableMap(roles);
-    }
-
-    public Collection<Event> getEvents() {
-        return Collections.unmodifiableCollection(events);
-    }
-
-    public Collection<Token> getTokens() {
-        return Collections.unmodifiableCollection(tokens);
     }
 
     public enum LessonState {
