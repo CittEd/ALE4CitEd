@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.MainController">
+<VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.MainController">
     <children>
         <MenuBar>
             <menus>
@@ -46,9 +46,27 @@
                     <content>
                         <HBox>
                             <children>
-                                <Accordion>
+                                <Accordion fx:id="learn_accord">
                                     <panes>
                                         <TitledPane text="Events">
+                                            <content>
+                                                <VBox>
+                                                    <children>
+                                                        <ListView fx:id="events" VBox.vgrow="ALWAYS" />
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </TitledPane>
+                                        <TitledPane text="Lessons">
+                                            <content>
+                                                <VBox>
+                                                    <children>
+                                                        <ListView fx:id="following_lessons" VBox.vgrow="ALWAYS" />
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </TitledPane>
+                                        <TitledPane text="Teachers">
                                             <content>
                                                 <GridPane hgap="10.0" vgap="10.0">
                                                     <columnConstraints>
@@ -61,15 +79,13 @@
                                                         <RowConstraints vgrow="ALWAYS" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <ListView prefHeight="200.0" prefWidth="200.0" GridPane.rowSpan="3" />
-                                                        <Button mnemonicParsing="false" text="Button" GridPane.columnIndex="1" />
-                                                        <Button mnemonicParsing="false" text="Button" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <ListView fx:id="teachers" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
+                                                        <Button fx:id="add_teachers_button" mnemonicParsing="false" GridPane.columnIndex="1" />
+                                                        <Button fx:id="remove_teachers_button" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
                                                 </GridPane>
                                             </content>
                                         </TitledPane>
-                                        <TitledPane text="Lessons" />
-                                        <TitledPane text="Teachers" />
                                     </panes>
                                 </Accordion>
                             </children>
@@ -83,10 +99,37 @@
                     <content>
                         <HBox>
                             <children>
-                                <Accordion>
+                                <Accordion fx:id="teach_accord">
                                     <panes>
-                                        <TitledPane text="Lessons" />
-                                        <TitledPane text="Students" />
+                                        <TitledPane text="Lessons">
+                                            <content>
+                                                <GridPane hgap="10.0" vgap="10.0">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="ALWAYS" />
+                                                        <ColumnConstraints hgrow="NEVER" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints vgrow="NEVER" />
+                                                        <RowConstraints vgrow="NEVER" />
+                                                        <RowConstraints vgrow="ALWAYS" />
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <ListView fx:id="teaching_lessons" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
+                                                        <Button fx:id="add_lesson_button" mnemonicParsing="false" GridPane.columnIndex="1" />
+                                                        <Button fx:id="remove_lessons_button" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                    </children>
+                                                </GridPane>
+                                            </content>
+                                        </TitledPane>
+                                        <TitledPane text="Students">
+                                            <content>
+                                                <VBox>
+                                                    <children>
+                                                        <ListView fx:id="students" VBox.vgrow="ALWAYS" />
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </TitledPane>
                                     </panes>
                                 </Accordion>
                             </children>
@@ -100,10 +143,10 @@
                     <content>
                         <VBox>
                             <children>
-                                <TableView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                <TableView fx:id="parameters" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                                     <columns>
-                                        <TableColumn maxWidth="-1.0" minWidth="100.0" prefWidth="-1.0" text="Name" />
-                                        <TableColumn maxWidth="-1.0" minWidth="100.0" prefWidth="-1.0" text="Valule" />
+                                        <TableColumn fx:id="par_names" maxWidth="-1.0" minWidth="100.0" prefWidth="-1.0" text="Name" />
+                                        <TableColumn fx:id="par_vals" maxWidth="-1.0" minWidth="100.0" prefWidth="-1.0" text="Valule" />
                                     </columns>
                                 </TableView>
                             </children>

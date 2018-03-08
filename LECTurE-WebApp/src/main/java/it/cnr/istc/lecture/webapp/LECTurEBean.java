@@ -18,6 +18,7 @@ package it.cnr.istc.lecture.webapp;
 
 import it.cnr.istc.lecture.api.Lesson;
 import it.cnr.istc.lecture.api.Parameter;
+import it.cnr.istc.lecture.api.messages.NewStudent;
 import it.cnr.istc.lecture.api.model.LessonModel;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import it.cnr.istc.lecture.webapp.solver.LessonManager;
@@ -36,6 +37,8 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.UriBuilder;
@@ -50,6 +53,7 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
@@ -63,6 +67,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class LECTurEBean {
 
     private static final Logger LOG = Logger.getLogger(LECTurEBean.class.getName());
+    public static final Jsonb JSONB = JsonbBuilder.create();
     private final Properties properties = new Properties();
     private BrokerService broker;
     private MqttClient mqtt;
@@ -226,5 +231,13 @@ public class LECTurEBean {
     @Lock(LockType.READ)
     public LessonManager getLessonManager(long lesson_id) {
         return lessons.get(lesson_id);
+    }
+
+    public void addTeacher(long student_id, long teacher_id) {
+        try {
+            mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(student_id)).getBytes(), 1, false);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 }

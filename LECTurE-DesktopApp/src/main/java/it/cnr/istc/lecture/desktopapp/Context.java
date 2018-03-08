@@ -18,11 +18,14 @@ package it.cnr.istc.lecture.desktopapp;
 
 import it.cnr.istc.lecture.api.Credentials;
 import it.cnr.istc.lecture.api.InitResponse;
+import it.cnr.istc.lecture.api.Lesson;
 import it.cnr.istc.lecture.api.NewUserRequest;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.messages.Event;
+import it.cnr.istc.lecture.api.messages.LostParameter;
 import it.cnr.istc.lecture.api.messages.NewParameter;
+import it.cnr.istc.lecture.api.model.LessonModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +52,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -65,7 +70,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
-    private static final Jsonb JSONB = JsonbBuilder.create();
+    public static final Jsonb JSONB = JsonbBuilder.create();
     private static Context ctx;
 
     public static Context getContext() {
@@ -86,7 +91,8 @@ public class Context {
     /**
      * The current user's parameter types.
      */
-    private final Map<String, Parameter> par_types = new HashMap<>();
+    private final ObservableList<Parameter> par_types = FXCollections.observableArrayList();
+    private final Map<String, Parameter> id_par_types = new HashMap<>();
     /**
      * The current user's parameter values.
      */
@@ -136,6 +142,10 @@ public class Context {
                     mqtt.close();
                     par_values.clear();
                     par_vals.clear();
+                    for (Parameter par : par_types) {
+                        // we broadcast the lost of a parameter..
+                        mqtt.publish(newValue.id + "/output", JSONB.toJson(new LostParameter(par.name)).getBytes(), 1, false);
+                    }
                     par_types.clear();
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
@@ -168,7 +178,7 @@ public class Context {
                     mqtt.connect(options);
 
                     for (Parameter par : newValue.par_types.values()) {
-                        par_types.put(par.name, par);
+                        par_types.add(par);
                         // we broadcast the existence of a new parameter..
                         mqtt.publish(newValue.id + "/output", JSONB.toJson(new NewParameter(par)).getBytes(), 1, false);
                     }
@@ -244,6 +254,17 @@ public class Context {
                 }
             }
         });
+
+        par_types.addListener((ListChangeListener.Change<? extends Parameter> c) -> {
+            while (c.next()) {
+                for (Parameter par : c.getAddedSubList()) {
+                    id_par_types.put(par.name, par);
+                }
+                for (Parameter par : c.getRemoved()) {
+                    id_par_types.remove(par.name);
+                }
+            }
+        });
     }
 
     public Stage getStage() {
@@ -264,6 +285,86 @@ public class Context {
 
     public ObjectProperty<User> userProperty() {
         return user;
+    }
+
+    public ObservableList<ParameterValue> parametersProperty() {
+        return par_values;
+    }
+
+    public void setParameterValue(String par_name, String sub_par, String value) {
+        par_vals.get(par_name).get(sub_par).set(value);
+        Map<String, String> val = new HashMap<>();
+        for (Map.Entry<String, StringProperty> v_val : par_vals.get(par_name).entrySet()) {
+            val.put(v_val.getKey(), v_val.getValue().get());
+        }
+        try {
+            mqtt.publish(user.get().id + "/output/" + par_name, JSONB.toJson(val).getBytes(), 1, true);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public ObservableList<Event> eventsProperty() {
+        return events;
+    }
+
+    public ObservableList<FollowingLessonContext> followingLessonsProperty() {
+        return following_lessons;
+    }
+
+    public void addTeacher(User teacher) {
+        Form form = new Form();
+        form.param("student_id", Long.toString(user.get().id));
+        form.param("teacher_id", Long.toString(teacher.id));
+        target.path("add_teacher")
+                .request(MediaType.APPLICATION_JSON)
+                .put(Entity.form(form));
+        teachers.add(new TeacherContext(teacher));
+    }
+
+    public void removeTeacher(TeacherContext tch_ctx) {
+        Form form = new Form();
+        form.param("student_id", Long.toString(user.get().id));
+        form.param("teacher_id", Long.toString(tch_ctx.getTeacher().id));
+        target.path("remove_teacher")
+                .request(MediaType.APPLICATION_JSON)
+                .put(Entity.form(form));
+        teachers.remove(tch_ctx);
+    }
+
+    public ObservableList<TeacherContext> teachersProperty() {
+        return teachers;
+    }
+
+    public void addLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {
+        Form form = new Form();
+        form.param("teacher_id", Long.toString(user.get().id));
+        form.param("lesson_name", lesson_name);
+        form.param("model", JSONB.toJson(model));
+        form.param("roles", JSONB.toJson(roles));
+        Lesson lesson = target.path("lessons")
+                .path("new_lesson_by_model")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form), Lesson.class);
+        teaching_lessons.add(new TeachingLessonContext(lesson, model));
+    }
+
+    public void removeLesson(TeachingLessonContext l_ctx) {
+        Form form = new Form();
+        form.param("teacher_id", Long.toString(user.get().id));
+        form.param("lesson_id", Long.toString(l_ctx.getLesson().id));
+        target.path("remove_lesson")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.form(form));
+        teaching_lessons.remove(l_ctx);
+    }
+
+    public ObservableList<TeachingLessonContext> teachingLessonsProperty() {
+        return teaching_lessons;
+    }
+
+    public ObservableList<StudentContext> studentsProperty() {
+        return students;
     }
 
     public void login(String email, String password) {
@@ -290,10 +391,15 @@ public class Context {
         Map<String, Parameter> par_tps = load_pars();
         Map<String, Map<String, String>> par_vls = load_par_vals();
         NewUserRequest new_user = new NewUserRequest(email, password, first_name, last_name, par_tps, par_vls);
-        User u = target.path("newUser").request(MediaType.APPLICATION_JSON).post(Entity.json(new_user), User.class);
+        User u = target.path("new_user").request(MediaType.APPLICATION_JSON).post(Entity.json(new_user), User.class);
         u.par_types = par_tps;
         u.par_values = par_vls;
         user.set(u);
+    }
+
+    public Collection<User> findUsers(String search_string) {
+        return target.path("find_users").path(search_string).request(MediaType.APPLICATION_JSON).get(new GenericType<Collection<User>>() {
+        });
     }
 
     private static Map<String, Parameter> load_pars() {

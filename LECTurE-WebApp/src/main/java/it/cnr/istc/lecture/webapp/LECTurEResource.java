@@ -45,11 +45,13 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
@@ -82,7 +84,7 @@ public class LECTurEResource {
     }
 
     @POST
-    @Path("newUser")
+    @Path("new_user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public User newUser(NewUserRequest new_user) {
@@ -139,7 +141,7 @@ public class LECTurEResource {
     }
 
     @DELETE
-    @Path("delete_user/{user_id}")
+    @Path("users/{user_id}")
     public void deleteUser(@PathParam("user_id") long user_id) {
         try {
             utx.begin();
@@ -147,6 +149,28 @@ public class LECTurEResource {
             em.remove(u);
             utx.commit();
             ctx.deleteUser(user_id);
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("add_teacher")
+    public void add_teacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
+        try {
+            utx.begin();
+            UserEntity student = em.find(UserEntity.class, student_id);
+            UserEntity teacher = em.find(UserEntity.class, teacher_id);
+            student.addTeacher(teacher);
+            teacher.addStudent(student);
+            em.persist(student);
+            utx.commit();
+            ctx.addTeacher(student_id, teacher_id);
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
