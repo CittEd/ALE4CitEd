@@ -17,6 +17,7 @@
 package it.cnr.istc.lecture.api;
 
 import it.cnr.istc.lecture.api.model.LessonModel;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -29,33 +30,33 @@ public class InitResponse {
     /**
      * The lessons followed as a student.
      */
-    public Collection<Lesson> following_lessons;
+    public ArrayList<Lesson> following_lessons;
     /**
      * The followed teachers.
      */
-    public Collection<User> teachers;
+    public ArrayList<User> teachers;
     /**
      * The associated lesson models.
      */
-    public Collection<LessonModel> models;
+    public ArrayList<LessonModel> models;
     /**
      * The lessons followed as a teacher.
      */
-    public Collection<Lesson> teaching_lessons;
+    public ArrayList<Lesson> teaching_lessons;
     /**
      * The followed students.
      */
-    public Collection<User> students;
+    public ArrayList<User> students;
 
     public InitResponse() {
     }
 
     public InitResponse(User user, Collection<Lesson> following_lessons, Collection<User> teachers, Collection<LessonModel> models, Collection<Lesson> teaching_lessons, Collection<User> students) {
         this.user = user;
-        this.following_lessons = following_lessons;
-        this.teachers = teachers;
-        this.models = models;
-        this.teaching_lessons = teaching_lessons;
-        this.students = students;
+        this.following_lessons = new ArrayList<>(following_lessons);
+        this.teachers = new ArrayList<>(teachers);
+        this.models = new ArrayList<>(models);
+        this.teaching_lessons = new ArrayList<>(teaching_lessons);
+        this.students = new ArrayList<>(students);
     }
 }

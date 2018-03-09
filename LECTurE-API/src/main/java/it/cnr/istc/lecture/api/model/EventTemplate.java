@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.lecture.api.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -29,8 +30,8 @@ public class EventTemplate {
     public String role;
     public Condition trigger_condition;
     public Condition execution_condition;
-    public Collection<String> events;
-    public Collection<Relation> relations;
+    public ArrayList<String> events;
+    public ArrayList<Relation> relations;
 
     public EventTemplate() {
     }
@@ -41,8 +42,8 @@ public class EventTemplate {
         this.role = role;
         this.trigger_condition = trigger_condition;
         this.execution_condition = execution_condition;
-        this.events = events;
-        this.relations = relations;
+        this.events = new ArrayList<>(events);
+        this.relations = new ArrayList<>(relations);
     }
 
     public enum EventTemplateType {

@@ -18,7 +18,9 @@ package it.cnr.istc.lecture.api;
 
 import it.cnr.istc.lecture.api.messages.Event;
 import it.cnr.istc.lecture.api.messages.Token;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,9 +35,9 @@ public class Lesson {
     public LessonState state;
     public long time;
     public Long model;
-    public Map<String, Long> roles;
-    public Collection<Event> events;
-    public Collection<Token> tokens;
+    public HashMap<String, Long> roles;
+    public ArrayList<Event> events;
+    public ArrayList<Token> tokens;
 
     public Lesson() {
     }
@@ -47,9 +49,9 @@ public class Lesson {
         this.state = state;
         this.time = time;
         this.model = model;
-        this.roles = roles;
-        this.events = events;
-        this.tokens = tokens;
+        this.roles = new HashMap<>(roles);
+        this.events = new ArrayList<>(events);
+        this.tokens = new ArrayList<>(tokens);
     }
 
     public enum LessonState {

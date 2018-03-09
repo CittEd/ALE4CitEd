@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.lecture.api.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -25,7 +26,7 @@ import java.util.Collection;
  */
 public class AndCondition extends Condition {
 
-    public Collection<Condition> conditions;
+    public ArrayList<Condition> conditions;
 
     public AndCondition() {
     }
@@ -36,6 +37,6 @@ public class AndCondition extends Condition {
 
     public AndCondition(Collection<Condition> conditions) {
         super(ConditionType.AndCondition);
-        this.conditions = conditions;
+        this.conditions = new ArrayList<>(conditions);
     }
 }

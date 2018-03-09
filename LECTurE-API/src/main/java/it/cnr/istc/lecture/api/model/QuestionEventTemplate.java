@@ -16,9 +16,8 @@
  */
 package it.cnr.istc.lecture.api.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  *
@@ -27,15 +26,15 @@ import java.util.List;
 public class QuestionEventTemplate extends EventTemplate {
 
     public String question;
-    public List<Answer> answers;
+    public ArrayList<Answer> answers;
 
     public QuestionEventTemplate() {
     }
 
-    public QuestionEventTemplate(String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String question, List<Answer> answers) {
+    public QuestionEventTemplate(String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String question, Collection<Answer> answers) {
         super(EventTemplateType.QuestionEventTemplate, name, role, trigger_condition, execution_condition, events, relations);
         this.question = question;
-        this.answers = answers;
+        this.answers = new ArrayList<>(answers);
     }
 
     public static class Answer {

@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.lecture.api.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -26,10 +27,10 @@ public class LessonModel {
 
     public long id;
     public String name;
-    public Collection<String> roles;
-    public Collection<EventTemplate> model;
-    public Collection<String> events;
-    public Collection<Relation> relations;
+    public ArrayList<String> roles;
+    public ArrayList<EventTemplate> model;
+    public ArrayList<String> events;
+    public ArrayList<Relation> relations;
 
     public LessonModel() {
     }
@@ -37,9 +38,9 @@ public class LessonModel {
     public LessonModel(long id, String name, Collection<String> roles, Collection<EventTemplate> model, Collection<String> events, Collection<Relation> relations) {
         this.id = id;
         this.name = name;
-        this.roles = roles;
-        this.model = model;
-        this.events = events;
-        this.relations = relations;
+        this.roles = new ArrayList<>(roles);
+        this.model = new ArrayList<>(model);
+        this.events = new ArrayList<>(events);
+        this.relations = new ArrayList<>(relations);
     }
 }

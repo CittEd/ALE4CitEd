@@ -144,7 +144,7 @@ public class Context {
                     par_vals.clear();
                     for (Parameter par : par_types) {
                         // we broadcast the lost of a parameter..
-                        mqtt.publish(newValue.id + "/output", JSONB.toJson(new LostParameter(par.name)).getBytes(), 1, false);
+                        mqtt.publish(oldValue.id + "/output", JSONB.toJson(new LostParameter(par.name)).getBytes(), 1, false);
                     }
                     par_types.clear();
                 } catch (MqttException ex) {
