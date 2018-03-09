@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/9.0.4" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.MainController">
+<VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.MainController">
     <children>
         <MenuBar>
             <menus>
@@ -143,11 +143,14 @@
                     <content>
                         <VBox>
                             <children>
-                                <TableView fx:id="parameters" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                <TableView fx:id="parameters" editable="true" VBox.vgrow="ALWAYS">
                                     <columns>
-                                        <TableColumn fx:id="par_names" maxWidth="-1.0" minWidth="100.0" prefWidth="-1.0" text="Name" />
-                                        <TableColumn fx:id="par_vals" maxWidth="-1.0" minWidth="100.0" prefWidth="-1.0" text="Valule" />
+                                        <TableColumn fx:id="par_names" editable="false" prefWidth="75.0" text="Name" />
+                                        <TableColumn fx:id="par_vals" prefWidth="75.0" text="Value" />
                                     </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                    </columnResizePolicy>
                                 </TableView>
                             </children>
                             <padding>

@@ -138,14 +138,14 @@ public class Context {
             if (oldValue != null) {
                 // we clear the current data..
                 try {
-                    mqtt.disconnect();
-                    mqtt.close();
-                    par_values.clear();
-                    par_vals.clear();
                     for (Parameter par : par_types) {
                         // we broadcast the lost of a parameter..
                         mqtt.publish(oldValue.id + "/output", JSONB.toJson(new LostParameter(par.name)).getBytes(), 1, false);
                     }
+                    mqtt.disconnect();
+                    mqtt.close();
+                    par_values.clear();
+                    par_vals.clear();
                     par_types.clear();
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);

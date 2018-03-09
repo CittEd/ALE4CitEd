@@ -24,6 +24,7 @@ import it.cnr.istc.lecture.api.messages.URLEvent;
 import it.cnr.istc.lecture.desktopapp.Context.ParameterValue;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -197,7 +198,6 @@ public class MainController implements Initializable {
         });
 
         parameters.setItems(Context.getContext().parametersProperty());
-        parameters.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         par_names.setCellValueFactory(new PropertyValueFactory<>("name"));
         par_vals.setCellValueFactory(new PropertyValueFactory<>("value"));
         par_vals.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -250,7 +250,7 @@ public class MainController implements Initializable {
 
     @FXML
     private void exit(ActionEvent event) {
-        Context.getContext().logout();
+        Platform.exit();
     }
 
     public void add_teachers() {
