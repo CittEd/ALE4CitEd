@@ -23,6 +23,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 
 /**
  *
@@ -58,6 +60,8 @@ public class NewUserDialog extends Dialog<NewUserDialog.NewUserResult> {
 
         getDialogPane().getButtonTypes().add(create_button);
         getDialogPane().lookupButton(create_button).disableProperty().bind(email_field.textProperty().isEmpty().or(password_field.textProperty().isEmpty()).or(first_name_field.textProperty().isEmpty()).or(last_name_field.textProperty().isEmpty()));
+        getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        ((Stage) getDialogPane().getScene().getWindow()).getIcons().addAll(Context.getContext().getStage().getIcons());
         setResultConverter((ButtonType param) -> param == create_button ? new NewUserResult(email_field.getText(), password_field.getText(), first_name_field.getText(), last_name_field.getText()) : null);
     }
 

@@ -31,14 +31,18 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -48,7 +52,9 @@ import javafx.scene.layout.GridPane;
 import static javafx.scene.layout.GridPane.setHgrow;
 import static javafx.scene.layout.GridPane.setVgrow;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -61,7 +67,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
 
     private static final FileChooser FILE_CHOOSER = new FileChooser();
     private final GridPane grid = new GridPane();
-    private final TextField lesson_type_name = new TextField();
+    private final ComboBox<LessonModel> lesson_types = new ComboBox<>();
     private final TextField lesson_name = new TextField();
     private final Button open_button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FILE_CODE_ALT));
     private final ObservableList<StudentRole> roles = FXCollections.observableArrayList();
@@ -75,7 +81,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
     public AddLessonDialog() {
         grid.setHgap(10);
         grid.setVgap(10);
-        setHgrow(lesson_type_name, Priority.ALWAYS);
+        setHgrow(lesson_types, Priority.ALWAYS);
         setHgrow(lesson_name, Priority.ALWAYS);
         setVgrow(roles_table_view, Priority.ALWAYS);
         setHgrow(roles_table_view, Priority.ALWAYS);
@@ -83,9 +89,39 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         setTitle("Add lesson");
 
         grid.add(new Label("Lesson type:"), 0, 0);
-        lesson_type_name.setPromptText("Lesson type");
-        lesson_type_name.setEditable(false);
-        grid.add(lesson_type_name, 1, 0);
+        lesson_types.setPromptText("Lesson type");
+        lesson_types.setEditable(false);
+        lesson_types.setItems(Context.getContext().modelsProperty());
+        lesson_types.valueProperty().addListener((ObservableValue<? extends LessonModel> observable, LessonModel oldValue, LessonModel newValue) -> {
+            lesson_model = newValue;
+            roles.clear();
+            lesson_model.roles.forEach(role -> roles.add(new StudentRole(role, null)));
+            getDialogPane().lookupButton(add_button).disableProperty().unbind();
+            getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_types.valueProperty().isNull().or(lesson_name.textProperty().isEmpty()).or(new StudentRoleBinding()));
+        });
+        lesson_types.setCellFactory((ListView<LessonModel> param) -> new ListCell<LessonModel>() {
+            @Override
+            public void updateItem(LessonModel item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.name);
+                }
+            }
+        });
+        lesson_types.setConverter(new StringConverter<LessonModel>() {
+            @Override
+            public String toString(LessonModel object) {
+                return object.name;
+            }
+
+            @Override
+            public LessonModel fromString(String string) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        grid.add(lesson_types, 1, 0);
         grid.add(open_button, 2, 0);
         grid.add(new Label("Lesson name:"), 0, 1);
         lesson_name.setPromptText("Lesson name");
@@ -131,12 +167,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             File lesson_file = FILE_CHOOSER.showOpenDialog(Context.getContext().getStage());
             if (lesson_file != null) {
                 try {
-                    lesson_model = Context.JSONB.fromJson(new FileInputStream(lesson_file), LessonModel.class);
-                    lesson_type_name.setText(lesson_model.name);
-                    lesson_model.roles.forEach(role -> roles.add(new StudentRole(role, null)));
-
-                    getDialogPane().lookupButton(add_button).disableProperty().unbind();
-                    getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_type_name.textProperty().isEmpty().or(lesson_name.textProperty().isEmpty()).or(new StudentRoleBinding()));
+                    lesson_types.setValue(Context.JSONB.fromJson(new FileInputStream(lesson_file), LessonModel.class));
                 } catch (IOException ex) {
                     Logger.getLogger(AddLessonDialog.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -145,6 +176,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
 
         getDialogPane().getButtonTypes().add(add_button);
         getDialogPane().lookupButton(add_button).disableProperty().set(true);
+        getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        ((Stage) getDialogPane().getScene().getWindow()).getIcons().addAll(Context.getContext().getStage().getIcons());
         setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().collect(Collectors.toMap(StudentRole::getRole, StudentRole::getStudentId))) : null);
     }
 

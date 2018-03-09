@@ -24,6 +24,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 
 /**
  *
@@ -51,6 +53,8 @@ public class LoginDialog extends Dialog<LoginDialog.LoginResult> {
 
         getDialogPane().getButtonTypes().add(login_button);
         getDialogPane().lookupButton(login_button).disableProperty().bind(Bindings.or(email_field.textProperty().isEmpty(), password_field.textProperty().isEmpty()));
+        getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        ((Stage) getDialogPane().getScene().getWindow()).getIcons().addAll(Context.getContext().getStage().getIcons());
         setResultConverter((ButtonType param) -> param == login_button ? new LoginResult(email_field.getText(), password_field.getText()) : null);
     }
 

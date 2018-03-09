@@ -117,6 +117,10 @@ public class Context {
     private final ObservableList<TeacherContext> teachers = FXCollections.observableArrayList(tch_ctx -> new Observable[]{tch_ctx.onlineProperty()});
     private final Map<Long, TeacherContext> id_teachers = new HashMap<>();
     /**
+     * The lesson models associated to the teacher.
+     */
+    private final ObservableList<LessonModel> models = FXCollections.observableArrayList();
+    /**
      * The lessons followed as a teacher.
      */
     private final ObservableList<TeachingLessonContext> teaching_lessons = FXCollections.observableArrayList();
@@ -138,15 +142,21 @@ public class Context {
             if (oldValue != null) {
                 // we clear the current data..
                 try {
+                    par_values.clear();
+                    par_vals.clear();
                     for (Parameter par : par_types) {
                         // we broadcast the lost of a parameter..
                         mqtt.publish(oldValue.id + "/output", JSONB.toJson(new LostParameter(par.name)).getBytes(), 1, false);
                     }
+                    par_types.clear();
+                    events.clear();
+                    following_lessons.clear();
+                    teachers.clear();
+                    models.clear();
+                    teaching_lessons.clear();
+                    students.clear();
                     mqtt.disconnect();
                     mqtt.close();
-                    par_values.clear();
-                    par_vals.clear();
-                    par_types.clear();
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
@@ -334,6 +344,10 @@ public class Context {
 
     public ObservableList<TeacherContext> teachersProperty() {
         return teachers;
+    }
+
+    public ObservableList<LessonModel> modelsProperty() {
+        return models;
     }
 
     public void addLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {

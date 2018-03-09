@@ -31,6 +31,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 
 /**
  *
@@ -81,6 +83,8 @@ public class AddTeachersDialog extends Dialog<User[]> {
 
         getDialogPane().getButtonTypes().add(add_button);
         getDialogPane().lookupButton(add_button).disableProperty().bind(Bindings.isEmpty(found_users_list_view.selectionModelProperty().get().getSelectedItems()));
+        getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        ((Stage) getDialogPane().getScene().getWindow()).getIcons().addAll(Context.getContext().getStage().getIcons());
         setResultConverter((ButtonType param) -> param == add_button ? found_users_list_view.getSelectionModel().getSelectedItems().toArray(new User[found_users_list_view.getSelectionModel().getSelectedItems().size()]) : null);
     }
 }
