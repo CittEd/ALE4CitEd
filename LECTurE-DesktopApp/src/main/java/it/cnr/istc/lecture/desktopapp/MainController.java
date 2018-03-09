@@ -253,7 +253,8 @@ public class MainController implements Initializable {
         Platform.exit();
     }
 
-    public void add_teachers() {
+    @FXML
+    private void add_teachers(ActionEvent event) {
         new AddTeachersDialog().showAndWait().ifPresent(teachers_to_add -> {
             for (User teacher : teachers_to_add) {
                 Context.getContext().addTeacher(teacher);
@@ -261,15 +262,18 @@ public class MainController implements Initializable {
         });
     }
 
-    public void remove_selected_teachers() {
+    @FXML
+    private void remove_selected_teachers(ActionEvent event) {
         teachers.selectionModelProperty().get().getSelectedItems().forEach(tch_ctx -> Context.getContext().removeTeacher(tch_ctx));
     }
 
-    public void add_lesson() {
+    @FXML
+    private void add_lesson(ActionEvent event) {
         new AddLessonDialog().showAndWait().ifPresent(new_lesson -> Context.getContext().addLesson(new_lesson.getLessonName(), new_lesson.getModel(), new_lesson.getRoles()));
     }
 
-    public void remove_selected_lessons() {
+    @FXML
+    private void remove_selected_lessons(ActionEvent event) {
         teaching_lessons.selectionModelProperty().get().getSelectedItems().forEach(l_ctx -> Context.getContext().removeLesson(l_ctx));
     }
 }

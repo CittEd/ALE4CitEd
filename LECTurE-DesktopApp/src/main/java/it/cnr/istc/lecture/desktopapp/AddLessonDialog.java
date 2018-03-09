@@ -63,7 +63,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
     private final GridPane grid = new GridPane();
     private final TextField lesson_type_name = new TextField();
     private final TextField lesson_name = new TextField();
-    private final Button open_button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.OPENID));
+    private final Button open_button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FILE_CODE_ALT));
     private final ObservableList<StudentRole> roles = FXCollections.observableArrayList();
     private final TableView<StudentRole> roles_table_view = new TableView<>(roles);
     private final TableColumn<StudentRole, String> role_column = new TableColumn<>("Role");

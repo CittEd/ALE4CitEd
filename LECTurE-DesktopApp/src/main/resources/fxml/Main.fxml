@@ -80,8 +80,8 @@
                                                     </rowConstraints>
                                                     <children>
                                                         <ListView fx:id="teachers" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
-                                                        <Button fx:id="add_teachers_button" mnemonicParsing="false" GridPane.columnIndex="1" />
-                                                        <Button fx:id="remove_teachers_button" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <Button fx:id="add_teachers_button" mnemonicParsing="false" onAction="#add_teachers" GridPane.columnIndex="1" />
+                                                        <Button fx:id="remove_teachers_button" mnemonicParsing="false" onAction="#remove_selected_teachers" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
                                                 </GridPane>
                                             </content>
@@ -115,8 +115,8 @@
                                                     </rowConstraints>
                                                     <children>
                                                         <ListView fx:id="teaching_lessons" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
-                                                        <Button fx:id="add_lesson_button" mnemonicParsing="false" GridPane.columnIndex="1" />
-                                                        <Button fx:id="remove_lessons_button" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <Button fx:id="add_lesson_button" mnemonicParsing="false" onAction="#add_lesson" GridPane.columnIndex="1" />
+                                                        <Button fx:id="remove_lessons_button" mnemonicParsing="false" onAction="#remove_selected_lessons" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
                                                 </GridPane>
                                             </content>

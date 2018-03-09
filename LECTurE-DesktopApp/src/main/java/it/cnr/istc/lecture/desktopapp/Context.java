@@ -398,7 +398,7 @@ public class Context {
     }
 
     public Collection<User> findUsers(String search_string) {
-        return target.path("find_users").path(search_string).request(MediaType.APPLICATION_JSON).get(new GenericType<Collection<User>>() {
+        return target.path("find_users").path(search_string).request(MediaType.APPLICATION_JSON).get(new GenericType<ArrayList<User>>() {
         });
     }
 
