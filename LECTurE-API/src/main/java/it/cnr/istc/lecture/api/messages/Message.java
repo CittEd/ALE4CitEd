@@ -22,10 +22,13 @@ package it.cnr.istc.lecture.api.messages;
  */
 public abstract class Message {
 
-    private final MessageType type;
+    public MessageType message_type;
+
+    public Message() {
+    }
 
     public Message(MessageType type) {
-        this.type = type;
+        this.message_type = type;
     }
 
     public enum MessageType {

@@ -22,20 +22,15 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class RemoveToken extends Message {
 
-    private final long lesson_id;
-    private final long event_id;
+    public long lesson_id;
+    public long event_id;
+
+    public RemoveToken() {
+    }
 
     public RemoveToken(long lesson_id, long event_id) {
         super(MessageType.RemoveToken);
         this.lesson_id = lesson_id;
         this.event_id = event_id;
-    }
-
-    public long getLessonId() {
-        return lesson_id;
-    }
-
-    public long getEventId() {
-        return event_id;
     }
 }

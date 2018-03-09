@@ -22,14 +22,13 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class LostParameter extends Message {
 
-    private final String name;
+    public String name;
+
+    public LostParameter() {
+    }
 
     public LostParameter(String name) {
         super(MessageType.LostParameter);
         this.name = name;
-    }
-
-    public String getName() {
-        return name;
     }
 }

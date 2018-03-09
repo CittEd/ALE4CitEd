@@ -132,8 +132,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             if (lesson_file != null) {
                 try {
                     lesson_model = Context.JSONB.fromJson(new FileInputStream(lesson_file), LessonModel.class);
-                    lesson_type_name.setText(lesson_model.getName());
-                    lesson_model.getRoles().forEach(role -> roles.add(new StudentRole(role, null)));
+                    lesson_type_name.setText(lesson_model.name);
+                    lesson_model.roles.forEach(role -> roles.add(new StudentRole(role, null)));
 
                     getDialogPane().lookupButton(add_button).disableProperty().unbind();
                     getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_type_name.textProperty().isEmpty().or(lesson_name.textProperty().isEmpty()).or(new StudentRoleBinding()));

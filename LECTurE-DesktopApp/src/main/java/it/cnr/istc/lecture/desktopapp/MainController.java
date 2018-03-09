@@ -115,11 +115,11 @@ public class MainController implements Initializable {
                     setText(null);
                 } else {
                     if (event instanceof TextEvent) {
-                        setText(((TextEvent) event).getContent());
+                        setText(((TextEvent) event).content);
                     } else if (event instanceof URLEvent) {
-                        setText(((URLEvent) event).getContent());
+                        setText(((URLEvent) event).content);
                     } else if (event instanceof QuestionEvent) {
-                        setText(((QuestionEvent) event).getQuestion());
+                        setText(((QuestionEvent) event).question);
                     }
                 }
             }

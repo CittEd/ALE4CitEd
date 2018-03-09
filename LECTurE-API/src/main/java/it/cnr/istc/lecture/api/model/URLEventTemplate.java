@@ -24,20 +24,15 @@ import java.util.Collection;
  */
 public class URLEventTemplate extends EventTemplate {
 
-    private final String content;
-    private final String url;
+    public String content;
+    public String url;
+
+    public URLEventTemplate() {
+    }
 
     public URLEventTemplate(String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String content, String url) {
         super(EventTemplateType.URLEventTemplate, name, role, trigger_condition, execution_condition, events, relations);
         this.content = content;
         this.url = url;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public String getUrl() {
-        return url;
     }
 }

@@ -204,7 +204,7 @@ public class LECTurEResource {
             List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
             List<Lesson> followed_lessons = u.getRoles().stream().map(role -> {
                 Lesson l = ctx.getLessonManager(role.getLesson().getId()).getLesson();
-                List<Event> events = l.events.stream().filter(e -> e.getRole().equals(role.getName())).collect(Collectors.toList());
+                List<Event> events = l.events.stream().filter(e -> e.role.equals(role.getName())).collect(Collectors.toList());
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, null, l.roles, events, null);
             }).collect(Collectors.toList());
             List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), null, null)).collect(Collectors.toList());

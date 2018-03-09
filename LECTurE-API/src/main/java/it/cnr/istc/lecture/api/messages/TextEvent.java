@@ -22,14 +22,13 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class TextEvent extends Event {
 
-    private final String content;
+    public String content;
+
+    public TextEvent() {
+    }
 
     public TextEvent(long lesson_id, int event_id, String role, String content) {
         super(EventType.TextEvent, lesson_id, event_id, role);
         this.content = content;
-    }
-
-    public String getContent() {
-        return content;
     }
 }

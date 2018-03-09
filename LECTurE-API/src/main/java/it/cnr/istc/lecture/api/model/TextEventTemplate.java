@@ -24,14 +24,13 @@ import java.util.Collection;
  */
 public class TextEventTemplate extends EventTemplate {
 
-    private final String content;
+    public String content;
+
+    public TextEventTemplate() {
+    }
 
     public TextEventTemplate(String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String content) {
         super(EventTemplateType.TextEventTemplate, name, role, trigger_condition, execution_condition, events, relations);
         this.content = content;
-    }
-
-    public String getContent() {
-        return content;
     }
 }

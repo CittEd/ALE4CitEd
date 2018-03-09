@@ -26,8 +26,11 @@ import java.util.List;
  */
 public class QuestionEventTemplate extends EventTemplate {
 
-    private final String question;
-    private final List<Answer> answers;
+    public String question;
+    public List<Answer> answers;
+
+    public QuestionEventTemplate() {
+    }
 
     public QuestionEventTemplate(String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String question, List<Answer> answers) {
         super(EventTemplateType.QuestionEventTemplate, name, role, trigger_condition, execution_condition, events, relations);
@@ -35,30 +38,17 @@ public class QuestionEventTemplate extends EventTemplate {
         this.answers = answers;
     }
 
-    public String getQuestion() {
-        return question;
-    }
-
-    public List<Answer> getAnswers() {
-        return Collections.unmodifiableList(answers);
-    }
-
     public static class Answer {
 
-        private final String answer;
-        private final String event;
+        public String answer;
+        public String event;
+
+        public Answer() {
+        }
 
         public Answer(String answer, String event) {
             this.answer = answer;
             this.event = event;
-        }
-
-        public String getAnswer() {
-            return answer;
-        }
-
-        public String getEvent() {
-            return event;
         }
     }
 }

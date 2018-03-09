@@ -22,20 +22,15 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class HideEvent extends Message {
 
-    private final long lesson_id;
-    private final long event_id;
+    public long lesson_id;
+    public long event_id;
+
+    public HideEvent() {
+    }
 
     public HideEvent(long lesson_id, long event_id) {
         super(MessageType.HideEvent);
         this.lesson_id = lesson_id;
         this.event_id = event_id;
-    }
-
-    public long getLessonId() {
-        return lesson_id;
-    }
-
-    public long getEventId() {
-        return event_id;
     }
 }

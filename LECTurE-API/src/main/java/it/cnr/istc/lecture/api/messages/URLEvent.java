@@ -22,20 +22,15 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class URLEvent extends Event {
 
-    private final String content;
-    private final String url;
+    public String content;
+    public String url;
+
+    public URLEvent() {
+    }
 
     public URLEvent(long lesson_id, int event_id, String role, String content, String url) {
         super(EventType.URLEvent, lesson_id, event_id, role);
         this.content = content;
         this.url = url;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public String getUrl() {
-        return url;
     }
 }

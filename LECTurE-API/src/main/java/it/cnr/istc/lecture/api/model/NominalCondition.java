@@ -22,20 +22,15 @@ package it.cnr.istc.lecture.api.model;
  */
 public class NominalCondition extends Condition {
 
-    private final String variable;
-    private final String value;
+    public String variable;
+    public String value;
+
+    public NominalCondition() {
+    }
 
     public NominalCondition(String variable, String value) {
         super(ConditionType.NominalCondition);
         this.variable = variable;
         this.value = value;
-    }
-
-    public String getVariable() {
-        return variable;
-    }
-
-    public String getValue() {
-        return value;
     }
 }

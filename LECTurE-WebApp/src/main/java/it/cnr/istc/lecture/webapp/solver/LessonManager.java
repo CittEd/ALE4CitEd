@@ -47,7 +47,7 @@ public class LessonManager implements TemporalListener {
     private static final Logger LOG = Logger.getLogger(LessonManager.class.getName());
     public static final String THIS = "this";
     private final Lesson lesson;
-    private final LessonModel model;
+    private final LessonModel lesson_model;
     public final TemporalNetwork network = new TemporalNetwork(16);
     private final Map<String, EventTemplate> event_templates = new HashMap<>();
     /**
@@ -72,9 +72,9 @@ public class LessonManager implements TemporalListener {
     private int idx = 0;
     private final Collection<LessonManagerListener> listeners = new ArrayList<>();
 
-    public LessonManager(Lesson lesson, LessonModel model) {
+    public LessonManager(Lesson lesson, LessonModel lesson_model) {
         this.lesson = lesson;
-        this.model = model;
+        this.lesson_model = lesson_model;
         network.addTemporalListener(this);
     }
 
@@ -83,16 +83,16 @@ public class LessonManager implements TemporalListener {
     }
 
     public void solve() {
-        for (EventTemplate event_template : model.getModel()) {
-            if (event_templates.containsKey(event_template.getName())) {
-                LOG.log(Level.WARNING, "Renaming event {0}", event_template.getName());
+        for (EventTemplate event_template : lesson_model.model) {
+            if (event_templates.containsKey(event_template.name)) {
+                LOG.log(Level.WARNING, "Renaming event {0}", event_template.name);
             }
-            event_templates.put(event_template.getName(), event_template);
+            event_templates.put(event_template.name, event_template);
         }
 
         Map<String, SolverToken> c_tks = new HashMap<>();
         // we create the tokens..
-        for (String id : model.getEvents()) {
+        for (String id : lesson_model.events) {
             SolverToken tk = new SolverToken(null, network.newTimePoint(), event_templates.get(id), null);
             tokens.add(tk);
             listeners.forEach(l -> l.newToken(tk));
@@ -101,13 +101,13 @@ public class LessonManager implements TemporalListener {
         }
 
         // we enforce the temporal relations..
-        for (Relation rel : model.getRelations()) {
-            double lb = rel.getLb() != null ? TimeUnit.MILLISECONDS.convert(rel.getLb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
-            double ub = rel.getUb() != null ? TimeUnit.MILLISECONDS.convert(rel.getUb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
-            if (rel.getFrom().equals(THIS)) {
-                network.addConstraint(0, c_tks.get(rel.getTo()).tp, lb, ub);
+        for (Relation rel : lesson_model.relations) {
+            double lb = rel.lb != null ? TimeUnit.MILLISECONDS.convert(rel.lb, rel.unit) : Double.NEGATIVE_INFINITY;
+            double ub = rel.ub != null ? TimeUnit.MILLISECONDS.convert(rel.ub, rel.unit) : Double.NEGATIVE_INFINITY;
+            if (rel.from.equals(THIS)) {
+                network.addConstraint(0, c_tks.get(rel.to).tp, lb, ub);
             } else {
-                network.addConstraint(c_tks.get(rel.getFrom()).tp, c_tks.get(rel.getTo()).tp, lb, ub);
+                network.addConstraint(c_tks.get(rel.from).tp, c_tks.get(rel.to).tp, lb, ub);
             }
         }
 
@@ -122,7 +122,7 @@ public class LessonManager implements TemporalListener {
         Map<String, SolverToken> c_tks = new HashMap<>();
         c_tks.put(THIS, tk);
         // we create the tokens..
-        for (String id : tk.template.getEvents()) {
+        for (String id : tk.template.events) {
             SolverToken c_tk = new SolverToken(tk, network.newTimePoint(), event_templates.get(id), null);
             tokens.add(c_tk);
             listeners.forEach(l -> l.newToken(tk));
@@ -131,10 +131,10 @@ public class LessonManager implements TemporalListener {
         }
 
         // we enforce the temporal relations..
-        for (Relation rel : tk.template.getRelations()) {
-            double lb = rel.getLb() != null ? TimeUnit.MILLISECONDS.convert(rel.getLb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
-            double ub = rel.getUb() != null ? TimeUnit.MILLISECONDS.convert(rel.getUb(), rel.getUnit()) : Double.NEGATIVE_INFINITY;
-            network.addConstraint(c_tks.get(rel.getFrom()).tp, c_tks.get(rel.getTo()).tp, lb, ub);
+        for (Relation rel : tk.template.relations) {
+            double lb = rel.lb != null ? TimeUnit.MILLISECONDS.convert(rel.lb, rel.unit) : Double.NEGATIVE_INFINITY;
+            double ub = rel.ub != null ? TimeUnit.MILLISECONDS.convert(rel.ub, rel.unit) : Double.NEGATIVE_INFINITY;
+            network.addConstraint(c_tks.get(rel.from).tp, c_tks.get(rel.to).tp, lb, ub);
         }
 
         if (answer_context != null) {
@@ -145,7 +145,7 @@ public class LessonManager implements TemporalListener {
     private void build() {
         while (!prop_q.isEmpty()) {
             SolverToken tk = prop_q.pop();
-            if (tk.template.getTriggerCondition() != null) {
+            if (tk.template.trigger_condition != null) {
                 triggerable_tokens.add(tk);
             } else {
                 expand_token(tk);

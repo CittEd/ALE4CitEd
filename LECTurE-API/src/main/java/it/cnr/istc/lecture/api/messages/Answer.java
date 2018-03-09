@@ -26,43 +26,17 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class Answer extends Message {
 
-    private final long lessonId;
-    private final int questionId;
-    private final int answer;
+    public long lessonId;
+    public int questionId;
+    public int answer;
+
+    public Answer() {
+    }
 
     public Answer(long lessonId, int questionId, int answer) {
         super(MessageType.Answer);
         this.lessonId = lessonId;
         this.questionId = questionId;
         this.answer = answer;
-    }
-
-    /**
-     * Returns the id of the lesson whose question has been answered.
-     *
-     * @return a {@code long} representing the id of the lesson whose question
-     * has been answered.
-     */
-    public long getLessonId() {
-        return lessonId;
-    }
-
-    /**
-     * Represents the id of the question whose answer has been given.
-     *
-     * @return an {@code int} representing the id of the question whose answer
-     * has been given.
-     */
-    public int getQuestionId() {
-        return questionId;
-    }
-
-    /**
-     * Represents the given answer.
-     *
-     * @return an {@code int} representing the given answer.
-     */
-    public int getAnswer() {
-        return answer;
     }
 }

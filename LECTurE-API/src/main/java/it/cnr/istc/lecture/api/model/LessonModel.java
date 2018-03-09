@@ -17,7 +17,6 @@
 package it.cnr.istc.lecture.api.model;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
@@ -25,12 +24,15 @@ import java.util.Collections;
  */
 public class LessonModel {
 
-    private final long id;
-    private final String name;
-    private final Collection<String> roles;
-    private final Collection<EventTemplate> model;
-    private final Collection<String> events;
-    private final Collection<Relation> relations;
+    public long id;
+    public String name;
+    public Collection<String> roles;
+    public Collection<EventTemplate> model;
+    public Collection<String> events;
+    public Collection<Relation> relations;
+
+    public LessonModel() {
+    }
 
     public LessonModel(long id, String name, Collection<String> roles, Collection<EventTemplate> model, Collection<String> events, Collection<Relation> relations) {
         this.id = id;
@@ -39,29 +41,5 @@ public class LessonModel {
         this.model = model;
         this.events = events;
         this.relations = relations;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Collection<String> getRoles() {
-        return Collections.unmodifiableCollection(roles);
-    }
-
-    public Collection<EventTemplate> getModel() {
-        return Collections.unmodifiableCollection(model);
-    }
-
-    public Collection<String> getEvents() {
-        return Collections.unmodifiableCollection(events);
-    }
-
-    public Collection<Relation> getRelations() {
-        return Collections.unmodifiableCollection(relations);
     }
 }

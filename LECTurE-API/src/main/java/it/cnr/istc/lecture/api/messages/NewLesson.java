@@ -24,14 +24,13 @@ import it.cnr.istc.lecture.api.Lesson;
  */
 public class NewLesson extends Message {
 
-    private final Lesson lesson;
+    public Lesson lesson;
+
+    public NewLesson() {
+    }
 
     public NewLesson(Lesson lesson) {
         super(MessageType.NewLesson);
         this.lesson = lesson;
-    }
-
-    public Lesson getLesson() {
-        return lesson;
     }
 }

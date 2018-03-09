@@ -22,26 +22,19 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class TokenUpdate extends Message {
 
-    private final long lesson_id;
-    private final int id;
-    private final long time;
+    public long lesson_id;
+    public int id;
+    public long min, max, val;
 
-    public TokenUpdate(long lesson_id, int id, long time) {
+    public TokenUpdate() {
+    }
+
+    public TokenUpdate(long lesson_id, int id, long min, long max, long val) {
         super(MessageType.TokenUpdate);
         this.lesson_id = lesson_id;
         this.id = id;
-        this.time = time;
-    }
-
-    public long getLessonId() {
-        return lesson_id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public long getTime() {
-        return time;
+        this.min = min;
+        this.max = max;
+        this.val = val;
     }
 }

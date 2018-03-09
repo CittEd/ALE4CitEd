@@ -17,7 +17,6 @@
 package it.cnr.istc.lecture.api.model;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
@@ -25,13 +24,16 @@ import java.util.Collections;
  */
 public class EventTemplate {
 
-    private final EventTemplateType type;
-    private final String name;
-    private final String role;
-    private final Condition trigger_condition;
-    private final Condition execution_condition;
-    private final Collection<String> events;
-    private final Collection<Relation> relations;
+    public EventTemplateType type;
+    public String name;
+    public String role;
+    public Condition trigger_condition;
+    public Condition execution_condition;
+    public Collection<String> events;
+    public Collection<Relation> relations;
+
+    public EventTemplate() {
+    }
 
     public EventTemplate(EventTemplateType type, String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations) {
         this.type = type;
@@ -41,34 +43,6 @@ public class EventTemplate {
         this.execution_condition = execution_condition;
         this.events = events;
         this.relations = relations;
-    }
-
-    public EventTemplateType getType() {
-        return type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public Condition getTriggerCondition() {
-        return trigger_condition;
-    }
-
-    public Condition getExecutionCondition() {
-        return execution_condition;
-    }
-
-    public Collection<String> getEvents() {
-        return Collections.unmodifiableCollection(events);
-    }
-
-    public Collection<Relation> getRelations() {
-        return Collections.unmodifiableCollection(relations);
     }
 
     public enum EventTemplateType {

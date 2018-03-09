@@ -22,14 +22,13 @@ package it.cnr.istc.lecture.api.model;
  */
 public class NotCondition extends Condition {
 
-    private final Condition condition;
+    public Condition condition;
+
+    public NotCondition() {
+    }
 
     public NotCondition(Condition condition) {
         super(ConditionType.NotCondition);
         this.condition = condition;
-    }
-
-    public Condition getCondition() {
-        return condition;
     }
 }

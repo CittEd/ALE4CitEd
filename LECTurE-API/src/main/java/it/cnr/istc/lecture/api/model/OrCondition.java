@@ -16,8 +16,8 @@
  */
 package it.cnr.istc.lecture.api.model;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
@@ -25,14 +25,17 @@ import java.util.Collections;
  */
 public class OrCondition extends Condition {
 
-    private final Collection<Condition> conditions;
+    public Collection<Condition> conditions;
+
+    public OrCondition() {
+    }
+
+    public OrCondition(Condition... conditions) {
+        this(Arrays.asList(conditions));
+    }
 
     public OrCondition(Collection<Condition> conditions) {
         super(ConditionType.OrCondition);
         this.conditions = conditions;
-    }
-
-    public Collection<Condition> getConditions() {
-        return Collections.unmodifiableCollection(conditions);
     }
 }

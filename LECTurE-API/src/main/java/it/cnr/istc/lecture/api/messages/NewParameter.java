@@ -24,14 +24,13 @@ import it.cnr.istc.lecture.api.Parameter;
  */
 public class NewParameter extends Message {
 
-    private final Parameter parameter;
+    public Parameter parameter;
+
+    public NewParameter() {
+    }
 
     public NewParameter(Parameter parameter) {
         super(MessageType.NewParameter);
         this.parameter = parameter;
-    }
-
-    public Parameter getParameter() {
-        return parameter;
     }
 }

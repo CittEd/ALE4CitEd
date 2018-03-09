@@ -22,14 +22,13 @@ package it.cnr.istc.lecture.api.model;
  */
 public abstract class Condition {
 
-    private final ConditionType type;
+    public ConditionType type;
+
+    public Condition() {
+    }
 
     public Condition(ConditionType type) {
         this.type = type;
-    }
-
-    public ConditionType getType() {
-        return type;
     }
 
     public enum ConditionType {

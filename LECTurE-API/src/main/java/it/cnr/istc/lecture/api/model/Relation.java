@@ -24,11 +24,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class Relation {
 
-    private final String from;
-    private final String to;
-    private final Long lb;
-    private final Long ub;
-    private final TimeUnit unit;
+    public String from;
+    public String to;
+    public Long lb;
+    public Long ub;
+    public TimeUnit unit;
+
+    public Relation() {
+    }
 
     public Relation(String from, String to, Long lb, Long ub, TimeUnit unit) {
         this.from = from;
@@ -36,25 +39,5 @@ public class Relation {
         this.lb = lb;
         this.ub = ub;
         this.unit = unit;
-    }
-
-    public String getFrom() {
-        return from;
-    }
-
-    public String getTo() {
-        return to;
-    }
-
-    public Long getLb() {
-        return lb;
-    }
-
-    public Long getUb() {
-        return ub;
-    }
-
-    public TimeUnit getUnit() {
-        return unit;
     }
 }

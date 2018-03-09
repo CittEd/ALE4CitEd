@@ -22,27 +22,18 @@ package it.cnr.istc.lecture.api.model;
  */
 public class NumericCondition extends Condition {
 
-    private final NumericConditionType type;
-    private final String variable;
-    private final double value;
+    public NumericConditionType numeric_condition_type;
+    public String variable;
+    public double value;
+
+    public NumericCondition() {
+    }
 
     public NumericCondition(NumericConditionType type, String variable, double value) {
         super(ConditionType.NumericCondition);
-        this.type = type;
+        this.numeric_condition_type = type;
         this.variable = variable;
         this.value = value;
-    }
-
-    public NumericConditionType getNumericConditionType() {
-        return type;
-    }
-
-    public String getVariable() {
-        return variable;
-    }
-
-    public double getValue() {
-        return value;
     }
 
     public enum NumericConditionType {

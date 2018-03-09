@@ -22,12 +22,15 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class Token extends Message {
 
-    private final long lesson_id;
-    private final int id;
-    private final Integer cause;
-    private final long time;
-    private final String refEvent;
-    private final Integer question;
+    public long lesson_id;
+    public int id;
+    public Integer cause;
+    public long time;
+    public String refEvent;
+    public Integer question;
+
+    public Token() {
+    }
 
     public Token(long lesson_id, int id, Integer cause, long time, String refEvent, Integer question) {
         super(MessageType.Token);
@@ -37,29 +40,5 @@ public class Token extends Message {
         this.time = time;
         this.refEvent = refEvent;
         this.question = question;
-    }
-
-    public long getLessonId() {
-        return lesson_id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public Integer getCause() {
-        return cause;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
-    public String getRefEvent() {
-        return refEvent;
-    }
-
-    public Integer getQuestion() {
-        return question;
     }
 }

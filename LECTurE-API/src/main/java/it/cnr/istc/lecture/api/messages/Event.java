@@ -22,10 +22,13 @@ package it.cnr.istc.lecture.api.messages;
  */
 public abstract class Event extends Message {
 
-    private final EventType event_type;
-    private final long lesson_id;
-    private final int event_id;
-    private final String role;
+    public EventType event_type;
+    public long lesson_id;
+    public int event_id;
+    public String role;
+
+    public Event() {
+    }
 
     public Event(EventType event_type, long lesson_id, int event_id, String role) {
         super(MessageType.Event);
@@ -33,22 +36,6 @@ public abstract class Event extends Message {
         this.lesson_id = lesson_id;
         this.event_id = event_id;
         this.role = role;
-    }
-
-    public EventType getEventType() {
-        return event_type;
-    }
-
-    public long getLessonId() {
-        return lesson_id;
-    }
-
-    public int getEventId() {
-        return event_id;
-    }
-
-    public String getRole() {
-        return role;
     }
 
     public enum EventType {
