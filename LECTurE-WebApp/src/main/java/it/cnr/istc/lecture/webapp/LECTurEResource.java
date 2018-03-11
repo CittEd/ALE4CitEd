@@ -19,13 +19,18 @@ package it.cnr.istc.lecture.webapp;
 import it.cnr.istc.lecture.api.Credentials;
 import it.cnr.istc.lecture.api.InitResponse;
 import it.cnr.istc.lecture.api.Lesson;
+import it.cnr.istc.lecture.api.NewLessonRequest;
 import it.cnr.istc.lecture.api.NewUserRequest;
 import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.messages.Event;
 import it.cnr.istc.lecture.api.model.LessonModel;
+import it.cnr.istc.lecture.webapp.entities.LessonEntity;
+import it.cnr.istc.lecture.webapp.entities.LessonModelEntity;
+import it.cnr.istc.lecture.webapp.entities.RoleEntity;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -213,6 +218,97 @@ public class LECTurEResource {
             return init;
         } catch (NoResultException e) {
             throw new WebApplicationException(e.getLocalizedMessage(), Response.Status.UNAUTHORIZED);
+        }
+    }
+
+    @POST
+    @Path("new_lesson_by_model")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Lesson new_lesson_by_model(NewLessonRequest new_lesson) {
+        try {
+            utx.begin();
+            UserEntity teacher = em.find(UserEntity.class, new_lesson.teacher_id);
+            LessonModelEntity lme = new LessonModelEntity();
+            lme.setModel(JSONB.toJson(new_lesson.model));
+            em.persist(lme);
+            teacher.addModel(lme);
+            LessonEntity le = new LessonEntity();
+            le.setName(new_lesson.lesson_name);
+            le.setTeacher(teacher);
+            le.setModel(lme);
+            teacher.addLesson(le);
+            for (Map.Entry<String, Long> role : new_lesson.roles.entrySet()) {
+                UserEntity student = em.find(UserEntity.class, role.getValue());
+                RoleEntity re = new RoleEntity();
+                re.setStudent(student);
+                re.setLesson(le);
+                re.setName(role.getKey());
+                le.addRole(re);
+                student.addRole(re);
+                em.persist(re);
+                em.persist(student);
+            }
+            em.persist(le);
+            teacher.addLesson(le);
+            em.persist(teacher);
+
+            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), null, null, null);
+            ctx.newLesson(l, new_lesson.model);
+
+            utx.commit();
+            return l;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @POST
+    @Path("new_lesson_by_model_id")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Lesson new_lesson_by_model_id(NewLessonRequest new_lesson) {
+        try {
+            utx.begin();
+            UserEntity teacher = em.find(UserEntity.class, new_lesson.teacher_id);
+            LessonModelEntity lme = em.find(LessonModelEntity.class, new_lesson.lesson_model_id);
+            LessonEntity le = new LessonEntity();
+            le.setName(new_lesson.lesson_name);
+            le.setTeacher(teacher);
+            le.setModel(lme);
+            teacher.addLesson(le);
+            for (Map.Entry<String, Long> role : new_lesson.roles.entrySet()) {
+                UserEntity student = em.find(UserEntity.class, role.getValue());
+                RoleEntity re = new RoleEntity();
+                re.setStudent(student);
+                re.setLesson(le);
+                re.setName(role.getKey());
+                le.addRole(re);
+                student.addRole(re);
+                em.persist(re);
+                em.persist(student);
+            }
+            em.persist(le);
+            teacher.addLesson(le);
+            em.persist(teacher);
+
+            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), null, null, null);
+            ctx.newLesson(l, new_lesson.model);
+
+            utx.commit();
+            return l;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
         }
     }
 }

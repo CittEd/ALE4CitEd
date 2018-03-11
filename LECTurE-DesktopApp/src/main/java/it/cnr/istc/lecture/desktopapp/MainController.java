@@ -22,14 +22,18 @@ import it.cnr.istc.lecture.api.messages.QuestionEvent;
 import it.cnr.istc.lecture.api.messages.TextEvent;
 import it.cnr.istc.lecture.api.messages.URLEvent;
 import it.cnr.istc.lecture.desktopapp.Context.ParameterValue;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
@@ -42,6 +46,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -70,6 +76,9 @@ public class MainController implements Initializable {
     private Button add_teachers_button;
     @FXML
     private Button remove_teachers_button;
+    private Pane event_pane;
+    @FXML
+    private StackPane learning_pane;
     @FXML
     private Accordion teach_accord;
     @FXML
@@ -78,6 +87,11 @@ public class MainController implements Initializable {
     private Button add_lesson_button;
     @FXML
     private Button remove_lessons_button;
+    @FXML
+    private StackPane teaching_pane;
+    private Pane lesson_pane;
+    private LessonController lesson_controller;
+    private Pane student_pane;
     @FXML
     private ListView<StudentContext> students;
     @FXML
@@ -196,6 +210,14 @@ public class MainController implements Initializable {
                 }
             }
         });
+
+        try {
+            FXMLLoader lesson_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Lesson.fxml"));
+            lesson_pane = lesson_pane_loader.load();
+            lesson_controller = lesson_pane_loader.getController();
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         parameters.setItems(Context.getContext().parametersProperty());
         par_names.setCellValueFactory(new PropertyValueFactory<>("name"));

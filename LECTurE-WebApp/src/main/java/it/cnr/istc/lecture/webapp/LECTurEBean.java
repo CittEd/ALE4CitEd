@@ -18,10 +18,13 @@ package it.cnr.istc.lecture.webapp;
 
 import it.cnr.istc.lecture.api.Lesson;
 import it.cnr.istc.lecture.api.Parameter;
+import it.cnr.istc.lecture.api.messages.NewLesson;
 import it.cnr.istc.lecture.api.messages.NewStudent;
 import it.cnr.istc.lecture.api.model.LessonModel;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import it.cnr.istc.lecture.webapp.solver.LessonManager;
+import it.cnr.istc.lecture.webapp.solver.LessonManagerListener;
+import it.cnr.istc.lecture.webapp.solver.SolverToken;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -225,7 +228,48 @@ public class LECTurEBean {
 
     @Lock(LockType.WRITE)
     public void newLesson(Lesson lesson, LessonModel model) {
-        lessons.put(lesson.id, new LessonManager(lesson, model));
+        LessonManager manager = new LessonManager(lesson, model);
+        lessons.put(lesson.id, manager);
+        manager.addSolverListener(new LessonManagerListener() {
+            @Override
+            public void newToken(SolverToken tk) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void movedToken(SolverToken tk) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void executeToken(SolverToken tk) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void hideToken(SolverToken tk) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void removeToken(SolverToken tk) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void newTime(long time) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+
+        // we notify all the students that a new lesson has been created..
+        for (Long student_id : lesson.roles.values()) {
+            try {
+                mqtt.publish(student_id + "/input", JSONB.toJson(new NewLesson(lesson)).getBytes(), 1, false);
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Lock(LockType.READ)

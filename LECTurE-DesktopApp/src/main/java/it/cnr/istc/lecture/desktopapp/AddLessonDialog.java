@@ -151,7 +151,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         }, Context.getContext().studentsProperty()));
         student_column.setEditable(true);
         student_column.setOnEditCommit((TableColumn.CellEditEvent<StudentRole, StudentContext> event) -> {
-            roles.get(event.getTablePosition().getRow()).student.set(event.getNewValue().getStudent());
+            roles.get(event.getTablePosition().getRow()).student.set(event.getNewValue());
         });
 
         getDialogPane().setContent(grid);
@@ -196,9 +196,9 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
     public static class StudentRole {
 
         public final StringProperty role;
-        public final ObjectProperty<User> student;
+        public final ObjectProperty<StudentContext> student;
 
-        public StudentRole(String name, User student) {
+        public StudentRole(String name, StudentContext student) {
             this.role = new SimpleStringProperty(name);
             this.student = new SimpleObjectProperty<>(student);
         }
@@ -212,10 +212,10 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         }
 
         public long getStudentId() {
-            return student.get().id;
+            return student.get().getStudent().id;
         }
 
-        public ObjectProperty<User> studentProperty() {
+        public ObjectProperty<StudentContext> studentProperty() {
             return student;
         }
     }

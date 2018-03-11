@@ -195,6 +195,14 @@ public class LessonManager implements TemporalListener {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    public void addSolverListener(LessonManagerListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeSolverListener(LessonManagerListener listener) {
+        listeners.remove(listener);
+    }
+
     private class AnswerContext {
 
         private final SolverToken question;

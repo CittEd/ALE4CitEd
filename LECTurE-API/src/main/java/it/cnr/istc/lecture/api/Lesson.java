@@ -49,9 +49,15 @@ public class Lesson {
         this.state = state;
         this.time = time;
         this.model = model;
-        this.roles = new HashMap<>(roles);
-        this.events = new ArrayList<>(events);
-        this.tokens = new ArrayList<>(tokens);
+        if (roles != null) {
+            this.roles = new HashMap<>(roles);
+        }
+        if (roles != null) {
+            this.events = new ArrayList<>(events);
+        }
+        if (roles != null) {
+            this.tokens = new ArrayList<>(tokens);
+        }
     }
 
     public enum LessonState {

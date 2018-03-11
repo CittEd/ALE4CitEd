@@ -16,12 +16,11 @@
  */
 package it.cnr.istc.lecture.desktopapp;
 
-import it.cnr.istc.lecture.api.messages.Token;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import org.jfree.data.xy.XYDataItem;
-import org.jfree.data.xy.XYSeries;
+import javafx.scene.layout.VBox;
 
 /**
  *
@@ -29,28 +28,10 @@ import org.jfree.data.xy.XYSeries;
  */
 public class LessonController implements Initializable {
 
+    @FXML
+    private VBox root;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-    }
-
-    private class TokenXYSeries extends XYSeries {
-
-        TokenXYSeries(Comparable key) {
-            super(key);
-        }
-
-        public void add(double x, double y, Token t) {
-            super.add(new TokenXYDataItem(x, y, t));
-        }
-    }
-
-    private class TokenXYDataItem extends XYDataItem {
-
-        private final Token t;
-
-        TokenXYDataItem(double x, double y, Token t) {
-            super(x, y);
-            this.t = t;
-        }
     }
 }
