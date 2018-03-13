@@ -22,8 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 /**
@@ -37,7 +39,8 @@ public class StudentContext {
     /**
      * The current student's parameter types.
      */
-    private final Map<String, Parameter> par_types = new HashMap<>();
+    private final ObservableList<Parameter> par_types = FXCollections.observableArrayList();
+    private final Map<String, Parameter> id_par_types = new HashMap<>();
     /**
      * The current student's parameter values.
      */
@@ -51,6 +54,16 @@ public class StudentContext {
 
     StudentContext(User student) {
         this.student = student;
+        par_types.addListener((ListChangeListener.Change<? extends Parameter> c) -> {
+            while (c.next()) {
+                for (Parameter par : c.getAddedSubList()) {
+                    id_par_types.put(par.name, par);
+                }
+                for (Parameter par : c.getRemoved()) {
+                    id_par_types.remove(par.name);
+                }
+            }
+        });
     }
 
     public User getStudent() {
@@ -63,5 +76,34 @@ public class StudentContext {
 
     public BooleanProperty onlineProperty() {
         return on_line;
+    }
+
+    public ObservableList<Parameter> parameterTypesProperty() {
+        return par_types;
+    }
+
+    public Parameter getParameter(String par_name) {
+        return id_par_types.get(par_name);
+    }
+
+    public void setParameterValue(String par_name, Map<String, String> values) {
+        Map<String, StringProperty> c_vals = par_vals.get(par_name);
+        if (c_vals == null) {
+            c_vals = new HashMap<>();
+            par_vals.put(par_name, c_vals);
+        }
+        for (Map.Entry<String, String> val : values.entrySet()) {
+            if (c_vals.containsKey(val.getKey())) {
+                c_vals.get(val.getKey()).set(val.getValue());
+            } else {
+                SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                c_vals.put(val.getKey(), val_prop);
+                par_values.add(new Context.ParameterValue(par_name + "." + val.getKey(), val_prop));
+            }
+        }
+    }
+
+    public ObservableList<Context.ParameterValue> parametersProperty() {
+        return par_values;
     }
 }

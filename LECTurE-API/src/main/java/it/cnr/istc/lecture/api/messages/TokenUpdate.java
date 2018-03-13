@@ -24,7 +24,7 @@ public class TokenUpdate extends Message {
 
     public long lesson_id;
     public int id;
-    public long min, max, val;
+    public long min, max, time;
 
     public TokenUpdate() {
     }
@@ -35,6 +35,6 @@ public class TokenUpdate extends Message {
         this.id = id;
         this.min = min;
         this.max = max;
-        this.val = val;
+        this.time = val;
     }
 }

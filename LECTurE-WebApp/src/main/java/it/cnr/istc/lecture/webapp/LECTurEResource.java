@@ -101,10 +101,10 @@ public class LECTurEResource {
             u.setFirstName(new_user.first_name);
             u.setLastName(new_user.last_name);
             em.persist(u);
-            utx.commit();
             ctx.newUser(u.getId());
             new_user.par_types.values().forEach(par -> ctx.newParameter(u.getId(), par));
             new_user.par_values.entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
+            utx.commit();
             return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()));
         } catch (IllegalStateException | SecurityException | HeuristicMixedException | HeuristicRollbackException | NotSupportedException | RollbackException | SystemException ex) {
             try {
@@ -152,8 +152,8 @@ public class LECTurEResource {
             utx.begin();
             UserEntity u = em.find(UserEntity.class, user_id);
             em.remove(u);
-            utx.commit();
             ctx.deleteUser(user_id);
+            utx.commit();
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -174,8 +174,8 @@ public class LECTurEResource {
             student.addTeacher(teacher);
             teacher.addStudent(student);
             em.persist(student);
-            utx.commit();
             ctx.addTeacher(student_id, teacher_id);
+            utx.commit();
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -253,7 +253,7 @@ public class LECTurEResource {
             teacher.addLesson(le);
             em.persist(teacher);
 
-            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), null, null, null);
+            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), new_lesson.roles, null, null);
             ctx.newLesson(l, new_lesson.model);
 
             utx.commit();
@@ -297,7 +297,7 @@ public class LECTurEResource {
             teacher.addLesson(le);
             em.persist(teacher);
 
-            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), null, null, null);
+            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), new_lesson.roles, null, null);
             ctx.newLesson(l, new_lesson.model);
 
             utx.commit();

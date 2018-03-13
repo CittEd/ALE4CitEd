@@ -18,6 +18,7 @@ package it.cnr.istc.lecture.api;
 
 import it.cnr.istc.lecture.api.model.LessonModel;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -34,17 +35,17 @@ public class NewLessonRequest {
     public NewLessonRequest() {
     }
 
-    public NewLessonRequest(long teacher_id, String lesson_name, Long lesson_model_id, HashMap<String, Long> roles) {
+    public NewLessonRequest(long teacher_id, String lesson_name, Long lesson_model_id, Map<String, Long> roles) {
         this.teacher_id = teacher_id;
         this.lesson_name = lesson_name;
         this.lesson_model_id = lesson_model_id;
-        this.roles = roles;
+        this.roles = new HashMap<>(roles);
     }
 
-    public NewLessonRequest(long teacher_id, String lesson_name, LessonModel model, HashMap<String, Long> roles) {
+    public NewLessonRequest(long teacher_id, String lesson_name, LessonModel model, Map<String, Long> roles) {
         this.teacher_id = teacher_id;
         this.lesson_name = lesson_name;
         this.model = model;
-        this.roles = roles;
+        this.roles = new HashMap<>(roles);
     }
 }

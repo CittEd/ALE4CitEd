@@ -19,7 +19,6 @@ package it.cnr.istc.lecture.desktopapp;
 import it.cnr.istc.lecture.api.Lesson;
 import it.cnr.istc.lecture.api.Lesson.LessonState;
 import it.cnr.istc.lecture.api.messages.Event;
-import it.cnr.istc.lecture.api.model.LessonModel;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleLongProperty;
@@ -34,22 +33,16 @@ import javafx.collections.ObservableList;
 public class FollowingLessonContext {
 
     private final Lesson lesson;
-    private final LessonModel model;
     private final ObjectProperty<LessonState> state = new SimpleObjectProperty<>();
     private final LongProperty time = new SimpleLongProperty(0);
     private final ObservableList<Event> events = FXCollections.observableArrayList();
 
-    FollowingLessonContext(Lesson lesson, LessonModel model) {
+    FollowingLessonContext(Lesson lesson) {
         this.lesson = lesson;
-        this.model = model;
     }
 
     public Lesson getLesson() {
         return lesson;
-    }
-
-    public LessonModel getModel() {
-        return model;
     }
 
     public ObjectProperty<LessonState> stateProperty() {

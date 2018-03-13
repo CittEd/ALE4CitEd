@@ -26,18 +26,22 @@ public class Token extends Message {
     public int id;
     public Integer cause;
     public long time;
+    public long min;
+    public long max;
     public String refEvent;
     public Integer question;
 
     public Token() {
     }
 
-    public Token(long lesson_id, int id, Integer cause, long time, String refEvent, Integer question) {
+    public Token(long lesson_id, int id, Integer cause, long time, long min, long max, String refEvent, Integer question) {
         super(MessageType.Token);
         this.lesson_id = lesson_id;
         this.id = id;
         this.cause = cause;
         this.time = time;
+        this.min = min;
+        this.max = max;
         this.refEvent = refEvent;
         this.question = question;
     }

@@ -164,8 +164,10 @@ public class MainController implements Initializable {
                     setText(tch_ctx.getTeacher().first_name + " " + tch_ctx.getTeacher().last_name);
                     if (tch_ctx.isOnline()) {
                         setStyle("-fx-text-fill: black;");
+                        setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.LINK));
                     } else {
                         setStyle("-fx-text-fill: gray;");
+                        setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.UNLINK));
                     }
                 }
             }
@@ -204,8 +206,10 @@ public class MainController implements Initializable {
                     setText(std_ctx.getStudent().first_name + " " + std_ctx.getStudent().last_name);
                     if (std_ctx.isOnline()) {
                         setStyle("-fx-text-fill: black;");
+                        setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.LINK));
                     } else {
                         setStyle("-fx-text-fill: gray;");
+                        setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.UNLINK));
                     }
                 }
             }

@@ -25,7 +25,7 @@ import java.util.Collection;
  */
 public class LessonModel {
 
-    public long id;
+    public Long id;
     public String name;
     public ArrayList<String> roles;
     public ArrayList<EventTemplate> model;

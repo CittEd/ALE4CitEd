@@ -19,12 +19,22 @@ package it.cnr.istc.lecture.desktopapp;
 import it.cnr.istc.lecture.api.Credentials;
 import it.cnr.istc.lecture.api.InitResponse;
 import it.cnr.istc.lecture.api.Lesson;
+import it.cnr.istc.lecture.api.Lesson.LessonState;
+import it.cnr.istc.lecture.api.NewLessonRequest;
 import it.cnr.istc.lecture.api.NewUserRequest;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.messages.Event;
+import it.cnr.istc.lecture.api.messages.HideEvent;
+import it.cnr.istc.lecture.api.messages.LostLesson;
 import it.cnr.istc.lecture.api.messages.LostParameter;
+import it.cnr.istc.lecture.api.messages.Message;
+import it.cnr.istc.lecture.api.messages.NewLesson;
 import it.cnr.istc.lecture.api.messages.NewParameter;
+import it.cnr.istc.lecture.api.messages.NewStudent;
+import it.cnr.istc.lecture.api.messages.RemoveToken;
+import it.cnr.istc.lecture.api.messages.Token;
+import it.cnr.istc.lecture.api.messages.TokenUpdate;
 import it.cnr.istc.lecture.api.model.LessonModel;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -187,6 +197,67 @@ public class Context {
                     options.setAutomaticReconnect(true);
                     mqtt.connect(options);
 
+                    mqtt.subscribe(newValue.id + "/input", (String topic, MqttMessage message) -> {
+                        LOG.log(Level.INFO, "message arrived: {0} - {1}", new Object[]{topic, message});
+                        Message m = JSONB.fromJson(new String(message.getPayload()), Message.class);
+                        switch (m.message_type) {
+                            case NewStudent:
+                                // a new student is following this user..
+                                NewStudent new_student = JSONB.fromJson(new String(message.getPayload()), NewStudent.class);
+                                User u = target.path("users").path(Long.toString(new_student.student_id)).request(MediaType.APPLICATION_JSON).get(User.class);
+                                Platform.runLater(() -> students.add(new StudentContext(u)));
+                                break;
+                            case LostStudent:
+                                // a student is not following this user anymore..
+                                NewStudent lost_student = JSONB.fromJson(new String(message.getPayload()), NewStudent.class);
+                                Platform.runLater(() -> students.remove(id_students.get(lost_student.student_id)));
+                                break;
+                            case NewLesson:
+                                // a teacher has created a new lesson for this student..
+                                NewLesson new_lesson = JSONB.fromJson(new String(message.getPayload()), NewLesson.class);
+                                Platform.runLater(() -> following_lessons.add(new FollowingLessonContext(new_lesson.lesson)));
+                                break;
+                            case LostLesson:
+                                // a teacher has removed a new lesson for this student..
+                                LostLesson lost_lesson = JSONB.fromJson(new String(message.getPayload()), LostLesson.class);
+                                Platform.runLater(() -> following_lessons.remove(id_following_lessons.get(lost_lesson.lesson_id)));
+                                break;
+                            case Token:
+                                // a new token has been created for a teaching lesson..
+                                Token token = JSONB.fromJson(new String(message.getPayload()), Token.class);
+                                Platform.runLater(() -> id_teaching_lessons.get(token.lesson_id).tokensProperty().add(new TeachingLessonContext.TokenRow(token.id, id_teaching_lessons.get(token.lesson_id).timeProperty(), token.time, token.min, token.max, token.refEvent)));
+                                break;
+                            case TokenUpdate:
+                                // a token of a teaching lesson has been updated..
+                                TokenUpdate token_update = JSONB.fromJson(new String(message.getPayload()), TokenUpdate.class);
+                                Platform.runLater(() -> {
+                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).timeProperty().set(token_update.time);
+                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).minProperty().set(token_update.min);
+                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).maxProperty().set(token_update.max);
+                                });
+                                break;
+                            case RemoveToken:
+                                // a token of a teaching lesson has been removed..
+                                RemoveToken remove_token = JSONB.fromJson(new String(message.getPayload()), RemoveToken.class);
+                                Platform.runLater(() -> id_teaching_lessons.get(remove_token.lesson_id).tokensProperty().remove(id_teaching_lessons.get(remove_token.lesson_id).getToken((int) remove_token.event_id)));
+                                break;
+                            case Event:
+                                // a new event has been created for a following lesson..
+                                Event event = JSONB.fromJson(new String(message.getPayload()), Event.class);
+                                Platform.runLater(() -> id_following_lessons.get(event.lesson_id).eventsProperty().add(event));
+                                break;
+                            case HideEvent:
+                                // an event has been removed for a following lesson..
+                                HideEvent hide_event = JSONB.fromJson(new String(message.getPayload()), HideEvent.class);
+                                Platform.runLater(() -> id_following_lessons.get(hide_event.lesson_id).eventsProperty().removeIf(e -> e.event_id == hide_event.event_id));
+                                break;
+                            case Answer:
+                                break;
+                            default:
+                                throw new AssertionError(m.message_type.name());
+                        }
+                    });
+
                     for (Parameter par : newValue.par_types.values()) {
                         par_types.add(par);
                         // we broadcast the existence of a new parameter..
@@ -211,8 +282,31 @@ public class Context {
 
         following_lessons.addListener((ListChangeListener.Change<? extends FollowingLessonContext> c) -> {
             while (c.next()) {
-                c.getAddedSubList().forEach(flc -> id_following_lessons.put(flc.getLesson().id, flc));
-                c.getRemoved().forEach(flc -> id_following_lessons.remove(flc.getLesson().id));
+                for (FollowingLessonContext flc : c.getAddedSubList()) {
+                    id_following_lessons.put(flc.getLesson().id, flc);
+                    try {
+                        // we subscribe to the lesson's time..
+                        mqtt.subscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/time", (String topic, MqttMessage message) -> {
+                            Platform.runLater(() -> flc.timeProperty().setValue(Long.parseLong(new String(message.getPayload()))));
+                        });
+                        // we subscribe to the lesson's state..
+                        mqtt.subscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/state", (String topic, MqttMessage message) -> {
+                            Platform.runLater(() -> flc.stateProperty().setValue(LessonState.valueOf(new String(message.getPayload()))));
+                        });
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                for (FollowingLessonContext flc : c.getRemoved()) {
+                    id_following_lessons.remove(flc.getLesson().id);
+                    try {
+                        // we subscribe from the lesson's time and state..
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/time");
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/state");
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         });
 
@@ -239,8 +333,31 @@ public class Context {
 
         teaching_lessons.addListener((ListChangeListener.Change<? extends TeachingLessonContext> c) -> {
             while (c.next()) {
-                c.getAddedSubList().forEach(tlc -> id_teaching_lessons.put(tlc.getLesson().id, tlc));
-                c.getRemoved().forEach(tlc -> id_teaching_lessons.remove(tlc.getLesson().id));
+                for (TeachingLessonContext tlc : c.getAddedSubList()) {
+                    id_teaching_lessons.put(tlc.getLesson().id, tlc);
+                    try {
+                        // we subscribe to the lesson's time..
+                        mqtt.subscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/time", (String topic, MqttMessage message) -> {
+                            Platform.runLater(() -> tlc.timeProperty().setValue(Long.parseLong(new String(message.getPayload()))));
+                        });
+                        // we subscribe to the lesson's state..
+                        mqtt.subscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/state", (String topic, MqttMessage message) -> {
+                            Platform.runLater(() -> tlc.stateProperty().setValue(LessonState.valueOf(new String(message.getPayload()))));
+                        });
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                for (TeachingLessonContext tlc : c.getRemoved()) {
+                    id_teaching_lessons.remove(tlc.getLesson().id);
+                    try {
+                        // we unsubscribe from the lesson's time and state..
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/time");
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/state");
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         });
 
@@ -248,7 +365,59 @@ public class Context {
             while (c.next()) {
                 for (StudentContext std_ctx : c.getAddedSubList()) {
                     try {
+                        // we subscribe to be notified whether the student gets online/offline..
                         mqtt.subscribe(std_ctx.getStudent().id + "/output/on-line", (String topic, MqttMessage message) -> Platform.runLater(() -> std_ctx.onlineProperty().set(Boolean.parseBoolean(new String(message.getPayload())))));
+                        // we subscribe/unsubscribe to the student's added/removed parameters..
+                        std_ctx.parameterTypesProperty().addListener((ListChangeListener.Change<? extends Parameter> c1) -> {
+                            while (c1.next()) {
+                                // we subscribe to the new user's parameters..
+                                for (Parameter par : c1.getAddedSubList()) {
+                                    try {
+                                        mqtt.subscribe(std_ctx.getStudent().id + "/output/" + par.name, (String topic, MqttMessage message) -> {
+                                            Map<String, String> par_vals = JSONB.fromJson(Context.class.getResourceAsStream("/parameters/values.json"), new HashMap<String, String>() {
+                                            }.getClass().getGenericSuperclass());
+                                            std_ctx.setParameterValue(par.name, par_vals);
+                                        });
+                                    } catch (MqttException ex) {
+                                        LOG.log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                                // we unsubscribe from the removed parameters..
+                                for (Parameter par : c1.getRemoved()) {
+                                    try {
+                                        mqtt.unsubscribe(std_ctx.getStudent().id + "/output/" + par.name);
+                                    } catch (MqttException ex) {
+                                        LOG.log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            }
+                        });
+                        if (std_ctx.isOnline()) {
+                            // we add the current student's parameters..
+                            // notice that in case the student is offline, the parameters will be added by the subscription to the student's output..
+                            Platform.runLater(() -> std_ctx.parameterTypesProperty().addAll(std_ctx.getStudent().par_types.values()));
+                        }
+                        // we subscribe to the student's output..
+                        mqtt.subscribe(std_ctx.getStudent().id + "/output", (String topic, MqttMessage message) -> {
+                            Message m = JSONB.fromJson(new String(message.getPayload()), Message.class);
+                            switch (m.message_type) {
+                                case NewParameter:
+                                    NewParameter new_parameter = JSONB.fromJson(new String(message.getPayload()), NewParameter.class);
+                                    Platform.runLater(() -> std_ctx.parameterTypesProperty().add(new_parameter.parameter));
+                                    break;
+                                case LostParameter:
+                                    LostParameter lost_parameter = JSONB.fromJson(new String(message.getPayload()), LostParameter.class);
+                                    Platform.runLater(() -> std_ctx.parameterTypesProperty().add(std_ctx.getParameter(lost_parameter.name)));
+                                    break;
+                                case Answer:
+                                    break;
+                                default:
+                                    throw new AssertionError(m.message_type.name());
+                            }
+                        });
+                        for (Map.Entry<String, Map<String, String>> par_val : std_ctx.getStudent().par_values.entrySet()) {
+                            Platform.runLater(() -> std_ctx.setParameterValue(par_val.getKey(), par_val.getValue()));
+                        }
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
@@ -257,6 +426,7 @@ public class Context {
                 for (StudentContext std_ctx : c.getRemoved()) {
                     try {
                         mqtt.unsubscribe(std_ctx.getStudent().id + "/output/on-line");
+                        Platform.runLater(() -> std_ctx.parameterTypesProperty().clear());
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
@@ -351,15 +521,15 @@ public class Context {
     }
 
     public void addLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {
-        Form form = new Form();
-        form.param("teacher_id", Long.toString(user.get().id));
-        form.param("lesson_name", lesson_name);
-        form.param("model", JSONB.toJson(model));
-        form.param("roles", JSONB.toJson(roles));
-        Lesson lesson = target.path("lessons")
-                .path("new_lesson_by_model")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.form(form), Lesson.class);
+        NewLessonRequest new_lesson;
+        Lesson lesson;
+        if (model.id != null) {
+            new_lesson = new NewLessonRequest(user.get().id, lesson_name, model.id, roles);
+            lesson = target.path("new_lesson_by_model_id").request(MediaType.APPLICATION_JSON).post(Entity.json(new_lesson), Lesson.class);
+        } else {
+            new_lesson = new NewLessonRequest(user.get().id, lesson_name, model, roles);
+            lesson = target.path("new_lesson_by_model").request(MediaType.APPLICATION_JSON).post(Entity.json(new_lesson), Lesson.class);
+        }
         teaching_lessons.add(new TeachingLessonContext(lesson, model));
     }
 
