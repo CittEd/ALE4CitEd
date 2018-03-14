@@ -18,9 +18,13 @@ package it.cnr.istc.lecture.webapp;
 
 import it.cnr.istc.lecture.api.Lesson;
 import it.cnr.istc.lecture.api.Parameter;
+import it.cnr.istc.lecture.api.messages.LostParameter;
+import it.cnr.istc.lecture.api.messages.Message;
 import it.cnr.istc.lecture.api.messages.NewLesson;
+import it.cnr.istc.lecture.api.messages.NewParameter;
 import it.cnr.istc.lecture.api.messages.NewStudent;
 import it.cnr.istc.lecture.api.model.LessonModel;
+import it.cnr.istc.lecture.webapp.entities.LessonEntity;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import it.cnr.istc.lecture.webapp.solver.LessonManager;
 import it.cnr.istc.lecture.webapp.solver.LessonManagerListener;
@@ -28,10 +32,12 @@ import it.cnr.istc.lecture.webapp.solver.SolverToken;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.ConcurrencyManagement;
@@ -127,6 +133,23 @@ public class LECTurEBean {
                                 mqtt.publish(user_id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
                                 mqtt.subscribe(user_id + "/output", (String topic, MqttMessage message) -> {
                                     LOG.log(Level.INFO, "Message arrived: {0} {1}", new Object[]{topic, message});
+                                    Message m = JSONB.fromJson(new String(message.getPayload()), Message.class);
+                                    switch (m.message_type) {
+                                        case NewParameter:
+                                            NewParameter new_parameter = JSONB.fromJson(new String(message.getPayload()), NewParameter.class);
+                                            newParameter(user_id, new_parameter.parameter);
+                                            break;
+                                        case LostParameter:
+                                            LostParameter lost_parameter = JSONB.fromJson(new String(message.getPayload()), LostParameter.class);
+                                            removeParameter(user_id, parameter_types.get(user_id).get(lost_parameter.name));
+                                            break;
+                                        case NewStudent:
+                                            break;
+                                        case Answer:
+                                            break;
+                                        default:
+                                            throw new AssertionError(m.message_type.name());
+                                    }
                                 });
                             }
                             super.addConnection(context, info);
@@ -176,6 +199,15 @@ public class LECTurEBean {
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+
+        // we create a solver for each of the already created lessons..
+        List<LessonEntity> c_lessons = em.createQuery("SELECT l FROM LessonEntity l", LessonEntity.class).getResultList();
+        for (LessonEntity l_entity : c_lessons) {
+            // warning! we do not store the current time of the lesson, nor its state.. if the service is restarted, the lesson is not lost, yet its state is!
+            Lesson l = new Lesson(l_entity.getId(), l_entity.getTeacher().getId(), l_entity.getName(), Lesson.LessonState.Stopped, 0, l_entity.getModel().getId(), l_entity.getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())), Collections.emptyList(), Collections.emptyList());
+            LessonModel lm = JSONB.fromJson(l_entity.getModel().getModel(), LessonModel.class);
+            newLesson(l, lm);
+        }
     }
 
     @PreDestroy
@@ -217,8 +249,27 @@ public class LECTurEBean {
     }
 
     @Lock(LockType.WRITE)
-    public void newParameter(long user_id, Parameter p) {
-        parameter_types.get(user_id).put(p.name, p);
+    public void newParameter(long user_id, Parameter par) {
+        parameter_types.get(user_id).put(par.name, par);
+        try {
+            mqtt.subscribe(user_id + "/output/" + par.name, (String topic, MqttMessage message) -> {
+                Map<String, String> par_vals = JSONB.fromJson(new String(message.getPayload()), new HashMap<String, String>() {
+                }.getClass().getGenericSuperclass());
+                newParameterValue(user_id, par.name, par_vals);
+            });
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Lock(LockType.WRITE)
+    public void removeParameter(long user_id, Parameter par) {
+        parameter_types.get(user_id).remove(par.name);
+        try {
+            mqtt.unsubscribe(user_id + "/output/" + par.name);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Lock(LockType.WRITE)

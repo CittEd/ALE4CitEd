@@ -16,8 +16,6 @@
  */
 package it.cnr.istc.lecture.api;
 
-import java.util.Map;
-
 /**
  *
  * @author Riccardo De Benedictis
@@ -28,18 +26,14 @@ public class NewUserRequest {
     public String password;
     public String first_name;
     public String last_name;
-    public Map<String, Parameter> par_types;
-    public Map<String, Map<String, String>> par_values;
 
     public NewUserRequest() {
     }
 
-    public NewUserRequest(String email, String password, String first_name, String last_name, Map<String, Parameter> par_types, Map<String, Map<String, String>> par_values) {
+    public NewUserRequest(String email, String password, String first_name, String last_name) {
         this.email = email;
         this.password = password;
         this.first_name = first_name;
         this.last_name = last_name;
-        this.par_types = par_types;
-        this.par_values = par_values;
     }
 }

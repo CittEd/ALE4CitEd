@@ -52,10 +52,10 @@ public class Lesson {
         if (roles != null) {
             this.roles = new HashMap<>(roles);
         }
-        if (roles != null) {
+        if (events != null) {
             this.events = new ArrayList<>(events);
         }
-        if (roles != null) {
+        if (tokens != null) {
             this.tokens = new ArrayList<>(tokens);
         }
     }

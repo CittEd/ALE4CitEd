@@ -102,8 +102,6 @@ public class LECTurEResource {
             u.setLastName(new_user.last_name);
             em.persist(u);
             ctx.newUser(u.getId());
-            new_user.par_types.values().forEach(par -> ctx.newParameter(u.getId(), par));
-            new_user.par_values.entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
             utx.commit();
             return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()));
         } catch (IllegalStateException | SecurityException | HeuristicMixedException | HeuristicRollbackException | NotSupportedException | RollbackException | SystemException ex) {
@@ -196,10 +194,6 @@ public class LECTurEResource {
             query.setParameter("email", credentials.email);
             query.setParameter("password", credentials.password);
             UserEntity u = query.getSingleResult();
-
-            credentials.par_types.values().forEach(par -> ctx.newParameter(u.getId(), par));
-            credentials.par_values.entrySet().forEach(entry -> ctx.newParameterValue(u.getId(), entry.getKey(), entry.getValue()));
-
             User user = new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, null);
             Collection<LessonModel> models = u.getModels().stream().map(model -> JSONB.fromJson(model.getModel(), LessonModel.class)).collect(Collectors.toList());
             List<Lesson> following_lessons = u.getLessons().stream().map(lesson -> {

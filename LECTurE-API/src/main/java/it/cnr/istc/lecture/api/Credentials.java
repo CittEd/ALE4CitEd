@@ -16,8 +16,6 @@
  */
 package it.cnr.istc.lecture.api;
 
-import java.util.Map;
-
 /**
  *
  * @author Riccardo De Benedictis
@@ -26,16 +24,12 @@ public class Credentials {
 
     public String email;
     public String password;
-    public Map<String, Parameter> par_types;
-    public Map<String, Map<String, String>> par_values;
 
     public Credentials() {
     }
 
-    public Credentials(String email, String password, Map<String, Parameter> par_types, Map<String, Map<String, String>> par_values) {
+    public Credentials(String email, String password) {
         this.email = email;
         this.password = password;
-        this.par_types = par_types;
-        this.par_values = par_values;
     }
 }

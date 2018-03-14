@@ -160,9 +160,19 @@ public class Context {
                     }
                     par_types.clear();
                     events.clear();
+                    for (FollowingLessonContext l_ctx : following_lessons) {
+                        // we unsubscribe from the lesson's time and state..
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                    }
                     following_lessons.clear();
                     teachers.clear();
                     models.clear();
+                    for (TeachingLessonContext l_ctx : teaching_lessons) {
+                        // we unsubscribe from the lesson's time and state..
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
+                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                    }
                     teaching_lessons.clear();
                     students.clear();
                     mqtt.disconnect();
@@ -299,12 +309,14 @@ public class Context {
                 }
                 for (FollowingLessonContext flc : c.getRemoved()) {
                     id_following_lessons.remove(flc.getLesson().id);
-                    try {
-                        // we subscribe from the lesson's time and state..
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/time");
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/state");
-                    } catch (MqttException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
+                    if (user.isNotNull().get()) {
+                        try {
+                            // we subscribe from the lesson's time and state..
+                            mqtt.unsubscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/time");
+                            mqtt.unsubscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/state");
+                        } catch (MqttException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
             }
@@ -350,12 +362,14 @@ public class Context {
                 }
                 for (TeachingLessonContext tlc : c.getRemoved()) {
                     id_teaching_lessons.remove(tlc.getLesson().id);
-                    try {
-                        // we unsubscribe from the lesson's time and state..
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/time");
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/state");
-                    } catch (MqttException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
+                    if (user.isNotNull().get()) {
+                        try {
+                            // we unsubscribe from the lesson's time and state..
+                            mqtt.unsubscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/time");
+                            mqtt.unsubscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/state");
+                        } catch (MqttException ex) {
+                            LOG.log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
             }
@@ -374,7 +388,7 @@ public class Context {
                                 for (Parameter par : c1.getAddedSubList()) {
                                     try {
                                         mqtt.subscribe(std_ctx.getStudent().id + "/output/" + par.name, (String topic, MqttMessage message) -> {
-                                            Map<String, String> par_vals = JSONB.fromJson(Context.class.getResourceAsStream("/parameters/values.json"), new HashMap<String, String>() {
+                                            Map<String, String> par_vals = JSONB.fromJson(new String(message.getPayload()), new HashMap<String, String>() {
                                             }.getClass().getGenericSuperclass());
                                             std_ctx.setParameterValue(par.name, par_vals);
                                         });
@@ -407,7 +421,7 @@ public class Context {
                                     break;
                                 case LostParameter:
                                     LostParameter lost_parameter = JSONB.fromJson(new String(message.getPayload()), LostParameter.class);
-                                    Platform.runLater(() -> std_ctx.parameterTypesProperty().add(std_ctx.getParameter(lost_parameter.name)));
+                                    Platform.runLater(() -> std_ctx.parameterTypesProperty().remove(std_ctx.getParameter(lost_parameter.name)));
                                     break;
                                 case Answer:
                                     break;
@@ -552,12 +566,10 @@ public class Context {
     }
 
     public void login(String email, String password) {
-        Map<String, Parameter> par_tps = load_pars();
-        Map<String, Map<String, String>> par_vls = load_par_vals();
-        Credentials credentials = new Credentials(email, password, par_tps, par_vls);
+        Credentials credentials = new Credentials(email, password);
         InitResponse init = target.path("login").request(MediaType.APPLICATION_JSON).post(Entity.json(credentials), InitResponse.class);
-        init.user.par_types = par_tps;
-        init.user.par_values = par_vls;
+        init.user.par_types = load_pars();
+        init.user.par_values = load_par_vals();
         user.set(init.user);
 
         // we add the teachers..
@@ -572,12 +584,10 @@ public class Context {
     }
 
     public void newUser(String email, String password, String first_name, String last_name) {
-        Map<String, Parameter> par_tps = load_pars();
-        Map<String, Map<String, String>> par_vls = load_par_vals();
-        NewUserRequest new_user = new NewUserRequest(email, password, first_name, last_name, par_tps, par_vls);
+        NewUserRequest new_user = new NewUserRequest(email, password, first_name, last_name);
         User u = target.path("new_user").request(MediaType.APPLICATION_JSON).post(Entity.json(new_user), User.class);
-        u.par_types = par_tps;
-        u.par_values = par_vls;
+        u.par_types = load_pars();
+        u.par_values = load_par_vals();
         user.set(u);
     }
 
