@@ -36,9 +36,12 @@ import javafx.scene.paint.Color;
 import javafx.util.StringConverter;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.fx.ChartCanvas;
-import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYShapeRenderer;
+import org.jfree.chart.util.DefaultShadowGenerator;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -132,7 +135,6 @@ public class LessonController implements Initializable {
                 pause_button.setDisable(false);
                 stop_button.setDisable(false);
                 time.setText(null);
-                lesson_chart_pane.getChildren().clear();
             }
         });
 
@@ -142,7 +144,20 @@ public class LessonController implements Initializable {
 
         XYSeriesCollection series_collection = new XYSeriesCollection();
         series_collection.addSeries(tokens);
-        lesson_chart_pane.getChildren().add(new ChartCanvas(ChartFactory.createScatterPlot(null, "", null, series_collection, PlotOrientation.VERTICAL, false, true, false)));
+
+        XYShapeRenderer renderer = new XYShapeRenderer();
+        renderer.setSeriesPaint(0, java.awt.Color.blue);
+
+        XYPlot plot = new XYPlot(series_collection, new NumberAxis(""), new NumberAxis(""), renderer);
+        plot.setShadowGenerator(new DefaultShadowGenerator(5, java.awt.Color.black, 1, 2, -45));
+        plot.getRangeAxis().setVisible(false);
+        plot.setNoDataMessage("No data");
+        plot.setRangeGridlinesVisible(false);
+
+        JFreeChart chart = new JFreeChart(null, JFreeChart.DEFAULT_TITLE_FONT, plot, false);
+        chart.setBackgroundPaint(java.awt.Color.WHITE);
+
+        lesson_chart_pane.getChildren().add(new ChartViewer(chart));
     }
 
     public ObjectProperty<TeachingLessonContext> teachingLessonContextProperty() {
