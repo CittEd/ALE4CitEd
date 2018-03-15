@@ -41,7 +41,7 @@
                 <TextField fx:id="time" editable="false" promptText="Time" GridPane.columnIndex="6" />
             </children>
         </GridPane>
-        <StackPane fx:id="lesson_chart_pane" prefHeight="150.0" VBox.vgrow="NEVER" />
+        <StackPane fx:id="lesson_chart_pane" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="150.0" VBox.vgrow="NEVER" />
         <TableView fx:id="tokens_table_view" editable="true" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="time_column" editable="false" prefWidth="75.0" text="Time" />
