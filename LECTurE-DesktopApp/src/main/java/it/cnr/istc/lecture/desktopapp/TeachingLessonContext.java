@@ -42,7 +42,7 @@ public class TeachingLessonContext {
 
     private final Lesson lesson;
     private final LessonModel model;
-    private final ObjectProperty<LessonState> state = new SimpleObjectProperty<>();
+    private final ObjectProperty<LessonState> state = new SimpleObjectProperty<>(LessonState.Stopped);
     private final LongProperty time = new SimpleLongProperty(0);
     private final ObservableList<TokenRow> tokens = FXCollections.observableArrayList((TokenRow tk) -> new Observable[]{tk.timeProperty()});
     private final Map<Integer, TokenRow> id_tokens = new HashMap<>();

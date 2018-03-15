@@ -160,9 +160,6 @@ public class LECTurEBean {
                             LOG.log(Level.INFO, "Lost connection: {0}", info.getClientId());
                             if (!info.getClientId().equals(mqtt_server_id)) {
                                 long user_id = Long.parseLong(info.getClientId());
-                                for (Map.Entry<String, Parameter> par_type : parameter_types.get(user_id).entrySet()) {
-                                    mqtt.unsubscribe(user_id + "/output/" + par_type.getKey());
-                                }
                                 mqtt.unsubscribe(user_id + "/output");
                                 mqtt.publish(user_id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 1, true);
                             }

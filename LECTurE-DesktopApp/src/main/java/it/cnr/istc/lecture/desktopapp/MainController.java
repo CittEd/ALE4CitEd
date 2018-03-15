@@ -48,6 +48,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -149,6 +150,19 @@ public class MainController implements Initializable {
                     setText(null);
                 } else {
                     setText(l_ctx.getLesson().name);
+                    switch (l_ctx.stateProperty().get()) {
+                        case Running:
+                            setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.PLAY).color(Color.INDIGO));
+                            break;
+                        case Paused:
+                            setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.PAUSE).color(Color.INDIGO));
+                            break;
+                        case Stopped:
+                            setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.STOP).color(Color.INDIGO));
+                            break;
+                        default:
+                            throw new AssertionError(l_ctx.stateProperty().get().name());
+                    }
                 }
             }
         });
@@ -187,6 +201,19 @@ public class MainController implements Initializable {
                     setText(null);
                 } else {
                     setText(l_ctx.getLesson().name);
+                    switch (l_ctx.stateProperty().get()) {
+                        case Running:
+                            setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.PLAY).color(Color.INDIGO));
+                            break;
+                        case Paused:
+                            setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.PAUSE).color(Color.INDIGO));
+                            break;
+                        case Stopped:
+                            setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.STOP).color(Color.INDIGO));
+                            break;
+                        default:
+                            throw new AssertionError(l_ctx.stateProperty().get().name());
+                    }
                 }
             }
         });

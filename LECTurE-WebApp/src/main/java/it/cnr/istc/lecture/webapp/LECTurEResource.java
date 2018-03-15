@@ -195,7 +195,11 @@ public class LECTurEResource {
             query.setParameter("password", credentials.password);
             UserEntity u = query.getSingleResult();
             User user = new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, null);
-            Collection<LessonModel> models = u.getModels().stream().map(model -> JSONB.fromJson(model.getModel(), LessonModel.class)).collect(Collectors.toList());
+            Collection<LessonModel> models = u.getModels().stream().map(model -> {
+                LessonModel m = JSONB.fromJson(model.getModel(), LessonModel.class);
+                m.id = model.getId();
+                return m;
+            }).collect(Collectors.toList());
             List<Lesson> following_lessons = u.getLessons().stream().map(lesson -> {
                 Lesson l = ctx.getLessonManager(lesson.getId()).getLesson();
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, l.model, l.roles, null, l.tokens);

@@ -119,7 +119,7 @@ public class Context {
     /**
      * The lessons followed as a student.
      */
-    private final ObservableList<FollowingLessonContext> following_lessons = FXCollections.observableArrayList();
+    private final ObservableList<FollowingLessonContext> following_lessons = FXCollections.observableArrayList(l_ctx -> new Observable[]{l_ctx.stateProperty()});
     private final Map<Long, FollowingLessonContext> id_following_lessons = new HashMap<>();
     /**
      * The followed teachers.
@@ -133,7 +133,7 @@ public class Context {
     /**
      * The lessons followed as a teacher.
      */
-    private final ObservableList<TeachingLessonContext> teaching_lessons = FXCollections.observableArrayList();
+    private final ObservableList<TeachingLessonContext> teaching_lessons = FXCollections.observableArrayList(l_ctx -> new Observable[]{l_ctx.stateProperty()});
     private final Map<Long, TeachingLessonContext> id_teaching_lessons = new HashMap<>();
     /**
      * The following students.
@@ -162,16 +162,16 @@ public class Context {
                     events.clear();
                     for (FollowingLessonContext l_ctx : following_lessons) {
                         // we unsubscribe from the lesson's time and state..
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
+                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
                     }
                     following_lessons.clear();
                     teachers.clear();
                     models.clear();
                     for (TeachingLessonContext l_ctx : teaching_lessons) {
                         // we unsubscribe from the lesson's time and state..
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
-                        mqtt.unsubscribe(user.get().id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
+                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
                     }
                     teaching_lessons.clear();
                     students.clear();
@@ -510,9 +510,7 @@ public class Context {
         Form form = new Form();
         form.param("student_id", Long.toString(user.get().id));
         form.param("teacher_id", Long.toString(teacher.id));
-        target.path("add_teacher")
-                .request(MediaType.APPLICATION_JSON)
-                .put(Entity.form(form));
+        target.path("add_teacher").request(MediaType.APPLICATION_JSON).put(Entity.form(form));
         teachers.add(new TeacherContext(teacher));
     }
 
@@ -520,9 +518,7 @@ public class Context {
         Form form = new Form();
         form.param("student_id", Long.toString(user.get().id));
         form.param("teacher_id", Long.toString(tch_ctx.getTeacher().id));
-        target.path("remove_teacher")
-                .request(MediaType.APPLICATION_JSON)
-                .put(Entity.form(form));
+        target.path("remove_teacher").request(MediaType.APPLICATION_JSON).put(Entity.form(form));
         teachers.remove(tch_ctx);
     }
 
@@ -551,9 +547,7 @@ public class Context {
         Form form = new Form();
         form.param("teacher_id", Long.toString(user.get().id));
         form.param("lesson_id", Long.toString(l_ctx.getLesson().id));
-        target.path("remove_lesson")
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.form(form));
+        target.path("remove_lesson").request(MediaType.APPLICATION_JSON).post(Entity.form(form));
         teaching_lessons.remove(l_ctx);
     }
 
@@ -572,11 +566,20 @@ public class Context {
         init.user.par_values = load_par_vals();
         user.set(init.user);
 
+        // we add the following lessons..
+        init.following_lessons.forEach(l -> following_lessons.add(new FollowingLessonContext(l)));
+
         // we add the teachers..
-        init.teachers.forEach((teacher) -> teachers.add(new TeacherContext(teacher)));
+        init.teachers.forEach(t -> teachers.add(new TeacherContext(t)));
+
+        // we add the available models..
+        models.addAll(init.models);
+
+        // we add the teaching lessons..
+        init.teaching_lessons.forEach(l -> teaching_lessons.add(new TeachingLessonContext(l, init.models.stream().filter(m -> m.id.equals(l.model)).findAny().get())));
 
         // we add the students..
-        init.students.forEach((student) -> students.add(new StudentContext(student)));
+        init.students.forEach(s -> students.add(new StudentContext(s)));
     }
 
     public void logout() {

@@ -33,7 +33,7 @@ import javafx.collections.ObservableList;
 public class FollowingLessonContext {
 
     private final Lesson lesson;
-    private final ObjectProperty<LessonState> state = new SimpleObjectProperty<>();
+    private final ObjectProperty<LessonState> state = new SimpleObjectProperty<>(LessonState.Stopped);
     private final LongProperty time = new SimpleLongProperty(0);
     private final ObservableList<Event> events = FXCollections.observableArrayList();
 

@@ -20,7 +20,7 @@ package it.cnr.istc.lecture.api.messages;
  *
  * @author Riccardo De Benedictis
  */
-public abstract class Message {
+public class Message {
 
     public MessageType message_type;
 
