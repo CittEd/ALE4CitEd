@@ -222,6 +222,25 @@ public class MainController implements Initializable {
         remove_lessons_button.graphicProperty().set(new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         remove_lessons_button.disableProperty().bind(Bindings.isEmpty(teaching_lessons.selectionModelProperty().get().getSelectedItems()));
 
+        try {
+            FXMLLoader lesson_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Lesson.fxml"));
+            lesson_pane = lesson_pane_loader.load();
+            lesson_controller = lesson_pane_loader.getController();
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        teaching_lessons.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends TeachingLessonContext> observable, TeachingLessonContext oldValue, TeachingLessonContext newValue) -> {
+            if (newValue != null) {
+                if (teaching_pane.getChildren().isEmpty()) {
+                    teaching_pane.getChildren().add(lesson_pane);
+                } else if (teaching_pane.getChildren().get(0) != lesson_pane) {
+                    teaching_pane.getChildren().set(0, lesson_pane);
+                }
+            }
+        });
+        lesson_controller.teachingLessonContextProperty().bind(teaching_lessons.getSelectionModel().selectedItemProperty());
+
         students.setItems(Context.getContext().studentsProperty());
         students.setCellFactory((ListView<StudentContext> param) -> new ListCell<StudentContext>() {
             @Override
@@ -241,14 +260,6 @@ public class MainController implements Initializable {
                 }
             }
         });
-
-        try {
-            FXMLLoader lesson_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Lesson.fxml"));
-            lesson_pane = lesson_pane_loader.load();
-            lesson_controller = lesson_pane_loader.getController();
-        } catch (IOException ex) {
-            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
         parameters.setItems(Context.getContext().parametersProperty());
         par_names.setCellValueFactory(new PropertyValueFactory<>("name"));
