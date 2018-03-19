@@ -17,13 +17,24 @@
 package it.cnr.istc.lecture.webapp;
 
 import it.cnr.istc.lecture.api.Lesson;
+import static it.cnr.istc.lecture.api.Lesson.LessonState.Stopped;
 import it.cnr.istc.lecture.api.Parameter;
+import it.cnr.istc.lecture.api.messages.HideEvent;
 import it.cnr.istc.lecture.api.messages.LostParameter;
 import it.cnr.istc.lecture.api.messages.Message;
 import it.cnr.istc.lecture.api.messages.NewLesson;
 import it.cnr.istc.lecture.api.messages.NewParameter;
 import it.cnr.istc.lecture.api.messages.NewStudent;
+import it.cnr.istc.lecture.api.messages.QuestionEvent;
+import it.cnr.istc.lecture.api.messages.RemoveToken;
+import it.cnr.istc.lecture.api.messages.TextEvent;
+import it.cnr.istc.lecture.api.messages.Token;
+import it.cnr.istc.lecture.api.messages.TokenUpdate;
+import it.cnr.istc.lecture.api.messages.URLEvent;
 import it.cnr.istc.lecture.api.model.LessonModel;
+import it.cnr.istc.lecture.api.model.QuestionEventTemplate;
+import it.cnr.istc.lecture.api.model.TextEventTemplate;
+import it.cnr.istc.lecture.api.model.URLEventTemplate;
 import it.cnr.istc.lecture.webapp.entities.LessonEntity;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import it.cnr.istc.lecture.webapp.solver.LessonManager;
@@ -281,32 +292,74 @@ public class LECTurEBean {
         manager.addSolverListener(new LessonManagerListener() {
             @Override
             public void newToken(SolverToken tk) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                try {
+                    mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(new Token(lesson.id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) manager.network.lb(tk.tp), (long) manager.network.ub(tk.tp), (long) manager.network.value(tk.tp), tk.template.name, tk.question)).getBytes(), 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
 
             @Override
             public void movedToken(SolverToken tk) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                try {
+                    mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(new TokenUpdate(lesson.id, tk.tp, (long) manager.network.value(tk.tp), (long) manager.network.lb(tk.tp), (long) manager.network.ub(tk.tp))).getBytes(), 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
 
             @Override
             public void executeToken(SolverToken tk) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                String tk_json = null;
+                switch (tk.template.type) {
+                    case TextEventTemplate:
+                        tk_json = JSONB.toJson(new TextEvent(lesson.id, tk.tp, tk.template.role, ((TextEventTemplate) tk.template).content));
+                        break;
+                    case URLEventTemplate:
+                        tk_json = JSONB.toJson(new URLEvent(lesson.id, tk.tp, tk.template.role, ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url));
+                        break;
+                    case QuestionEventTemplate:
+                        tk_json = JSONB.toJson(new QuestionEvent(lesson.id, tk.tp, tk.template.role, ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null));
+                        break;
+                    default:
+                        throw new AssertionError(tk.template.type.name());
+                }
+                try {
+                    // we notify the student associated to the token's role that a token has to be executed..
+                    mqtt.publish(lesson.roles.get(tk.template.role) + "/input", tk_json.getBytes(), 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
 
             @Override
             public void hideToken(SolverToken tk) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                try {
+                    // we notify the student associated to the token's role that a token has to be hidden..
+                    mqtt.publish(lesson.roles.get(tk.template.role) + "/input", JSONB.toJson(new HideEvent(lesson.id, tk.tp)).getBytes(), 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
 
             @Override
             public void removeToken(SolverToken tk) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                try {
+                    // we notify the teacher that a token has to be removed..
+                    mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(new RemoveToken(lesson.id, tk.tp)).getBytes(), 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
 
             @Override
             public void newTime(long time) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                try {
+                    // we notify the teacher that a token has to be removed..
+                    mqtt.publish(lesson.teacher_id + "/input/lesson-" + lesson.id + "/time", Long.toString(time).getBytes(), 1, false);
+                } catch (MqttException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -318,6 +371,18 @@ public class LECTurEBean {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    @Lock(LockType.WRITE)
+    public void solveLesson(long lesson_id) {
+        lessons.get(lesson_id).solve();
+        try {
+            mqtt.publish(lessons.get(lesson_id).getLesson().teacher_id + "/input/lesson-" + lesson_id + "/time", Long.toString(0).getBytes(), 1, true);
+            mqtt.publish(lessons.get(lesson_id).getLesson().teacher_id + "/input/lesson-" + lesson_id + "/state", Stopped.toString().getBytes(), 1, true);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        LOG.log(Level.INFO, "Lesson {0} solved", lesson_id);
     }
 
     @Lock(LockType.READ)

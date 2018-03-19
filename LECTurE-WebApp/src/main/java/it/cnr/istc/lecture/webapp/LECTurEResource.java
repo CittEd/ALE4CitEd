@@ -164,7 +164,7 @@ public class LECTurEResource {
 
     @PUT
     @Path("add_teacher")
-    public void add_teacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
+    public void addTeacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
         try {
             utx.begin();
             UserEntity student = em.find(UserEntity.class, student_id);
@@ -223,7 +223,7 @@ public class LECTurEResource {
     @Path("new_lesson_by_model")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Lesson new_lesson_by_model(NewLessonRequest new_lesson) {
+    public Lesson newLessonByModel(NewLessonRequest new_lesson) {
         try {
             utx.begin();
             UserEntity teacher = em.find(UserEntity.class, new_lesson.teacher_id);
@@ -270,7 +270,7 @@ public class LECTurEResource {
     @Path("new_lesson_by_model_id")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Lesson new_lesson_by_model_id(NewLessonRequest new_lesson) {
+    public Lesson newLessonByModelId(NewLessonRequest new_lesson) {
         try {
             utx.begin();
             UserEntity teacher = em.find(UserEntity.class, new_lesson.teacher_id);
@@ -300,6 +300,23 @@ public class LECTurEResource {
 
             utx.commit();
             return l;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("solve_lesson/{lesson_id}")
+    public void solveLesson(@PathParam("lesson_id") long lesson_id) {
+        try {
+            utx.begin();
+            ctx.solveLesson(lesson_id);
+            utx.commit();
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
