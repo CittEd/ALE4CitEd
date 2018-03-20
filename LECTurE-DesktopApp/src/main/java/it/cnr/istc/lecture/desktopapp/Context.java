@@ -170,6 +170,7 @@ public class Context {
                     teachers.clear();
                     models.clear();
                     for (TeachingLessonContext l_ctx : teaching_lessons) {
+                        l_ctx.tokensProperty().clear();
                         // we unsubscribe from the lesson's time and state..
                         mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
                         mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
@@ -551,7 +552,7 @@ public class Context {
     }
 
     public boolean removeLesson(TeachingLessonContext l_ctx) {
-        if (!target.path("remove_lesson").path(Long.toString(l_ctx.getLesson().id)).request(MediaType.APPLICATION_JSON).delete(Boolean.class)) {
+        if (!target.path("lessons").path(Long.toString(l_ctx.getLesson().id)).request(MediaType.APPLICATION_JSON).delete(Boolean.class)) {
             return false;
         }
         teaching_lessons.remove(l_ctx);

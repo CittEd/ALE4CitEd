@@ -433,7 +433,7 @@ public class LECTurEResource {
 
     @DELETE
     @Path("lessons/{lesson_id}")
-    public boolean deleteLesson(@PathParam("lesson_id") int lesson_id) {
+    public boolean deleteLesson(@PathParam("lesson_id") long lesson_id) {
         try {
             utx.begin();
             LessonEntity lesson = em.find(LessonEntity.class, lesson_id);

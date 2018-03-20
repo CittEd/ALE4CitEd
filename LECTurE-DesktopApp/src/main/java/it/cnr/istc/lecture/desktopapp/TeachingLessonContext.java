@@ -21,6 +21,7 @@ import it.cnr.istc.lecture.api.Lesson.LessonState;
 import it.cnr.istc.lecture.api.model.LessonModel;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.LongProperty;
@@ -56,6 +57,9 @@ public class TeachingLessonContext {
                 c.getRemoved().forEach((tk) -> id_tokens.remove(tk.getId()));
             }
         });
+        if (lesson.tokens != null) {
+            tokens.addAll(lesson.tokens.stream().map(token -> new TeachingLessonContext.TokenRow(token.id, time, token.min, token.max, token.time, token.refEvent)).collect(Collectors.toList()));
+        }
     }
 
     public Lesson getLesson() {
