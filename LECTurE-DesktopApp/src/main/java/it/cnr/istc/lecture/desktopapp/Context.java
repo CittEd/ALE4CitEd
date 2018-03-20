@@ -36,6 +36,7 @@ import it.cnr.istc.lecture.api.messages.RemoveToken;
 import it.cnr.istc.lecture.api.messages.Token;
 import it.cnr.istc.lecture.api.messages.TokenUpdate;
 import it.cnr.istc.lecture.api.model.LessonModel;
+import it.cnr.istc.lecture.desktopapp.TeachingLessonContext.TokenRow;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -235,7 +236,7 @@ public class Context {
                             case Token:
                                 // a new token has been created for a teaching lesson..
                                 Token token = JSONB.fromJson(new String(message.getPayload()), Token.class);
-                                Platform.runLater(() -> id_teaching_lessons.get(token.lesson_id).tokensProperty().add(new TeachingLessonContext.TokenRow(token.id, id_teaching_lessons.get(token.lesson_id).timeProperty(), token.time, token.min, token.max, token.refEvent)));
+                                Platform.runLater(() -> id_teaching_lessons.get(token.lesson_id).tokensProperty().add(new TeachingLessonContext.TokenRow(token.id, id_teaching_lessons.get(token.lesson_id).timeProperty(), token.min, token.max, token.time, token.refEvent)));
                                 break;
                             case TokenUpdate:
                                 // a token of a teaching lesson has been updated..
@@ -531,6 +532,7 @@ public class Context {
     }
 
     public void addLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {
+        // we create a new lesson..
         NewLessonRequest new_lesson;
         Lesson lesson;
         if (model.id != null) {
@@ -541,18 +543,60 @@ public class Context {
             lesson = target.path("new_lesson_by_model").request(MediaType.APPLICATION_JSON).post(Entity.json(new_lesson), Lesson.class);
         }
         teaching_lessons.add(new TeachingLessonContext(lesson, model));
+
+        // we solve the new lesson..
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson.id));
+        target.path("solve_lesson").request().put(Entity.form(form));
     }
 
-    public void removeLesson(TeachingLessonContext l_ctx) {
-        Form form = new Form();
-        form.param("teacher_id", Long.toString(user.get().id));
-        form.param("lesson_id", Long.toString(l_ctx.getLesson().id));
-        target.path("remove_lesson").request(MediaType.APPLICATION_JSON).post(Entity.form(form));
+    public boolean removeLesson(TeachingLessonContext l_ctx) {
+        if (!target.path("remove_lesson").path(Long.toString(l_ctx.getLesson().id)).request(MediaType.APPLICATION_JSON).delete(Boolean.class)) {
+            return false;
+        }
         teaching_lessons.remove(l_ctx);
+        return true;
     }
 
     public ObservableList<TeachingLessonContext> teachingLessonsProperty() {
         return teaching_lessons;
+    }
+
+    public boolean setTime(Lesson lesson, TokenRow row, long time) {
+        row.timeProperty().set(time);
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson.id));
+        form.param("time", Long.toString(time));
+        return target.path("set_time").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+    }
+
+    public boolean play(Lesson lesson) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson.id));
+        return target.path("play").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+    }
+
+    public boolean pause(Lesson lesson) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson.id));
+        return target.path("pause").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+    }
+
+    public boolean stop(Lesson lesson) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson.id));
+        return target.path("stop").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+    }
+
+    public boolean goTo(Lesson lesson, long time) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(lesson.id));
+        form.param("time", Long.toString(time));
+        return target.path("go_to").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+    }
+
+    public StudentContext getStudentContext(long id) {
+        return id_students.get(id);
     }
 
     public ObservableList<StudentContext> studentsProperty() {

@@ -83,7 +83,7 @@ public class LessonManager implements TemporalListener {
     }
 
     public void solve() {
-        for (EventTemplate event_template : lesson_model.model) {
+        for (EventTemplate event_template : lesson_model.events) {
             if (event_templates.containsKey(event_template.name)) {
                 LOG.log(Level.WARNING, "Renaming event {0}", event_template.name);
             }
@@ -92,7 +92,7 @@ public class LessonManager implements TemporalListener {
 
         Map<String, SolverToken> c_tks = new HashMap<>();
         // we create the tokens..
-        for (String id : lesson_model.events) {
+        for (String id : lesson_model.ids) {
             SolverToken tk = new SolverToken(null, network.newTimePoint(), event_templates.get(id), null);
             tokens.add(tk);
             listeners.forEach(l -> l.newToken(tk));
@@ -180,19 +180,96 @@ public class LessonManager implements TemporalListener {
         }
     }
 
+    public void setTime(final int var, final double value) {
+        network.setValue(var, value);
+
+        // we extract the lesson timeline..
+        extract_timeline();
+    }
+
+    /**
+     * Executes one tick. In other words moves the execution of the lesson
+     * forward of one second.
+     */
+    public void tick() {
+        goTo(t_now + 1000);
+    }
+
+    /**
+     * Executes the lesson, either forward or backward, till the given relative
+     * (to the lesson) time.
+     *
+     * @param t the relative current time.
+     */
+    public void goTo(final long t) {
+        if (t > t_now && idx < lesson_timeline_pulses.size()) {
+            // we are moving forward..
+            long next_pulse = lesson_timeline_pulses.get(idx);
+            while (next_pulse <= t) {
+                lesson_timeline_values.get(idx).forEach(tk -> listeners.forEach(l -> l.executeToken(tk)));
+                idx++;
+                if (idx < lesson_timeline_pulses.size()) {
+                    next_pulse = lesson_timeline_pulses.get(idx);
+                } else {
+                    // we have no more tokens to execute..
+                    break;
+                }
+            }
+        }
+        if (t < t_now && idx > 0) {
+            // we are moving backward..
+            long last_pulse = lesson_timeline_pulses.get(idx - 1);
+            Collection<SolverToken> to_disable = new ArrayList<>();
+            while (last_pulse > t) {
+                for (SolverToken tk : lesson_timeline_values.get(idx - 1)) {
+                    listeners.forEach(l -> l.hideToken(tk));
+                    AnswerContext ctx = answer_contexts.remove(tk);
+                    if (ctx != null) {
+                        // token 'tk' is an answer, we remove all the consequences of the answer..
+                        to_disable.addAll(ctx.tokens);
+                        answers.remove(ctx.getQuestion());
+                    }
+                }
+                idx--;
+                if (idx > 0) {
+                    last_pulse = lesson_timeline_pulses.get(idx - 1);
+                } else {
+                    // we have no more tokens to hide..
+                    break;
+                }
+            }
+
+            if (!to_disable.isEmpty()) {
+                // we remove these tokens and re-extract the lesson timeline..
+                for (SolverToken tk : to_disable) {
+                    tk.enabled = false;
+                    listeners.forEach(l -> l.removeToken(tk));
+                }
+
+                // we extract the lesson timeline..
+                extract_timeline();
+            }
+        }
+        t_now = t;
+        listeners.forEach(l -> l.newTime(t_now));
+    }
+
     @Override
     public void newValue(int tp, double val) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (tp != 0 && tp != 1) {
+            listeners.forEach(l -> l.movedToken(tokens.get(tp - 2)));
+        }
     }
 
     @Override
     public void boundChange(int tp, double min, double max) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (tp != 0 && tp != 1) {
+            listeners.forEach(l -> l.movedToken(tokens.get(tp - 2)));
+        }
     }
 
     @Override
     public void distanceChange(int tp_from, int tp_to, double min, double max) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public void addSolverListener(LessonManagerListener listener) {

@@ -4,7 +4,7 @@
         "Police officer",
         "Firefighter"
     ],
-    "model": [
+    "events": [
         {
             "type": "text",
             "name": "police_0",
@@ -88,7 +88,7 @@
             "url": "https://it.wikipedia.org/wiki/Colosseo"
         }
     ],
-    "events": [
+    "ids": [
         "police_0",
         "police_1",
         "fire_0",

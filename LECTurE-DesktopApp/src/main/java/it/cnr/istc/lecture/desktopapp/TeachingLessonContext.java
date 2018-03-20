@@ -84,25 +84,25 @@ public class TeachingLessonContext {
 
     public static class TokenRow {
 
-        private final int id;
+        private final int token_id;
         private final BooleanProperty executed;
-        private final LongProperty time;
         private final LongProperty min;
         private final LongProperty max;
+        private final LongProperty time;
         private final StringProperty name;
 
-        public TokenRow(int id, LongProperty lesson_time, long time, long min, long max, String name) {
-            this.id = id;
+        public TokenRow(int token_id, LongProperty lesson_time, long min, long max, long time, String name) {
+            this.token_id = token_id;
             this.executed = new SimpleBooleanProperty(false);
-            this.time = new SimpleLongProperty(time);
             this.min = new SimpleLongProperty(min);
             this.max = new SimpleLongProperty(max);
+            this.time = new SimpleLongProperty(time);
             this.name = new SimpleStringProperty(name);
             executed.bind(lesson_time.greaterThanOrEqualTo(this.time));
         }
 
         public int getId() {
-            return id;
+            return token_id;
         }
 
         public boolean getExecuted() {
@@ -113,16 +113,24 @@ public class TeachingLessonContext {
             return executed;
         }
 
-        public long getTime() {
-            return time.get();
+        public long getMin() {
+            return min.get();
         }
 
         public LongProperty minProperty() {
             return min;
         }
 
+        public long getMax() {
+            return max.get();
+        }
+
         public LongProperty maxProperty() {
             return max;
+        }
+
+        public long getTime() {
+            return time.get();
         }
 
         public LongProperty timeProperty() {

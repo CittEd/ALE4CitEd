@@ -148,6 +148,7 @@ public class MainController implements Initializable {
                 super.updateItem(l_ctx, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                 } else {
                     setText(l_ctx.getLesson().name);
                     switch (l_ctx.stateProperty().get()) {
@@ -174,6 +175,7 @@ public class MainController implements Initializable {
                 super.updateItem(tch_ctx, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                 } else {
                     setText(tch_ctx.getTeacher().first_name + " " + tch_ctx.getTeacher().last_name);
                     if (tch_ctx.isOnline()) {
@@ -199,6 +201,7 @@ public class MainController implements Initializable {
                 super.updateItem(l_ctx, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                 } else {
                     setText(l_ctx.getLesson().name);
                     switch (l_ctx.stateProperty().get()) {
@@ -248,6 +251,7 @@ public class MainController implements Initializable {
                 super.updateItem(std_ctx, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                 } else {
                     setText(std_ctx.getStudent().first_name + " " + std_ctx.getStudent().last_name);
                     if (std_ctx.isOnline()) {
@@ -308,8 +312,7 @@ public class MainController implements Initializable {
                 alert.setHeaderText(e.getMessage());
                 alert.showAndWait();
             }
-        }
-        );
+        });
     }
 
     @FXML

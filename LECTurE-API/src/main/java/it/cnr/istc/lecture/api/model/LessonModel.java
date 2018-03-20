@@ -28,19 +28,19 @@ public class LessonModel {
     public Long id;
     public String name;
     public ArrayList<String> roles;
-    public ArrayList<EventTemplate> model;
-    public ArrayList<String> events;
+    public ArrayList<EventTemplate> events;
+    public ArrayList<String> ids;
     public ArrayList<Relation> relations;
 
     public LessonModel() {
     }
 
-    public LessonModel(long id, String name, Collection<String> roles, Collection<EventTemplate> model, Collection<String> events, Collection<Relation> relations) {
+    public LessonModel(long id, String name, Collection<String> roles, Collection<EventTemplate> events, Collection<String> ids, Collection<Relation> relations) {
         this.id = id;
         this.name = name;
         this.roles = new ArrayList<>(roles);
-        this.model = new ArrayList<>(model);
         this.events = new ArrayList<>(events);
+        this.ids = new ArrayList<>(ids);
         this.relations = new ArrayList<>(relations);
     }
 }

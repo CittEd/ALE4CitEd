@@ -16,9 +16,11 @@
  */
 
 $(document).ready(function () {
+    console.log("retrieving users..");
     $.ajax({
         url: "http://localhost:8080/LECTurE-WebApp/LECTurE/users"
     }).then(function (users) {
+        console.log("found " + users.length + " users..");
         document.getElementById("users_count").textContent = users.length;
 
         var tbl = document.getElementById("users_table");
@@ -34,6 +36,31 @@ $(document).ready(function () {
             var td_last_name = document.createElement("td");
             td_last_name.appendChild(document.createTextNode(users[i].last_name));
             tr.appendChild(td_last_name);
+            tbdy.appendChild(tr);
+        }
+        tbl.appendChild(tbdy);
+    });
+
+    console.log("retrieving lessons..");
+    $.ajax({
+        url: "http://localhost:8080/LECTurE-WebApp/LECTurE/lessons"
+    }).then(function (lessons) {
+        console.log("found " + lessons.length + " lessons..");
+        document.getElementById("lessons_count").textContent = lessons.length;
+
+        var tbl = document.getElementById("lessons_table");
+        var tbdy = document.createElement("tbody");
+        for (var i = 0; i < lessons.length; i++) {
+            var tr = document.createElement("tr");
+            var td_name = document.createElement("td");
+            td_name.appendChild(document.createTextNode(lessons[i].name));
+            tr.appendChild(td_name);
+            var td_state = document.createElement("td");
+            td_state.appendChild(document.createTextNode(lessons[i].state));
+            tr.appendChild(td_state);
+            var td_time = document.createElement("td");
+            td_time.appendChild(document.createTextNode(lessons[i].time));
+            tr.appendChild(td_time);
             tbdy.appendChild(tr);
         }
         tbl.appendChild(tbdy);

@@ -20,6 +20,7 @@ import it.cnr.istc.lecture.api.Lesson;
 import static it.cnr.istc.lecture.api.Lesson.LessonState.Stopped;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.messages.HideEvent;
+import it.cnr.istc.lecture.api.messages.LostLesson;
 import it.cnr.istc.lecture.api.messages.LostParameter;
 import it.cnr.istc.lecture.api.messages.Message;
 import it.cnr.istc.lecture.api.messages.NewLesson;
@@ -41,11 +42,14 @@ import it.cnr.istc.lecture.webapp.solver.LessonManager;
 import it.cnr.istc.lecture.webapp.solver.LessonManagerListener;
 import it.cnr.istc.lecture.webapp.solver.SolverToken;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -55,6 +59,7 @@ import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
+import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.json.bind.Jsonb;
@@ -108,6 +113,7 @@ public class LECTurEBean {
     private final Map<Long, LessonManager> lessons = new HashMap<>();
     @PersistenceContext
     private EntityManager em;
+    private AtomicBoolean busy = new AtomicBoolean(false);
 
     @PostConstruct
     private void startup() {
@@ -215,6 +221,7 @@ public class LECTurEBean {
             Lesson l = new Lesson(l_entity.getId(), l_entity.getTeacher().getId(), l_entity.getName(), Lesson.LessonState.Stopped, 0, l_entity.getModel().getId(), l_entity.getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())), Collections.emptyList(), Collections.emptyList());
             LessonModel lm = JSONB.fromJson(l_entity.getModel().getModel(), LessonModel.class);
             newLesson(l, lm);
+            solveLesson(l.id);
         }
     }
 
@@ -383,6 +390,61 @@ public class LECTurEBean {
             LOG.log(Level.SEVERE, null, ex);
         }
         LOG.log(Level.INFO, "Lesson {0} solved", lesson_id);
+    }
+
+    @Lock(LockType.WRITE)
+    public void play(long lesson_id) {
+        lessons.get(lesson_id).getLesson().state = Lesson.LessonState.Running;
+    }
+
+    @Lock(LockType.WRITE)
+    public void pause(long lesson_id) {
+        lessons.get(lesson_id).getLesson().state = Lesson.LessonState.Paused;
+    }
+
+    @Lock(LockType.WRITE)
+    public void stop(long lesson_id) {
+        lessons.get(lesson_id).getLesson().state = Lesson.LessonState.Stopped;
+    }
+
+    @Lock(LockType.WRITE)
+    public void goTo(long lesson_id, long time) {
+        lessons.get(lesson_id).goTo(time);
+    }
+
+    @Lock(LockType.WRITE)
+    public void setTime(long lesson_id, int token_id, long time) {
+        lessons.get(lesson_id).setTime(token_id, time);
+    }
+
+    @Lock(LockType.WRITE)
+    public void removeLesson(long lesson_id) {
+        Lesson lesson = lessons.get(lesson_id).getLesson();
+        // we notify all the students that a new lesson has been created..
+        for (Long student_id : lesson.roles.values()) {
+            try {
+                mqtt.publish(student_id + "/input", JSONB.toJson(new LostLesson(lesson.id)).getBytes(), 1, false);
+            } catch (MqttException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        // we delete the lesson..
+        lessons.remove(lesson_id);
+    }
+
+    @Lock(LockType.WRITE)
+    @Schedule(second = "*/1", minute = "*", hour = "*", persistent = false)
+    public void tick() {
+        if (busy.compareAndSet(false, true)) {
+            LOG.info("tick..");
+            lessons.values().stream().filter(lm -> lm.getLesson().state == Lesson.LessonState.Running).forEach(lm -> lm.tick());
+            busy.set(false);
+        }
+    }
+
+    @Lock(LockType.READ)
+    public Collection<LessonManager> getLessonManagers() {
+        return new ArrayList<>(lessons.values());
     }
 
     @Lock(LockType.READ)

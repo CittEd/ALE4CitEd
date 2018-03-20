@@ -296,7 +296,7 @@ public class LECTurEResource {
             em.persist(teacher);
 
             Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), new_lesson.roles, null, null);
-            ctx.newLesson(l, new_lesson.model);
+            ctx.newLesson(l, JSONB.fromJson(lme.getModel(), LessonModel.class));
 
             utx.commit();
             return l;
@@ -310,13 +310,137 @@ public class LECTurEResource {
         }
     }
 
+    @GET
+    @Path("lessons")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<Lesson> getLessons() {
+        LOG.info("Retrieving lessons");
+        List<Lesson> lessons = ctx.getLessonManagers().stream().map(lm -> lm.getLesson()).collect(Collectors.toList());
+        LOG.log(Level.INFO, "Found {0} lessons", lessons.size());
+        return lessons;
+    }
+
     @PUT
-    @Path("solve_lesson/{lesson_id}")
-    public void solveLesson(@PathParam("lesson_id") long lesson_id) {
+    @Path("solve_lesson")
+    public boolean solveLesson(@FormParam("lesson_id") long lesson_id) {
         try {
             utx.begin();
             ctx.solveLesson(lesson_id);
             utx.commit();
+            return true;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("play")
+    public boolean play(@FormParam("lesson_id") long lesson_id) {
+        LOG.log(Level.INFO, "Starting lesson {0}", lesson_id);
+        try {
+            utx.begin();
+            ctx.play(lesson_id);
+            utx.commit();
+            return true;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("pause")
+    public boolean pause(@FormParam("lesson_id") long lesson_id) {
+        LOG.log(Level.INFO, "Pausing lesson {0}", lesson_id);
+        try {
+            utx.begin();
+            ctx.pause(lesson_id);
+            utx.commit();
+            return true;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("stop")
+    public boolean stop(@FormParam("lesson_id") long lesson_id) {
+        LOG.log(Level.INFO, "Stopping lesson {0}", lesson_id);
+        try {
+            utx.begin();
+            ctx.stop(lesson_id);
+            utx.commit();
+            return true;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("go_to")
+    public boolean goTo(@FormParam("lesson_id") long lesson_id, @FormParam("time") long time) {
+        try {
+            utx.begin();
+            ctx.goTo(lesson_id, time);
+            utx.commit();
+            return true;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("set_time")
+    public boolean goTo(@FormParam("lesson_id") long lesson_id, @FormParam("token_id") int token_id, @FormParam("time") long time) {
+        try {
+            utx.begin();
+            ctx.setTime(lesson_id, token_id, time);
+            utx.commit();
+            return true;
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @DELETE
+    @Path("lessons/{lesson_id}")
+    public boolean deleteLesson(@PathParam("lesson_id") int lesson_id) {
+        try {
+            utx.begin();
+            LessonEntity lesson = em.find(LessonEntity.class, lesson_id);
+            em.remove(lesson);
+            ctx.removeLesson(lesson_id);
+            utx.commit();
+            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
