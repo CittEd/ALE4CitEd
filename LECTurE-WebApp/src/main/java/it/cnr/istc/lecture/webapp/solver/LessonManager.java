@@ -122,7 +122,7 @@ public class LessonManager implements TemporalListener {
         Map<String, SolverToken> c_tks = new HashMap<>();
         c_tks.put(THIS, tk);
         // we create the tokens..
-        for (String id : tk.template.events) {
+        for (String id : tk.template.ids) {
             SolverToken c_tk = new SolverToken(tk, network.newTimePoint(), event_templates.get(id), null);
             tokens.add(c_tk);
             listeners.forEach(l -> l.newToken(tk));

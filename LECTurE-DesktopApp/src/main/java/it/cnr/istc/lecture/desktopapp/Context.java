@@ -574,26 +574,26 @@ public class Context {
     public boolean play(Lesson lesson) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
-        return target.path("play").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+        return target.path("play").request().put(Entity.form(form), Boolean.class);
     }
 
     public boolean pause(Lesson lesson) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
-        return target.path("pause").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+        return target.path("pause").request().put(Entity.form(form), Boolean.class);
     }
 
     public boolean stop(Lesson lesson) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
-        return target.path("stop").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+        return target.path("stop").request().put(Entity.form(form), Boolean.class);
     }
 
     public boolean goTo(Lesson lesson, long time) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
         form.param("time", Long.toString(time));
-        return target.path("go_to").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+        return target.path("go_to").request().put(Entity.form(form), Boolean.class);
     }
 
     public StudentContext getStudentContext(long id) {

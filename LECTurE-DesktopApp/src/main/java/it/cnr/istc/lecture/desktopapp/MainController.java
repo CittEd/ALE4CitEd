@@ -131,13 +131,17 @@ public class MainController implements Initializable {
                 super.updateItem(event, empty);
                 if (empty) {
                     setText(null);
+                    setGraphic(null);
                 } else {
                     if (event instanceof TextEvent) {
                         setText(((TextEvent) event).content);
+                        setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.INFO));
                     } else if (event instanceof URLEvent) {
                         setText(((URLEvent) event).content);
+                        setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.INFO));
                     } else if (event instanceof QuestionEvent) {
                         setText(((QuestionEvent) event).question);
+                        setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.QUESTION));
                     }
                 }
             }

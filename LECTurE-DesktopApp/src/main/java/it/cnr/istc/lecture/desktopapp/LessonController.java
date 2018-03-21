@@ -55,6 +55,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.chart.util.DefaultShadowGenerator;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
@@ -121,15 +122,24 @@ public class LessonController implements Initializable {
     private final TokenXYSeries tokens = new TokenXYSeries("Tokens");
     private final ListChangeListener<TokenRow> TOKENS_CHANGE_LISTENER = (ListChangeListener.Change<? extends TokenRow> c) -> {
         while (c.next()) {
-            c.getAddedSubList().forEach(tk_row -> tokens.add(new TokenXYDataItem(tk_row.getTime(), 0, tk_row)));
-            for (TokenRow tk_row : c.getRemoved()) {
+            c.getAddedSubList().forEach(tk_row -> {
+                long x = tk_row.getTime();
+                long y = 0;
+                for (int i = 0; i < tokens.getItemCount(); i++) {
+                    if (tokens.getDataItem(i).getXValue() == x) {
+                        y++;
+                    }
+                }
+                tokens.add(new TokenXYDataItem(x, y, tk_row));
+            });
+            c.getRemoved().forEach(tk_row -> {
                 for (int i = 0; i < tokens.getItemCount(); i++) {
                     if (((TokenXYDataItem) tokens.getDataItem(i)).t == tk_row) {
                         tokens.remove(i);
                     }
                     break;
                 }
-            }
+            });
         }
     };
 
@@ -148,9 +158,18 @@ public class LessonController implements Initializable {
                 newValue.stateProperty().addListener(STATE_LISTENER);
                 TIME_LISTENER.changed(newValue.timeProperty(), oldValue != null ? oldValue.timeProperty().getValue() : null, newValue.timeProperty().getValue());
                 newValue.timeProperty().addListener(TIME_LISTENER);
-                newValue.tokensProperty().forEach(tk_row -> tokens.add(new TokenXYDataItem(tk_row.getTime(), 0, tk_row)));
+                newValue.tokensProperty().forEach(tk_row -> {
+                    long x = tk_row.getTime();
+                    long y = 0;
+                    for (int i = 0; i < tokens.getItemCount(); i++) {
+                        if (tokens.getDataItem(i).getXValue() == x) {
+                            y++;
+                        }
+                    }
+                    tokens.add(new TokenXYDataItem(x, y, tk_row));
+                });
                 newValue.tokensProperty().addListener(TOKENS_CHANGE_LISTENER);
-                tokens_table_view.setItems(new SortedList<>(newValue.tokensProperty()));
+                tokens_table_view.setItems(new SortedList<>(newValue.tokensProperty(), (TokenRow r0, TokenRow r1) -> Long.compare(r0.getTime(), r1.getTime())));
             } else {
                 lesson_name.setText(null);
                 play_button.setDisable(true);
@@ -178,6 +197,7 @@ public class LessonController implements Initializable {
         plot.getRangeAxis().setVisible(false);
         plot.setNoDataMessage("No data");
         plot.setRangeGridlinesVisible(false);
+        plot.setInsets(new RectangleInsets(10, 10, 10, 10));
 
         JFreeChart chart = new JFreeChart(null, JFreeChart.DEFAULT_TITLE_FONT, plot, false);
         chart.setBackgroundPaint(java.awt.Color.WHITE);
@@ -202,7 +222,6 @@ public class LessonController implements Initializable {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
-                    setGraphic(null);
                     styleProperty().unbind();
                     setStyle("");
                 } else {
@@ -226,11 +245,10 @@ public class LessonController implements Initializable {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
-                    setGraphic(null);
                     styleProperty().unbind();
                     setStyle("");
                 } else {
-                    EventTemplate et = l_ctx.get().getModel().events.stream().filter(templ -> templ.name.equals(item)).findAny().get();
+                    EventTemplate et = l_ctx.get().getModel().events.get(getIndex());
                     StudentContext student_ctx = Context.getContext().getStudentContext(l_ctx.get().getLesson().roles.get(et.role));
                     setText(et.role + " (" + student_ctx.getStudent().first_name + " " + student_ctx.getStudent().last_name + ")");
 
@@ -252,11 +270,10 @@ public class LessonController implements Initializable {
                 super.updateItem(item, empty);
                 if (empty) {
                     setText(null);
-                    setGraphic(null);
                     styleProperty().unbind();
                     setStyle("");
                 } else {
-                    EventTemplate et = l_ctx.get().getModel().events.stream().filter(templ -> templ.name.equals(item)).findAny().get();
+                    EventTemplate et = l_ctx.get().getModel().events.get(getIndex());
                     if (et instanceof TextEventTemplate) {
                         setText(((TextEventTemplate) et).content);
                     } else if (et instanceof URLEventTemplate) {
