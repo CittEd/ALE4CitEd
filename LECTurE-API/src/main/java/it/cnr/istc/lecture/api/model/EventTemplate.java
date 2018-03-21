@@ -30,19 +30,19 @@ public class EventTemplate {
     public String role;
     public Condition trigger_condition;
     public Condition execution_condition;
-    public ArrayList<String> events;
+    public ArrayList<String> ids;
     public ArrayList<Relation> relations;
 
     public EventTemplate() {
     }
 
-    public EventTemplate(EventTemplateType type, String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations) {
+    public EventTemplate(EventTemplateType type, String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> ids, Collection<Relation> relations) {
         this.type = type;
         this.name = name;
         this.role = role;
         this.trigger_condition = trigger_condition;
         this.execution_condition = execution_condition;
-        this.events = new ArrayList<>(events);
+        this.ids = new ArrayList<>(ids);
         this.relations = new ArrayList<>(relations);
     }
 
