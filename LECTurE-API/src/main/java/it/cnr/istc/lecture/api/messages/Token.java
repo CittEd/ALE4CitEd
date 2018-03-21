@@ -25,8 +25,8 @@ public class Token extends Message {
     public long lesson_id;
     public int id;
     public Integer cause;
-    public long min;
-    public long max;
+    public Long min;
+    public Long max;
     public long time;
     public String refEvent;
     public Integer question;
@@ -34,7 +34,7 @@ public class Token extends Message {
     public Token() {
     }
 
-    public Token(long lesson_id, int id, Integer cause, long min, long max, long time, String refEvent, Integer question) {
+    public Token(long lesson_id, int id, Integer cause, Long min, Long max, long time, String refEvent, Integer question) {
         super(MessageType.Token);
         this.lesson_id = lesson_id;
         this.id = id;

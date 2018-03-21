@@ -22,6 +22,7 @@ import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.messages.HideEvent;
 import it.cnr.istc.lecture.api.messages.LostLesson;
 import it.cnr.istc.lecture.api.messages.LostParameter;
+import it.cnr.istc.lecture.api.messages.LostStudent;
 import it.cnr.istc.lecture.api.messages.Message;
 import it.cnr.istc.lecture.api.messages.NewLesson;
 import it.cnr.istc.lecture.api.messages.NewParameter;
@@ -299,8 +300,12 @@ public class LECTurEBean {
         manager.addSolverListener(new LessonManagerListener() {
             @Override
             public void newToken(SolverToken tk) {
+                Double lb = manager.network.lb(tk.tp);
+                Double ub = manager.network.ub(tk.tp);
+                Token token = new Token(lesson.id, tk.tp, tk.cause != null ? tk.cause.tp : null, lb != Double.NEGATIVE_INFINITY ? lb.longValue() : null, ub != Double.POSITIVE_INFINITY ? ub.longValue() : null, (long) manager.network.value(tk.tp), tk.template.name, tk.question);
+                lesson.tokens.add(token);
                 try {
-                    mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(new Token(lesson.id, tk.tp, tk.cause != null ? tk.cause.tp : null, (long) manager.network.lb(tk.tp), (long) manager.network.ub(tk.tp), (long) manager.network.value(tk.tp), tk.template.name, tk.question)).getBytes(), 1, false);
+                    mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(token).getBytes(), 1, false);
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
@@ -308,8 +313,14 @@ public class LECTurEBean {
 
             @Override
             public void movedToken(SolverToken tk) {
+                Token token = lesson.tokens.stream().filter(t -> t.id == tk.tp).findAny().get();
+                Double lb = manager.network.lb(tk.tp);
+                Double ub = manager.network.ub(tk.tp);
+                token.min = lb != Double.NEGATIVE_INFINITY ? lb.longValue() : null;
+                token.max = ub != Double.POSITIVE_INFINITY ? ub.longValue() : null;
+                token.time = (long) manager.network.value(tk.tp);
                 try {
-                    mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(new TokenUpdate(lesson.id, tk.tp, (long) manager.network.value(tk.tp), (long) manager.network.lb(tk.tp), (long) manager.network.ub(tk.tp))).getBytes(), 1, false);
+                    mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(new TokenUpdate(lesson.id, tk.tp, token.min, token.max, token.time)).getBytes(), 1, false);
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
@@ -320,13 +331,19 @@ public class LECTurEBean {
                 String tk_json = null;
                 switch (tk.template.type) {
                     case TextEventTemplate:
-                        tk_json = JSONB.toJson(new TextEvent(lesson.id, tk.tp, tk.template.role, ((TextEventTemplate) tk.template).content));
+                        TextEvent te = new TextEvent(lesson.id, tk.tp, tk.template.role, ((TextEventTemplate) tk.template).content);
+                        lesson.events.add(te);
+                        tk_json = JSONB.toJson(te);
                         break;
                     case URLEventTemplate:
-                        tk_json = JSONB.toJson(new URLEvent(lesson.id, tk.tp, tk.template.role, ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url));
+                        URLEvent ue = new URLEvent(lesson.id, tk.tp, tk.template.role, ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url);
+                        lesson.events.add(ue);
+                        tk_json = JSONB.toJson(ue);
                         break;
                     case QuestionEventTemplate:
-                        tk_json = JSONB.toJson(new QuestionEvent(lesson.id, tk.tp, tk.template.role, ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null));
+                        QuestionEvent qe = new QuestionEvent(lesson.id, tk.tp, tk.template.role, ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null);
+                        lesson.events.add(qe);
+                        tk_json = JSONB.toJson(qe);
                         break;
                     default:
                         throw new AssertionError(tk.template.type.name());
@@ -341,6 +358,8 @@ public class LECTurEBean {
 
             @Override
             public void hideToken(SolverToken tk) {
+                // we remove the event from the lesson..
+                lesson.events.removeIf(e -> e.event_id == tk.tp);
                 try {
                     // we notify the student associated to the token's role that a token has to be hidden..
                     mqtt.publish(lesson.roles.get(tk.template.role) + "/input", JSONB.toJson(new HideEvent(lesson.id, tk.tp)).getBytes(), 1, false);
@@ -351,6 +370,8 @@ public class LECTurEBean {
 
             @Override
             public void removeToken(SolverToken tk) {
+                // we remove the token from the lesson..
+                lesson.tokens.removeIf(t -> t.id == tk.tp);
                 try {
                     // we notify the teacher that a token has to be removed..
                     mqtt.publish(lesson.teacher_id + "/input", JSONB.toJson(new RemoveToken(lesson.id, tk.tp)).getBytes(), 1, false);
@@ -362,7 +383,7 @@ public class LECTurEBean {
             @Override
             public void newTime(long time) {
                 try {
-                    // we notify the teacher that a token has to be removed..
+                    // we broadcast the new lesson time..
                     mqtt.publish(lesson.teacher_id + "/input/lesson-" + lesson.id + "/time", Long.toString(time).getBytes(), 1, false);
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
@@ -455,6 +476,14 @@ public class LECTurEBean {
     public void addTeacher(long student_id, long teacher_id) {
         try {
             mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(student_id)).getBytes(), 1, false);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void removeTeacher(long student_id, long teacher_id) {
+        try {
+            mqtt.publish(teacher_id + "/input", JSONB.toJson(new LostStudent(student_id)).getBytes(), 1, false);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

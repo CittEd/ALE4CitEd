@@ -49,9 +49,7 @@ public class Lesson {
         this.state = state;
         this.time = time;
         this.model = model;
-        if (roles != null) {
-            this.roles = new HashMap<>(roles);
-        }
+        this.roles = new HashMap<>(roles);
         if (events != null) {
             this.events = new ArrayList<>(events);
         }

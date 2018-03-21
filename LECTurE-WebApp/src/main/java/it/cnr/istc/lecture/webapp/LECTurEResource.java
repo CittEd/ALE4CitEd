@@ -29,6 +29,7 @@ import it.cnr.istc.lecture.webapp.entities.LessonModelEntity;
 import it.cnr.istc.lecture.webapp.entities.RoleEntity;
 import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -51,8 +52,6 @@ import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -73,8 +72,6 @@ public class LECTurEResource {
 
     private static final Logger LOG = Logger.getLogger(LECTurEResource.class.getName());
     private static final Jsonb JSONB = JsonbBuilder.create();
-    @Context
-    private UriInfo context;
     @PersistenceContext
     private EntityManager em;
     @Resource
@@ -149,6 +146,14 @@ public class LECTurEResource {
         try {
             utx.begin();
             UserEntity u = em.find(UserEntity.class, user_id);
+            for (UserEntity student : u.getStudents()) {
+                student.removeTeacher(u);
+                em.merge(student);
+            }
+            for (UserEntity teacher : u.getTeachers()) {
+                teacher.removeStudent(u);
+                em.merge(teacher);
+            }
             em.remove(u);
             ctx.deleteUser(user_id);
             utx.commit();
@@ -171,8 +176,32 @@ public class LECTurEResource {
             UserEntity teacher = em.find(UserEntity.class, teacher_id);
             student.addTeacher(teacher);
             teacher.addStudent(student);
-            em.persist(student);
+            em.merge(student);
+            em.merge(teacher);
             ctx.addTeacher(student_id, teacher_id);
+            utx.commit();
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
+    @PUT
+    @Path("remove_teacher")
+    public void removeTeacher(@FormParam("student_id") long student_id, @FormParam("teacher_id") long teacher_id) {
+        try {
+            utx.begin();
+            UserEntity student = em.find(UserEntity.class, student_id);
+            UserEntity teacher = em.find(UserEntity.class, teacher_id);
+            student.removeTeacher(teacher);
+            teacher.removeStudent(student);
+            em.merge(student);
+            em.merge(teacher);
+            ctx.removeTeacher(student_id, teacher_id);
             utx.commit();
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
@@ -200,11 +229,13 @@ public class LECTurEResource {
                 m.id = model.getId();
                 return m;
             }).collect(Collectors.toList());
+            // the lessons followed as a teacher..
             List<Lesson> following_lessons = u.getLessons().stream().map(lesson -> {
                 Lesson l = ctx.getLessonManager(lesson.getId()).getLesson();
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, l.model, l.roles, null, l.tokens);
             }).collect(Collectors.toList());
             List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
+            // the lessons followed as a student..
             List<Lesson> followed_lessons = u.getRoles().stream().map(role -> {
                 Lesson l = ctx.getLessonManager(role.getLesson().getId()).getLesson();
                 List<Event> events = l.events.stream().filter(e -> e.role.equals(role.getName())).collect(Collectors.toList());
@@ -249,9 +280,9 @@ public class LECTurEResource {
             }
             em.persist(le);
             teacher.addLesson(le);
-            em.persist(teacher);
+            em.merge(teacher);
 
-            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), new_lesson.roles, null, null);
+            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), new_lesson.roles, Collections.emptyList(), Collections.emptyList());
             ctx.newLesson(l, new_lesson.model);
 
             utx.commit();
@@ -293,9 +324,9 @@ public class LECTurEResource {
             }
             em.persist(le);
             teacher.addLesson(le);
-            em.persist(teacher);
+            em.merge(teacher);
 
-            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), new_lesson.roles, null, null);
+            Lesson l = new Lesson(le.getId(), new_lesson.teacher_id, new_lesson.lesson_name, Lesson.LessonState.Stopped, 0, lme.getId(), new_lesson.roles, Collections.emptyList(), Collections.emptyList());
             ctx.newLesson(l, JSONB.fromJson(lme.getModel(), LessonModel.class));
 
             utx.commit();
@@ -437,8 +468,15 @@ public class LECTurEResource {
         try {
             utx.begin();
             LessonEntity lesson = em.find(LessonEntity.class, lesson_id);
-            em.remove(lesson);
             ctx.removeLesson(lesson_id);
+            lesson.getTeacher().removeLesson(lesson);
+            em.merge(lesson.getTeacher());
+            for (RoleEntity role : lesson.getRoles()) {
+                role.getStudent().removeRole(role);
+                em.merge(role.getStudent());
+                em.remove(role);
+            }
+            em.remove(lesson);
             utx.commit();
             return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {

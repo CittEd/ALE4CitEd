@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -52,7 +51,7 @@ public class UserEntity implements Serializable {
     private final Collection<UserEntity> students = new ArrayList<>();
     @OneToMany(mappedBy = "teacher")
     private final Collection<LessonEntity> lessons = new ArrayList<>();
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "student")
     private List<RoleEntity> roles;
     @OneToMany
     private final Collection<LessonModelEntity> models = new ArrayList<>();

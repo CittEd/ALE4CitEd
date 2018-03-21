@@ -24,12 +24,13 @@ public class TokenUpdate extends Message {
 
     public long lesson_id;
     public int id;
-    public long min, max, time;
+    public Long min, max;
+    public long time;
 
     public TokenUpdate() {
     }
 
-    public TokenUpdate(long lesson_id, int id, long min, long max, long val) {
+    public TokenUpdate(long lesson_id, int id, Long min, Long max, long val) {
         super(MessageType.TokenUpdate);
         this.lesson_id = lesson_id;
         this.id = id;

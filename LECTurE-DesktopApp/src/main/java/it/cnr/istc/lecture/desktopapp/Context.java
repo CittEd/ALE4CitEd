@@ -243,9 +243,9 @@ public class Context {
                                 // a token of a teaching lesson has been updated..
                                 TokenUpdate token_update = JSONB.fromJson(new String(message.getPayload()), TokenUpdate.class);
                                 Platform.runLater(() -> {
-                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).timeProperty().set(token_update.time);
-                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).minProperty().set(token_update.min);
-                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).maxProperty().set(token_update.max);
+                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).timeProperty().setValue(token_update.time);
+                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).minProperty().setValue(token_update.min);
+                                    id_teaching_lessons.get(token_update.lesson_id).getToken(token_update.id).maxProperty().setValue(token_update.max);
                                 });
                                 break;
                             case RemoveToken:
@@ -552,7 +552,7 @@ public class Context {
     }
 
     public boolean removeLesson(TeachingLessonContext l_ctx) {
-        if (!target.path("lessons").path(Long.toString(l_ctx.getLesson().id)).request(MediaType.APPLICATION_JSON).delete(Boolean.class)) {
+        if (!target.path("lessons").path(Long.toString(l_ctx.getLesson().id)).request().delete(Boolean.class)) {
             return false;
         }
         teaching_lessons.remove(l_ctx);

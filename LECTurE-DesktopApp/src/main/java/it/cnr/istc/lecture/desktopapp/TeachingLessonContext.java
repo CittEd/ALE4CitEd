@@ -95,11 +95,11 @@ public class TeachingLessonContext {
         private final LongProperty time;
         private final StringProperty name;
 
-        public TokenRow(int token_id, LongProperty lesson_time, long min, long max, long time, String name) {
+        public TokenRow(int token_id, LongProperty lesson_time, Long min, Long max, long time, String name) {
             this.token_id = token_id;
             this.executed = new SimpleBooleanProperty(false);
-            this.min = new SimpleLongProperty(min);
-            this.max = new SimpleLongProperty(max);
+            this.min = min != null ? new SimpleLongProperty(min) : new SimpleLongProperty();
+            this.max = max != null ? new SimpleLongProperty(max) : new SimpleLongProperty();
             this.time = new SimpleLongProperty(time);
             this.name = new SimpleStringProperty(name);
             executed.bind(lesson_time.greaterThanOrEqualTo(this.time));

@@ -95,7 +95,9 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         lesson_types.valueProperty().addListener((ObservableValue<? extends LessonModel> observable, LessonModel oldValue, LessonModel newValue) -> {
             lesson_model = newValue;
             roles.clear();
-            lesson_model.roles.forEach(role -> roles.add(new StudentRole(role, null)));
+            if (newValue != null) {
+                lesson_model.roles.forEach(role -> roles.add(new StudentRole(role, null)));
+            }
             getDialogPane().lookupButton(add_button).disableProperty().unbind();
             getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_types.valueProperty().isNull().or(lesson_name.textProperty().isEmpty()).or(new StudentRoleBinding()));
         });

@@ -197,17 +197,17 @@ public class TemporalNetwork {
     private void setWeight(final int from, final int to, final double weight) {
         dist[from][to] = weight;
         if (from == 0) {
-            listeners.stream().forEach(l -> l.boundChange(to, -dist[to][from], dist[from][to]));
             if (vals[to] > dist[0][to]) {
                 vals[to] = dist[0][to];
                 prop_q.push(to);
             }
+            listeners.stream().forEach(l -> l.boundChange(to, -dist[to][from], dist[from][to]));
         } else if (to == 0) {
-            listeners.stream().forEach(l -> l.boundChange(from, -dist[from][to], dist[to][from]));
             if (vals[from] < -dist[from][0]) {
                 vals[from] = -dist[from][0];
                 prop_q.push(from);
             }
+            listeners.stream().forEach(l -> l.boundChange(from, -dist[from][to], dist[to][from]));
         } else {
             listeners.stream().forEach(l -> l.distanceChange(from, to, -dist[to][from], dist[from][to]));
         }
@@ -237,10 +237,12 @@ public class TemporalNetwork {
         if (value < lb(tp) || value > ub(tp)) {
             throw new IllegalArgumentException("'value' must be within the 'tp' variable's bound");
         }
-        vals[tp] = value;
-        listeners.forEach(l -> l.newValue(tp, value));
-        prop_q.push(tp);
-        propagate();
+        if (vals[tp] != value) {
+            vals[tp] = value;
+            listeners.forEach(l -> l.newValue(tp, value));
+            prop_q.push(tp);
+            propagate();
+        }
     }
 
     public Bound bound(final int tp) {

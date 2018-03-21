@@ -26,6 +26,9 @@ public class TimeStringConverter extends StringConverter<Long> {
 
     @Override
     public String toString(Long time) {
+        if (time == null) {
+            return "";
+        }
         long second = (time / 1000) % 60;
         long minute = (time / (1000 * 60)) % 60;
         long hour = (time / (1000 * 60 * 60)) % 24;
