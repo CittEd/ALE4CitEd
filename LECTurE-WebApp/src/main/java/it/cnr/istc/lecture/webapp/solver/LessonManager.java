@@ -181,7 +181,13 @@ public class LessonManager implements TemporalListener {
     }
 
     public void setTime(final int var, final double value) {
-        network.setValue(var, value);
+        if (value < network.lb(var)) {
+            network.setValue(var, network.lb(var));
+        } else if (value > network.ub(var)) {
+            network.setValue(var, network.ub(var));
+        } else {
+            network.setValue(var, value);
+        }
 
         // we extract the lesson timeline..
         extract_timeline();

@@ -55,7 +55,6 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
-import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.chart.util.DefaultShadowGenerator;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
@@ -195,9 +194,10 @@ public class LessonController implements Initializable {
         XYPlot plot = new XYPlot(series_collection, new NumberAxis(""), new NumberAxis(""), renderer);
         plot.setShadowGenerator(new DefaultShadowGenerator(5, java.awt.Color.black, 1, 2, -45));
         plot.getRangeAxis().setVisible(false);
+//        plot.getRangeAxis().setUpperBound(2);
+//        plot.getRangeAxis().setLowerBound(-1);
         plot.setNoDataMessage("No data");
         plot.setRangeGridlinesVisible(false);
-        plot.setInsets(new RectangleInsets(10, 10, 10, 10));
 
         JFreeChart chart = new JFreeChart(null, JFreeChart.DEFAULT_TITLE_FONT, plot, false);
         chart.setBackgroundPaint(java.awt.Color.WHITE);
