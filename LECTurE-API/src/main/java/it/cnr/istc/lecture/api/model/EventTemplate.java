@@ -18,6 +18,7 @@ package it.cnr.istc.lecture.api.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.json.bind.annotation.JsonbTypeAdapter;
 
 /**
  *
@@ -28,7 +29,9 @@ public class EventTemplate {
     public EventTemplateType type;
     public String name;
     public String role;
+    @JsonbTypeAdapter(ConditionAdapter.class)
     public Condition trigger_condition;
+    @JsonbTypeAdapter(ConditionAdapter.class)
     public Condition execution_condition;
     public ArrayList<String> ids;
     public ArrayList<Relation> relations;

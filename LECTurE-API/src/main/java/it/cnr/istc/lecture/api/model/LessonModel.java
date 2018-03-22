@@ -18,6 +18,7 @@ package it.cnr.istc.lecture.api.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.json.bind.annotation.JsonbTypeAdapter;
 
 /**
  *
@@ -28,6 +29,7 @@ public class LessonModel {
     public Long id;
     public String name;
     public ArrayList<String> roles;
+    @JsonbTypeAdapter(EventTemplateListAdapter.class)
     public ArrayList<EventTemplate> events;
     public ArrayList<String> ids;
     public ArrayList<Relation> relations;

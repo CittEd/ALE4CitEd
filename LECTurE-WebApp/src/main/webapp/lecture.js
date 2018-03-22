@@ -63,7 +63,7 @@ $(document).ready(function () {
                     url: "http://localhost:8080/LECTurE-WebApp/LECTurE/users/" + user_id,
                     type: "DELETE"
                 }).then(function () {
-                    location.reload();
+                    tbdy.removeChild(tr);
                 });
             };
             actions_group.append(btn_del);
@@ -123,7 +123,7 @@ $(document).ready(function () {
                     url: "http://localhost:8080/LECTurE-WebApp/LECTurE/lessons/" + lesson_id,
                     type: "DELETE"
                 }).then(function () {
-                    location.reload();
+                    tbdy.removeChild(tr);
                 });
             };
             actions_group.append(btn_del);
