@@ -17,6 +17,8 @@
 package it.cnr.istc.lecture.webapp;
 
 import it.cnr.istc.lecture.api.Lesson;
+import static it.cnr.istc.lecture.api.Lesson.LessonState.Paused;
+import static it.cnr.istc.lecture.api.Lesson.LessonState.Running;
 import static it.cnr.istc.lecture.api.Lesson.LessonState.Stopped;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.messages.HideEvent;
@@ -416,16 +418,32 @@ public class LECTurEBean {
     @Lock(LockType.WRITE)
     public void play(long lesson_id) {
         lessons.get(lesson_id).getLesson().state = Lesson.LessonState.Running;
+        try {
+            mqtt.publish(lessons.get(lesson_id).getLesson().teacher_id + "/input/lesson-" + lesson_id + "/state", Running.toString().getBytes(), 1, true);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Lock(LockType.WRITE)
     public void pause(long lesson_id) {
         lessons.get(lesson_id).getLesson().state = Lesson.LessonState.Paused;
+        try {
+            mqtt.publish(lessons.get(lesson_id).getLesson().teacher_id + "/input/lesson-" + lesson_id + "/state", Paused.toString().getBytes(), 1, true);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Lock(LockType.WRITE)
     public void stop(long lesson_id) {
         lessons.get(lesson_id).getLesson().state = Lesson.LessonState.Stopped;
+        lessons.get(lesson_id).goTo(0);
+        try {
+            mqtt.publish(lessons.get(lesson_id).getLesson().teacher_id + "/input/lesson-" + lesson_id + "/state", Stopped.toString().getBytes(), 1, true);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Lock(LockType.WRITE)

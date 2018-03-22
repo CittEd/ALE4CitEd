@@ -298,11 +298,11 @@ public class Context {
                     id_following_lessons.put(flc.getLesson().id, flc);
                     try {
                         // we subscribe to the lesson's time..
-                        mqtt.subscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/time", (String topic, MqttMessage message) -> {
+                        mqtt.subscribe(flc.getLesson().teacher_id + "/input/lesson-" + flc.getLesson().id + "/time", (String topic, MqttMessage message) -> {
                             Platform.runLater(() -> flc.timeProperty().setValue(Long.parseLong(new String(message.getPayload()))));
                         });
                         // we subscribe to the lesson's state..
-                        mqtt.subscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/state", (String topic, MqttMessage message) -> {
+                        mqtt.subscribe(flc.getLesson().teacher_id + "/input/lesson-" + flc.getLesson().id + "/state", (String topic, MqttMessage message) -> {
                             Platform.runLater(() -> flc.stateProperty().setValue(LessonState.valueOf(new String(message.getPayload()))));
                         });
                     } catch (MqttException ex) {

@@ -64,6 +64,7 @@ $(document).ready(function () {
                     type: "DELETE"
                 }).then(function () {
                     tbdy.removeChild(tr);
+                    document.getElementById("users_count").textContent = users.length;
                 });
             };
             actions_group.append(btn_del);
@@ -124,6 +125,7 @@ $(document).ready(function () {
                     type: "DELETE"
                 }).then(function () {
                     tbdy.removeChild(tr);
+                    document.getElementById("lessons_count").textContent = lessons.length;
                 });
             };
             actions_group.append(btn_del);
