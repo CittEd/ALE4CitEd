@@ -334,17 +334,17 @@ public class LECTurEBean {
                 String tk_json = null;
                 switch (tk.template.type) {
                     case TextEventTemplate:
-                        TextEvent te = new TextEvent(lesson.id, tk.tp, tk.template.role, ((TextEventTemplate) tk.template).content);
+                        TextEvent te = new TextEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((TextEventTemplate) tk.template).content);
                         lesson.events.add(te);
                         tk_json = JSONB.toJson(te);
                         break;
                     case URLEventTemplate:
-                        URLEvent ue = new URLEvent(lesson.id, tk.tp, tk.template.role, ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url);
+                        URLEvent ue = new URLEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url);
                         lesson.events.add(ue);
                         tk_json = JSONB.toJson(ue);
                         break;
                     case QuestionEventTemplate:
-                        QuestionEvent qe = new QuestionEvent(lesson.id, tk.tp, tk.template.role, ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null);
+                        QuestionEvent qe = new QuestionEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null);
                         lesson.events.add(qe);
                         tk_json = JSONB.toJson(qe);
                         break;

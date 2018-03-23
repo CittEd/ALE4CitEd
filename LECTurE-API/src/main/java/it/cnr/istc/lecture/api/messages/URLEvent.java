@@ -28,8 +28,8 @@ public class URLEvent extends Event {
     public URLEvent() {
     }
 
-    public URLEvent(long lesson_id, int event_id, String role, String content, String url) {
-        super(EventType.URLEvent, lesson_id, event_id, role);
+    public URLEvent(long lesson_id, int event_id, String role, long time, String content, String url) {
+        super(EventType.URLEvent, lesson_id, event_id, role, time);
         this.content = content;
         this.url = url;
     }

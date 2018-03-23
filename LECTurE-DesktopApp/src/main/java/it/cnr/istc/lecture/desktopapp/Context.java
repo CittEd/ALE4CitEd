@@ -301,6 +301,8 @@ public class Context {
             while (c.next()) {
                 for (FollowingLessonContext flc : c.getAddedSubList()) {
                     id_following_lessons.put(flc.getLesson().id, flc);
+                    events.addAll(flc.getLesson().events);
+                    flc.eventsProperty().addAll(flc.getLesson().events);
                     try {
                         // we subscribe to the lesson's time..
                         mqtt.subscribe(flc.getLesson().teacher_id + "/input/lesson-" + flc.getLesson().id + "/time", (String topic, MqttMessage message) -> {
@@ -316,6 +318,8 @@ public class Context {
                 }
                 for (FollowingLessonContext flc : c.getRemoved()) {
                     id_following_lessons.remove(flc.getLesson().id);
+                    events.removeAll(flc.eventsProperty());
+                    flc.eventsProperty().clear();
                     if (user.isNotNull().get()) {
                         try {
                             // we subscribe from the lesson's time and state..
@@ -385,9 +389,10 @@ public class Context {
         students.addListener((ListChangeListener.Change<? extends StudentContext> c) -> {
             while (c.next()) {
                 for (StudentContext std_ctx : c.getAddedSubList()) {
+                    long student_id = std_ctx.getStudent().id;
                     try {
                         // we subscribe to be notified whether the student gets online/offline..
-                        mqtt.subscribe(std_ctx.getStudent().id + "/output/on-line", (String topic, MqttMessage message) -> Platform.runLater(() -> std_ctx.onlineProperty().set(Boolean.parseBoolean(new String(message.getPayload())))));
+                        mqtt.subscribe(student_id + "/output/on-line", (String topic, MqttMessage message) -> Platform.runLater(() -> std_ctx.onlineProperty().set(Boolean.parseBoolean(new String(message.getPayload())))));
                         // we subscribe/unsubscribe to the student's added/removed parameters..
                         std_ctx.parameterTypesProperty().addListener((ListChangeListener.Change<? extends Parameter> c1) -> {
                             while (c1.next()) {
@@ -395,9 +400,9 @@ public class Context {
                                 for (Parameter par : c1.getAddedSubList()) {
                                     try {
                                         mqtt.subscribe(std_ctx.getStudent().id + "/output/" + par.name, (String topic, MqttMessage message) -> {
-                                            Map<String, String> par_vals = JSONB.fromJson(new String(message.getPayload()), new HashMap<String, String>() {
+                                            Map<String, String> c_par_vals = JSONB.fromJson(new String(message.getPayload()), new HashMap<String, String>() {
                                             }.getClass().getGenericSuperclass());
-                                            std_ctx.setParameterValue(par.name, par_vals);
+                                            Platform.runLater(() -> std_ctx.setParameterValue(par.name, c_par_vals));
                                         });
                                     } catch (MqttException ex) {
                                         LOG.log(Level.SEVERE, null, ex);
@@ -406,7 +411,7 @@ public class Context {
                                 // we unsubscribe from the removed parameters..
                                 for (Parameter par : c1.getRemoved()) {
                                     try {
-                                        mqtt.unsubscribe(std_ctx.getStudent().id + "/output/" + par.name);
+                                        mqtt.unsubscribe(student_id + "/output/" + par.name);
                                     } catch (MqttException ex) {
                                         LOG.log(Level.SEVERE, null, ex);
                                     }
@@ -416,7 +421,7 @@ public class Context {
                         if (std_ctx.isOnline()) {
                             // we add the current student's parameters..
                             // notice that in case the student is offline, the parameters will be added by the subscription to the student's output..
-                            Platform.runLater(() -> std_ctx.parameterTypesProperty().addAll(std_ctx.getStudent().par_types.values()));
+                            std_ctx.parameterTypesProperty().addAll(std_ctx.getStudent().par_types.values());
                         }
                         // we subscribe to the student's output..
                         mqtt.subscribe(std_ctx.getStudent().id + "/output", (String topic, MqttMessage message) -> {
@@ -437,7 +442,7 @@ public class Context {
                             }
                         });
                         for (Map.Entry<String, Map<String, String>> par_val : std_ctx.getStudent().par_values.entrySet()) {
-                            Platform.runLater(() -> std_ctx.setParameterValue(par_val.getKey(), par_val.getValue()));
+                            std_ctx.setParameterValue(par_val.getKey(), par_val.getValue());
                         }
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
@@ -447,7 +452,7 @@ public class Context {
                 for (StudentContext std_ctx : c.getRemoved()) {
                     try {
                         mqtt.unsubscribe(std_ctx.getStudent().id + "/output/on-line");
-                        Platform.runLater(() -> std_ctx.parameterTypesProperty().clear());
+                        std_ctx.parameterTypesProperty().clear();
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }

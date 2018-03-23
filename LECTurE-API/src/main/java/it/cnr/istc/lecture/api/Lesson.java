@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import javax.json.bind.annotation.JsonbTypeAdapter;
 
 /**
  *
@@ -36,6 +37,7 @@ public class Lesson {
     public long time;
     public Long model;
     public HashMap<String, Long> roles;
+    @JsonbTypeAdapter(EventListAdapter.class)
     public ArrayList<Event> events;
     public ArrayList<Token> tokens;
 

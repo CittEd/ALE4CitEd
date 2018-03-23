@@ -31,8 +31,8 @@ public class QuestionEvent extends Event {
     public QuestionEvent() {
     }
 
-    public QuestionEvent(long lesson_id, int event_id, String role, String question, List<String> answers, Integer answer) {
-        super(EventType.QuestionEvent, lesson_id, event_id, role);
+    public QuestionEvent(long lesson_id, int event_id, String role, long time, String question, List<String> answers, Integer answer) {
+        super(EventType.QuestionEvent, lesson_id, event_id, role, time);
         this.question = question;
         this.answers = answers;
         this.answer = answer;

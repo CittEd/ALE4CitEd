@@ -40,6 +40,7 @@ public class EventAdapter implements JsonbAdapter<Event, JsonObject> {
         c_object.add("lesson_id", obj.lesson_id);
         c_object.add("event_id", obj.event_id);
         c_object.add("role", obj.role);
+        c_object.add("time", obj.time);
         switch (obj.event_type) {
             case TextEvent:
                 c_object.add("content", ((TextEvent) obj).content);
@@ -70,9 +71,10 @@ public class EventAdapter implements JsonbAdapter<Event, JsonObject> {
         long lesson_id = obj.getJsonNumber("lesson_id").longValue();
         int event_id = obj.getInt("event_id");
         String role = obj.getString("role");
+        long time = obj.getJsonNumber("time").longValue();
         switch (Event.EventType.valueOf(obj.getString("event_type"))) {
             case TextEvent:
-                return new TextEvent(lesson_id, event_id, role, obj.getString("content"));
+                return new TextEvent(lesson_id, event_id, role, time, obj.getString("content"));
             case QuestionEvent:
                 String question = obj.getString("question");
                 JsonArray answers_array = obj.getJsonArray("answers");
@@ -80,9 +82,9 @@ public class EventAdapter implements JsonbAdapter<Event, JsonObject> {
                 for (JsonValue answer_value : answers_array) {
                     answers.add(answer_value.toString());
                 }
-                return new QuestionEvent(lesson_id, event_id, role, question, answers, obj.containsKey("answer") ? obj.getInt("answer") : null);
+                return new QuestionEvent(lesson_id, event_id, role, time, question, answers, obj.containsKey("answer") ? obj.getInt("answer") : null);
             case URLEvent:
-                return new URLEvent(lesson_id, event_id, role, obj.getString("content"), obj.getString("url"));
+                return new URLEvent(lesson_id, event_id, role, time, obj.getString("content"), obj.getString("url"));
             default:
                 throw new AssertionError(Event.EventType.valueOf(obj.getString("event_type")).name());
         }

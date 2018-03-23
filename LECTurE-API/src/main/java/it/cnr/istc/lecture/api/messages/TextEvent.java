@@ -27,8 +27,8 @@ public class TextEvent extends Event {
     public TextEvent() {
     }
 
-    public TextEvent(long lesson_id, int event_id, String role, String content) {
-        super(EventType.TextEvent, lesson_id, event_id, role);
+    public TextEvent(long lesson_id, int event_id, String role, long time, String content) {
+        super(EventType.TextEvent, lesson_id, event_id, role, time);
         this.content = content;
     }
 }

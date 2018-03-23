@@ -31,6 +31,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -109,13 +110,11 @@ public class MainController implements Initializable {
 
         ObjectProperty<User> user = Context.getContext().userProperty();
         user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
-            Platform.runLater(() -> {
-                if (newValue != null) {
-                    stage.setTitle("LECTurE (Learning Environment CiTtà Educante) - " + newValue.first_name);
-                } else {
-                    stage.setTitle("LECTurE (Learning Environment CiTtà Educante)");
-                }
-            });
+            if (newValue != null) {
+                stage.setTitle("LECTurE (Learning Environment CiTtà Educante) - " + newValue.first_name);
+            } else {
+                stage.setTitle("LECTurE (Learning Environment CiTtà Educante)");
+            }
         });
 
         login.disableProperty().bind(user.isNotNull());
@@ -124,7 +123,7 @@ public class MainController implements Initializable {
 
         learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
 
-        events.setItems(Context.getContext().eventsProperty());
+        events.setItems(new SortedList<>(Context.getContext().eventsProperty(), (Event e0, Event e1) -> Long.compare(e0.time, e1.time)));
         events.setCellFactory((ListView<Event> param) -> new ListCell<Event>() {
             @Override
             protected void updateItem(Event event, boolean empty) {

@@ -26,16 +26,18 @@ public abstract class Event extends Message {
     public long lesson_id;
     public int event_id;
     public String role;
+    public long time;
 
     public Event() {
     }
 
-    public Event(EventType event_type, long lesson_id, int event_id, String role) {
+    public Event(EventType event_type, long lesson_id, int event_id, String role, long time) {
         super(MessageType.Event);
         this.event_type = event_type;
         this.lesson_id = lesson_id;
         this.event_id = event_id;
         this.role = role;
+        this.time = time;
     }
 
     public enum EventType {
