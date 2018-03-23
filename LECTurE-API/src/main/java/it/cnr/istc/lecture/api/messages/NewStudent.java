@@ -16,19 +16,21 @@
  */
 package it.cnr.istc.lecture.api.messages;
 
+import it.cnr.istc.lecture.api.User;
+
 /**
  *
  * @author Riccardo De Benedictis
  */
 public class NewStudent extends Message {
 
-    public long student_id;
+    public User student;
 
     public NewStudent() {
     }
 
-    public NewStudent(long studentId) {
+    public NewStudent(User student) {
         super(MessageType.NewStudent);
-        this.student_id = studentId;
+        this.student = student;
     }
 }

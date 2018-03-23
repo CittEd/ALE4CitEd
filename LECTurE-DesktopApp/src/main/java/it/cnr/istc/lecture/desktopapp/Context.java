@@ -569,9 +569,9 @@ public class Context {
     }
 
     public boolean setTime(Lesson lesson, TokenRow row, long time) {
-        row.timeProperty().set(time);
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
+        form.param("token_id", Integer.toString(row.getId()));
         form.param("time", Long.toString(time));
         return target.path("set_time").request().put(Entity.form(form), Boolean.class);
     }

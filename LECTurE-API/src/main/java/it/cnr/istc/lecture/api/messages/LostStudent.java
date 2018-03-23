@@ -22,13 +22,13 @@ package it.cnr.istc.lecture.api.messages;
  */
 public class LostStudent extends Message {
 
-    public long studentId;
+    public long student_id;
 
     public LostStudent() {
     }
 
     public LostStudent(long studentId) {
         super(MessageType.LostStudent);
-        this.studentId = studentId;
+        this.student_id = studentId;
     }
 }

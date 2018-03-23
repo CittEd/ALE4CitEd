@@ -26,6 +26,8 @@ import java.net.URL;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -124,19 +126,25 @@ public class LessonController implements Initializable {
         if (newValue != null) {
             switch (newValue) {
                 case Running:
-                    play_button.setDisable(true);
-                    pause_button.setDisable(false);
-                    stop_button.setDisable(false);
+                    Platform.runLater(() -> {
+                        play_button.setDisable(true);
+                        pause_button.setDisable(false);
+                        stop_button.setDisable(false);
+                    });
                     break;
                 case Paused:
-                    play_button.setDisable(false);
-                    pause_button.setDisable(true);
-                    stop_button.setDisable(false);
+                    Platform.runLater(() -> {
+                        play_button.setDisable(false);
+                        pause_button.setDisable(true);
+                        stop_button.setDisable(false);
+                    });
                     break;
                 case Stopped:
-                    play_button.setDisable(false);
-                    pause_button.setDisable(true);
-                    stop_button.setDisable(true);
+                    Platform.runLater(() -> {
+                        play_button.setDisable(false);
+                        pause_button.setDisable(true);
+                        stop_button.setDisable(true);
+                    });
                     break;
                 default:
                     throw new AssertionError(newValue.name());
@@ -144,27 +152,54 @@ public class LessonController implements Initializable {
         }
     };
     private static final StringConverter TIME_STRING_CONVERTER = new TimeStringConverter();
+    private final ChangeListener<Number> TOKENS_TIME_CHANGE_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+        Platform.runLater(() -> {
+            List<XYDataItem> items = new ArrayList<>(tokens.getItemCount());
+            for (int i = 0; i < tokens.getItemCount(); i++) {
+                if (((TokenXYDataItem) tokens.getDataItem(i)).t.timeProperty() == observable) {
+                    long x = ((TokenXYDataItem) tokens.getDataItem(i)).t.getTime();
+                    long y = 1;
+                    for (int j = 0; j < tokens.getItemCount(); j++) {
+                        if (tokens.getDataItem(j).getXValue() == x) {
+                            y++;
+                        }
+                    }
+                    items.add(new TokenXYDataItem(x, y, ((TokenXYDataItem) tokens.getDataItem(i)).t));
+                } else {
+                    items.add(tokens.getDataItem(i));
+                }
+            }
+            tokens.clear();
+            for (XYDataItem item : items) {
+                tokens.add(item);
+            }
+        });
+    };
     private final ListChangeListener<TokenRow> TOKENS_CHANGE_LISTENER = (ListChangeListener.Change<? extends TokenRow> c) -> {
-        while (c.next()) {
-            c.getAddedSubList().forEach(tk_row -> {
-                long x = tk_row.getTime();
-                long y = 1;
-                for (int i = 0; i < tokens.getItemCount(); i++) {
-                    if (tokens.getDataItem(i).getXValue() == x) {
-                        y++;
+        Platform.runLater(() -> {
+            while (c.next()) {
+                c.getAddedSubList().forEach(tk_row -> {
+                    long x = tk_row.getTime();
+                    long y = 1;
+                    for (int i = 0; i < tokens.getItemCount(); i++) {
+                        if (tokens.getDataItem(i).getXValue() == x) {
+                            y++;
+                        }
                     }
-                }
-                tokens.add(new TokenXYDataItem(x, y, tk_row));
-            });
-            c.getRemoved().forEach(tk_row -> {
-                for (int i = 0; i < tokens.getItemCount(); i++) {
-                    if (((TokenXYDataItem) tokens.getDataItem(i)).t == tk_row) {
-                        tokens.remove(i);
+                    tokens.add(new TokenXYDataItem(x, y, tk_row));
+                    tk_row.timeProperty().addListener(TOKENS_TIME_CHANGE_LISTENER);
+                });
+                c.getRemoved().forEach(tk_row -> {
+                    tk_row.timeProperty().removeListener(TOKENS_TIME_CHANGE_LISTENER);
+                    for (int i = 0; i < tokens.getItemCount(); i++) {
+                        if (((TokenXYDataItem) tokens.getDataItem(i)).t == tk_row) {
+                            tokens.remove(i);
+                        }
+                        break;
                     }
-                    break;
-                }
-            });
-        }
+                });
+            }
+        });
     };
 
     @Override
@@ -177,29 +212,36 @@ public class LessonController implements Initializable {
             }
             tokens.clear();
             if (newValue != null) {
-                lesson_name.setText(newValue.getLesson().name);
-                STATE_LISTENER.changed(newValue.stateProperty(), oldValue != null ? oldValue.stateProperty().getValue() : null, newValue.stateProperty().getValue());
-                newValue.stateProperty().addListener(STATE_LISTENER);
-                TIME_LISTENER.changed(newValue.timeProperty(), oldValue != null ? oldValue.timeProperty().getValue() : null, newValue.timeProperty().getValue());
-                newValue.timeProperty().addListener(TIME_LISTENER);
-                newValue.tokensProperty().forEach(tk_row -> {
-                    long x = tk_row.getTime();
-                    long y = 1;
-                    for (int i = 0; i < tokens.getItemCount(); i++) {
-                        if (tokens.getDataItem(i).getXValue() == x) {
-                            y++;
-                        }
-                    }
-                    tokens.add(new TokenXYDataItem(x, y, tk_row));
+                Platform.runLater(() -> {
+                    lesson_name.setText(newValue.getLesson().name);
+                    STATE_LISTENER.changed(newValue.stateProperty(), oldValue != null ? oldValue.stateProperty().getValue() : null, newValue.stateProperty().getValue());
+                    newValue.stateProperty().addListener(STATE_LISTENER);
+                    TIME_LISTENER.changed(newValue.timeProperty(), oldValue != null ? oldValue.timeProperty().getValue() : null, newValue.timeProperty().getValue());
+                    newValue.timeProperty().addListener(TIME_LISTENER);
+                    newValue.tokensProperty().forEach(tk_row -> {
+                        Platform.runLater(() -> {
+                            long x = tk_row.getTime();
+                            long y = 1;
+                            for (int i = 0; i < tokens.getItemCount(); i++) {
+                                if (tokens.getDataItem(i).getXValue() == x) {
+                                    y++;
+                                }
+                            }
+                            tokens.add(new TokenXYDataItem(x, y, tk_row));
+                            tk_row.timeProperty().addListener(TOKENS_TIME_CHANGE_LISTENER);
+                        });
+                    });
+                    newValue.tokensProperty().addListener(TOKENS_CHANGE_LISTENER);
+                    tokens_table_view.setItems(new SortedList<>(newValue.tokensProperty(), (TokenRow r0, TokenRow r1) -> Long.compare(r0.getTime(), r1.getTime())));
                 });
-                newValue.tokensProperty().addListener(TOKENS_CHANGE_LISTENER);
-                tokens_table_view.setItems(new SortedList<>(newValue.tokensProperty(), (TokenRow r0, TokenRow r1) -> Long.compare(r0.getTime(), r1.getTime())));
             } else {
-                lesson_name.setText(null);
-                play_button.setDisable(true);
-                pause_button.setDisable(true);
-                stop_button.setDisable(true);
-                time.setText(null);
+                Platform.runLater(() -> {
+                    lesson_name.setText(null);
+                    play_button.setDisable(true);
+                    pause_button.setDisable(true);
+                    stop_button.setDisable(true);
+                    time.setText(null);
+                });
             }
         });
 
@@ -372,21 +414,10 @@ public class LessonController implements Initializable {
     private class TokenXYDataItem extends XYDataItem {
 
         private final TokenRow t;
-        private final LongProperty time_property;
 
         TokenXYDataItem(double x, double y, TokenRow t) {
             super(x, y);
             this.t = t;
-            time_property = new SimpleLongProperty(0);
-            t.timeProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                final Timeline tl = new Timeline();
-                final KeyValue kv = new KeyValue(time_property, newValue.longValue(), Interpolator.EASE_BOTH);
-                final KeyFrame kf = new KeyFrame(Duration.millis(500), kv);
-                tl.getKeyFrames().add(kf);
-                tl.play();
-            });
-            time_property.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-            });
         }
     }
 

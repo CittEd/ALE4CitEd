@@ -21,6 +21,7 @@ import static it.cnr.istc.lecture.api.Lesson.LessonState.Paused;
 import static it.cnr.istc.lecture.api.Lesson.LessonState.Running;
 import static it.cnr.istc.lecture.api.Lesson.LessonState.Stopped;
 import it.cnr.istc.lecture.api.Parameter;
+import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.messages.HideEvent;
 import it.cnr.istc.lecture.api.messages.LostLesson;
 import it.cnr.istc.lecture.api.messages.LostParameter;
@@ -491,9 +492,11 @@ public class LECTurEBean {
         return lessons.get(lesson_id);
     }
 
+    @Lock(LockType.READ)
     public void addTeacher(long student_id, long teacher_id) {
+        UserEntity u = em.find(UserEntity.class, student_id);
         try {
-            mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(student_id)).getBytes(), 1, false);
+            mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), getParTypes(u.getId()), getParValues(u.getId())))).getBytes(), 1, false);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
