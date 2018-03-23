@@ -23,9 +23,19 @@ import it.cnr.istc.lecture.api.model.TextEventTemplate;
 import it.cnr.istc.lecture.api.model.URLEventTemplate;
 import it.cnr.istc.lecture.desktopapp.TeachingLessonContext.TokenRow;
 import java.net.URL;
+import java.text.FieldPosition;
+import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.util.ResourceBundle;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -47,14 +57,18 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
+import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.TextAnchor;
 import org.jfree.chart.util.DefaultShadowGenerator;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
@@ -92,7 +106,20 @@ public class LessonController implements Initializable {
     private TableColumn<TokenRow, String> role_column;
     @FXML
     private TableColumn<TokenRow, String> subject_column;
-    private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> time.setText(TIME_STRING_CONVERTER.toString(newValue.longValue()));
+    private final ObjectProperty<TeachingLessonContext> l_ctx = new SimpleObjectProperty<>();
+    private final TokenXYSeries tokens = new TokenXYSeries("Tokens");
+    private final ValueMarker t_now = new ValueMarker(0);
+    private final LongProperty t_now_property = new SimpleLongProperty(0);
+    private final ChangeListener<Number> TIME_LISTENER = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+        Platform.runLater(() -> {
+            time.setText(TIME_STRING_CONVERTER.toString(newValue.longValue()));
+            final Timeline tl = new Timeline();
+            final KeyValue kv = new KeyValue(t_now_property, newValue.longValue(), Interpolator.EASE_BOTH);
+            final KeyFrame kf = new KeyFrame(Duration.millis(500), kv);
+            tl.getKeyFrames().add(kf);
+            tl.play();
+        });
+    };
     private final ChangeListener<LessonState> STATE_LISTENER = (ObservableValue<? extends LessonState> observable, LessonState oldValue, LessonState newValue) -> {
         if (newValue != null) {
             switch (newValue) {
@@ -117,13 +144,11 @@ public class LessonController implements Initializable {
         }
     };
     private static final StringConverter TIME_STRING_CONVERTER = new TimeStringConverter();
-    private final ObjectProperty<TeachingLessonContext> l_ctx = new SimpleObjectProperty<>();
-    private final TokenXYSeries tokens = new TokenXYSeries("Tokens");
     private final ListChangeListener<TokenRow> TOKENS_CHANGE_LISTENER = (ListChangeListener.Change<? extends TokenRow> c) -> {
         while (c.next()) {
             c.getAddedSubList().forEach(tk_row -> {
                 long x = tk_row.getTime();
-                long y = 0;
+                long y = 1;
                 for (int i = 0; i < tokens.getItemCount(); i++) {
                     if (tokens.getDataItem(i).getXValue() == x) {
                         y++;
@@ -159,7 +184,7 @@ public class LessonController implements Initializable {
                 newValue.timeProperty().addListener(TIME_LISTENER);
                 newValue.tokensProperty().forEach(tk_row -> {
                     long x = tk_row.getTime();
-                    long y = 0;
+                    long y = 1;
                     for (int i = 0; i < tokens.getItemCount(); i++) {
                         if (tokens.getDataItem(i).getXValue() == x) {
                             y++;
@@ -190,17 +215,39 @@ public class LessonController implements Initializable {
 
         XYShapeRenderer renderer = new XYShapeRenderer();
         renderer.setSeriesPaint(0, java.awt.Color.blue);
+        NumberAxis range_axis = new NumberAxis("");
+        range_axis.setVisible(false);
+        range_axis.setUpperMargin(0.4);
+        NumberAxis domain_axis = new NumberAxis("");
+        domain_axis.setNumberFormatOverride(new NumberFormat() {
+            @Override
+            public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos) {
+                return format((long) number, toAppendTo, pos);
+            }
 
-        XYPlot plot = new XYPlot(series_collection, new NumberAxis(""), new NumberAxis(""), renderer);
+            @Override
+            public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos) {
+                return toAppendTo.append(TIME_STRING_CONVERTER.toString(number));
+            }
+
+            @Override
+            public Number parse(String source, ParsePosition parsePosition) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });
+        XYPlot plot = new XYPlot(series_collection, domain_axis, range_axis, renderer);
         plot.setShadowGenerator(new DefaultShadowGenerator(5, java.awt.Color.black, 1, 2, -45));
-        plot.getRangeAxis().setVisible(false);
-//        plot.getRangeAxis().setUpperBound(2);
-//        plot.getRangeAxis().setLowerBound(-1);
         plot.setNoDataMessage("No data");
         plot.setRangeGridlinesVisible(false);
+        t_now.setLabel("now");
+        t_now.setLabelAnchor(RectangleAnchor.TOP_LEFT);
+        t_now.setLabelTextAnchor(TextAnchor.TOP_RIGHT);
+        plot.addDomainMarker(t_now);
 
         JFreeChart chart = new JFreeChart(null, JFreeChart.DEFAULT_TITLE_FONT, plot, false);
         chart.setBackgroundPaint(java.awt.Color.WHITE);
+
+        t_now_property.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> t_now.setValue(newValue.longValue()));
 
         lesson_chart_pane.getChildren().add(new ChartViewer(chart));
 
@@ -325,10 +372,21 @@ public class LessonController implements Initializable {
     private class TokenXYDataItem extends XYDataItem {
 
         private final TokenRow t;
+        private final LongProperty time_property;
 
         TokenXYDataItem(double x, double y, TokenRow t) {
             super(x, y);
             this.t = t;
+            time_property = new SimpleLongProperty(0);
+            t.timeProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                final Timeline tl = new Timeline();
+                final KeyValue kv = new KeyValue(time_property, newValue.longValue(), Interpolator.EASE_BOTH);
+                final KeyFrame kf = new KeyFrame(Duration.millis(500), kv);
+                tl.getKeyFrames().add(kf);
+                tl.play();
+            });
+            time_property.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+            });
         }
     }
 

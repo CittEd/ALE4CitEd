@@ -29,6 +29,8 @@ import it.cnr.istc.lecture.api.messages.HideEvent;
 import it.cnr.istc.lecture.api.messages.LostLesson;
 import it.cnr.istc.lecture.api.messages.LostParameter;
 import it.cnr.istc.lecture.api.messages.Message;
+import it.cnr.istc.lecture.api.messages.EventAdapter;
+import it.cnr.istc.lecture.api.messages.LostStudent;
 import it.cnr.istc.lecture.api.messages.NewLesson;
 import it.cnr.istc.lecture.api.messages.NewParameter;
 import it.cnr.istc.lecture.api.messages.NewStudent;
@@ -59,6 +61,7 @@ import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -81,7 +84,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
-    public static final Jsonb JSONB = JsonbBuilder.create();
+    public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withAdapters(new EventAdapter()));
     private static Context ctx;
 
     public static Context getContext() {
@@ -216,12 +219,11 @@ public class Context {
                             case NewStudent:
                                 // a new student is following this user..
                                 NewStudent new_student = JSONB.fromJson(new String(message.getPayload()), NewStudent.class);
-                                User u = target.path("users").path(Long.toString(new_student.student_id)).request(MediaType.APPLICATION_JSON).get(User.class);
-                                Platform.runLater(() -> students.add(new StudentContext(u)));
+                                Platform.runLater(() -> students.add(new StudentContext(new_student.student)));
                                 break;
                             case LostStudent:
                                 // a student is not following this user anymore..
-                                NewStudent lost_student = JSONB.fromJson(new String(message.getPayload()), NewStudent.class);
+                                LostStudent lost_student = JSONB.fromJson(new String(message.getPayload()), LostStudent.class);
                                 Platform.runLater(() -> students.remove(id_students.get(lost_student.student_id)));
                                 break;
                             case NewLesson:
@@ -256,7 +258,10 @@ public class Context {
                             case Event:
                                 // a new event has been created for a following lesson..
                                 Event event = JSONB.fromJson(new String(message.getPayload()), Event.class);
-                                Platform.runLater(() -> id_following_lessons.get(event.lesson_id).eventsProperty().add(event));
+                                Platform.runLater(() -> {
+                                    Context.getContext().eventsProperty().add(event);
+                                    id_following_lessons.get(event.lesson_id).eventsProperty().add(event);
+                                });
                                 break;
                             case HideEvent:
                                 // an event has been removed for a following lesson..
@@ -568,7 +573,7 @@ public class Context {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
         form.param("time", Long.toString(time));
-        return target.path("set_time").request(MediaType.APPLICATION_JSON).put(Entity.form(form), Boolean.class);
+        return target.path("set_time").request().put(Entity.form(form), Boolean.class);
     }
 
     public boolean play(Lesson lesson) {
