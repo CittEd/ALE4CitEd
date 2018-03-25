@@ -24,6 +24,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 /**
@@ -39,6 +40,12 @@ public class FollowingLessonContext {
 
     FollowingLessonContext(Lesson lesson) {
         this.lesson = lesson;
+        events.addListener((ListChangeListener.Change<? extends Event> c) -> {
+            while (c.next()) {
+                Context.getContext().eventsProperty().addAll(c.getAddedSubList());
+                Context.getContext().eventsProperty().removeAll(c.getRemoved());
+            }
+        });
     }
 
     public Lesson getLesson() {

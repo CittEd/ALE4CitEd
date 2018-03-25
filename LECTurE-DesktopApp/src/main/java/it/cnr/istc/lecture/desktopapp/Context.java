@@ -258,10 +258,7 @@ public class Context {
                             case Event:
                                 // a new event has been created for a following lesson..
                                 Event event = JSONB.fromJson(new String(message.getPayload()), Event.class);
-                                Platform.runLater(() -> {
-                                    Context.getContext().eventsProperty().add(event);
-                                    id_following_lessons.get(event.lesson_id).eventsProperty().add(event);
-                                });
+                                Platform.runLater(() -> id_following_lessons.get(event.lesson_id).eventsProperty().add(event));
                                 break;
                             case HideEvent:
                                 // an event has been removed for a following lesson..
