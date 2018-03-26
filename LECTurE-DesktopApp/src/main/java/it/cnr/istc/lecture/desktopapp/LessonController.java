@@ -413,7 +413,6 @@ public class LessonController implements Initializable {
             super.updateItem(item, empty);
             if (empty) {
                 setText(null);
-                setGraphic(null);
                 editableProperty().unbind();
                 styleProperty().unbind();
                 setStyle("");

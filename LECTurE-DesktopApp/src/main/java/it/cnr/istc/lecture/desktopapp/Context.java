@@ -298,7 +298,6 @@ public class Context {
             while (c.next()) {
                 for (FollowingLessonContext flc : c.getAddedSubList()) {
                     id_following_lessons.put(flc.getLesson().id, flc);
-                    events.addAll(flc.getLesson().events);
                     flc.eventsProperty().addAll(flc.getLesson().events);
                     try {
                         // we subscribe to the lesson's time..
