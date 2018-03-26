@@ -19,6 +19,7 @@ package it.cnr.istc.lecture.webapp.solver;
 import it.cnr.istc.lecture.api.Lesson;
 import it.cnr.istc.lecture.api.model.EventTemplate;
 import it.cnr.istc.lecture.api.model.LessonModel;
+import it.cnr.istc.lecture.api.model.QuestionEventTemplate;
 import it.cnr.istc.lecture.api.model.Relation;
 import it.cnr.istc.lecture.webapp.time.TemporalListener;
 import it.cnr.istc.lecture.webapp.time.TemporalNetwork;
@@ -258,6 +259,31 @@ public class LessonManager implements TemporalListener {
         }
         t_now = t;
         listeners.forEach(l -> l.newTime(t_now));
+    }
+
+    public void answerQuestion(final int question_id, final int answer) {
+        SolverToken q_tk = tokens.get(question_id - 2);
+        answers.put(q_tk, answer);
+        QuestionEventTemplate.Answer answr = ((QuestionEventTemplate) q_tk.template).answers.get(answer);
+
+        answer_context = new AnswerContext(q_tk, answer);
+
+        // this token represents the effects of the answer on the lesson..
+        SolverToken c_tk = new SolverToken(null, network.newTimePoint(), event_templates.get(answr.event), question_id);
+        tokens.add(c_tk);
+        listeners.forEach(l -> l.newToken(c_tk));
+        prop_q.push(c_tk);
+
+        build();
+
+        answer_contexts.put(c_tk, answer_context);
+        answer_context = null;
+
+        // we guarantee that the origin is at 0..
+        network.setValue(c_tk.tp, t_now + 1000);
+
+        // we extract the lesson timeline..
+        extract_timeline();
     }
 
     @Override

@@ -22,6 +22,7 @@ import static it.cnr.istc.lecture.api.Lesson.LessonState.Running;
 import static it.cnr.istc.lecture.api.Lesson.LessonState.Stopped;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.User;
+import it.cnr.istc.lecture.api.messages.Answer;
 import it.cnr.istc.lecture.api.messages.HideEvent;
 import it.cnr.istc.lecture.api.messages.LostLesson;
 import it.cnr.istc.lecture.api.messages.LostParameter;
@@ -294,6 +295,16 @@ public class LECTurEBean {
     @Lock(LockType.WRITE)
     public void newParameterValue(long user_id, String par, Map<String, String> val) {
         parameter_values.get(user_id).put(par, val);
+    }
+
+    @Lock(LockType.WRITE)
+    public void answerQuestion(long lesson_id, int question_id, int answer_id) {
+        try {
+            mqtt.publish(lessons.get(lesson_id).getLesson().teacher_id + "/input", JSONB.toJson(new Answer(lesson_id, question_id, answer_id)).getBytes(), 1, false);
+            lessons.get(lesson_id).answerQuestion(question_id, answer_id);
+        } catch (MqttException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Lock(LockType.WRITE)

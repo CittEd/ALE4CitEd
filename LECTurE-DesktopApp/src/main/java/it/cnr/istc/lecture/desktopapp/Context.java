@@ -34,6 +34,7 @@ import it.cnr.istc.lecture.api.messages.LostStudent;
 import it.cnr.istc.lecture.api.messages.NewLesson;
 import it.cnr.istc.lecture.api.messages.NewParameter;
 import it.cnr.istc.lecture.api.messages.NewStudent;
+import it.cnr.istc.lecture.api.messages.QuestionEvent;
 import it.cnr.istc.lecture.api.messages.RemoveToken;
 import it.cnr.istc.lecture.api.messages.Token;
 import it.cnr.istc.lecture.api.messages.TokenUpdate;
@@ -514,6 +515,14 @@ public class Context {
         return following_lessons;
     }
 
+    public void answerQuestion(QuestionEvent event, int answer) {
+        Form form = new Form();
+        form.param("lesson_id", Long.toString(event.lesson_id));
+        form.param("question_id", Long.toString(event.event_id));
+        form.param("answer_id", Long.toString(answer));
+        target.path("answer_question").request().put(Entity.form(form));
+    }
+
     public void addTeacher(User teacher) {
         Form form = new Form();
         form.param("student_id", Long.toString(user.get().id));
@@ -557,49 +566,46 @@ public class Context {
         target.path("solve_lesson").request().put(Entity.form(form));
     }
 
-    public boolean removeLesson(TeachingLessonContext l_ctx) {
-        if (!target.path("lessons").path(Long.toString(l_ctx.getLesson().id)).request().delete(Boolean.class)) {
-            return false;
-        }
+    public void removeLesson(TeachingLessonContext l_ctx) {
+        target.path("lessons").path(Long.toString(l_ctx.getLesson().id)).request().delete();
         teaching_lessons.remove(l_ctx);
-        return true;
     }
 
     public ObservableList<TeachingLessonContext> teachingLessonsProperty() {
         return teaching_lessons;
     }
 
-    public boolean setTime(Lesson lesson, TokenRow row, long time) {
+    public void setTime(Lesson lesson, TokenRow row, long time) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
         form.param("token_id", Integer.toString(row.getId()));
         form.param("time", Long.toString(time));
-        return target.path("set_time").request().put(Entity.form(form), Boolean.class);
+        target.path("set_time").request().put(Entity.form(form));
     }
 
-    public boolean play(Lesson lesson) {
+    public void play(Lesson lesson) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
-        return target.path("play").request().put(Entity.form(form), Boolean.class);
+        target.path("play").request().put(Entity.form(form));
     }
 
-    public boolean pause(Lesson lesson) {
+    public void pause(Lesson lesson) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
-        return target.path("pause").request().put(Entity.form(form), Boolean.class);
+        target.path("pause").request().put(Entity.form(form));
     }
 
-    public boolean stop(Lesson lesson) {
+    public void stop(Lesson lesson) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
-        return target.path("stop").request().put(Entity.form(form), Boolean.class);
+        target.path("stop").request().put(Entity.form(form));
     }
 
-    public boolean goTo(Lesson lesson, long time) {
+    public void goTo(Lesson lesson, long time) {
         Form form = new Form();
         form.param("lesson_id", Long.toString(lesson.id));
         form.param("time", Long.toString(time));
-        return target.path("go_to").request().put(Entity.form(form), Boolean.class);
+        target.path("go_to").request().put(Entity.form(form));
     }
 
     public StudentContext getStudentContext(long id) {

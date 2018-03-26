@@ -250,6 +250,23 @@ public class LECTurEResource {
         }
     }
 
+    @PUT
+    @Path("answer_question")
+    public void answerQuestion(@FormParam("lesson_id") long lesson_id, @FormParam("question_id") int question_id, @FormParam("answer_id") int answer_id) {
+        try {
+            utx.begin();
+            ctx.answerQuestion(lesson_id, question_id, answer_id);
+            utx.commit();
+        } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
+            try {
+                utx.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException ex1) {
+                LOG.log(Level.SEVERE, null, ex1);
+            }
+            throw new WebApplicationException(ex.getMessage());
+        }
+    }
+
     @POST
     @Path("new_lesson_by_model")
     @Produces(MediaType.APPLICATION_JSON)
@@ -353,12 +370,11 @@ public class LECTurEResource {
 
     @PUT
     @Path("solve_lesson")
-    public boolean solveLesson(@FormParam("lesson_id") long lesson_id) {
+    public void solveLesson(@FormParam("lesson_id") long lesson_id) {
         try {
             utx.begin();
             ctx.solveLesson(lesson_id);
             utx.commit();
-            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -371,13 +387,12 @@ public class LECTurEResource {
 
     @PUT
     @Path("play")
-    public boolean play(@FormParam("lesson_id") long lesson_id) {
+    public void play(@FormParam("lesson_id") long lesson_id) {
         LOG.log(Level.INFO, "Starting lesson {0}", lesson_id);
         try {
             utx.begin();
             ctx.play(lesson_id);
             utx.commit();
-            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -390,13 +405,12 @@ public class LECTurEResource {
 
     @PUT
     @Path("pause")
-    public boolean pause(@FormParam("lesson_id") long lesson_id) {
+    public void pause(@FormParam("lesson_id") long lesson_id) {
         LOG.log(Level.INFO, "Pausing lesson {0}", lesson_id);
         try {
             utx.begin();
             ctx.pause(lesson_id);
             utx.commit();
-            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -409,13 +423,12 @@ public class LECTurEResource {
 
     @PUT
     @Path("stop")
-    public boolean stop(@FormParam("lesson_id") long lesson_id) {
+    public void stop(@FormParam("lesson_id") long lesson_id) {
         LOG.log(Level.INFO, "Stopping lesson {0}", lesson_id);
         try {
             utx.begin();
             ctx.stop(lesson_id);
             utx.commit();
-            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -428,12 +441,11 @@ public class LECTurEResource {
 
     @PUT
     @Path("go_to")
-    public boolean goTo(@FormParam("lesson_id") long lesson_id, @FormParam("time") long time) {
+    public void goTo(@FormParam("lesson_id") long lesson_id, @FormParam("time") long time) {
         try {
             utx.begin();
             ctx.goTo(lesson_id, time);
             utx.commit();
-            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -446,12 +458,11 @@ public class LECTurEResource {
 
     @PUT
     @Path("set_time")
-    public boolean goTo(@FormParam("lesson_id") long lesson_id, @FormParam("token_id") int token_id, @FormParam("time") long time) {
+    public void setTime(@FormParam("lesson_id") long lesson_id, @FormParam("token_id") int token_id, @FormParam("time") long time) {
         try {
             utx.begin();
             ctx.setTime(lesson_id, token_id, time);
             utx.commit();
-            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();
@@ -464,7 +475,7 @@ public class LECTurEResource {
 
     @DELETE
     @Path("lessons/{lesson_id}")
-    public boolean deleteLesson(@PathParam("lesson_id") long lesson_id) {
+    public void deleteLesson(@PathParam("lesson_id") long lesson_id) {
         try {
             utx.begin();
             LessonEntity lesson = em.find(LessonEntity.class, lesson_id);
@@ -478,7 +489,6 @@ public class LECTurEResource {
             }
             em.remove(lesson);
             utx.commit();
-            return true;
         } catch (NotSupportedException | SystemException | RollbackException | HeuristicMixedException | HeuristicRollbackException | SecurityException | IllegalStateException ex) {
             try {
                 utx.rollback();

@@ -78,7 +78,11 @@ public class MainController implements Initializable {
     private Button add_teachers_button;
     @FXML
     private Button remove_teachers_button;
-    private Pane event_pane;
+    private Pane text_event_pane;
+    private TextEventController text_event_controller;
+    private Pane url_event_pane;
+    private URLEventController url_event_controller;
+    private Pane question_event_pane;
     @FXML
     private StackPane learning_pane;
     @FXML
@@ -114,6 +118,8 @@ public class MainController implements Initializable {
                 stage.setTitle("LECTurE (Learning Environment CiTtà Educante) - " + newValue.first_name);
             } else {
                 stage.setTitle("LECTurE (Learning Environment CiTtà Educante)");
+                learning_pane.getChildren().clear();
+                teaching_pane.getChildren().clear();
             }
         });
 
@@ -198,6 +204,44 @@ public class MainController implements Initializable {
         remove_teachers_button.graphicProperty().set(new Glyph("FontAwesome", FontAwesome.Glyph.MINUS));
         remove_teachers_button.disableProperty().bind(Bindings.isEmpty(teachers.selectionModelProperty().get().getSelectedItems()));
 
+        try {
+            FXMLLoader text_event_pane_loader = new FXMLLoader(getClass().getResource("/fxml/TextEvent.fxml"));
+            text_event_pane = text_event_pane_loader.load();
+            text_event_controller = text_event_pane_loader.getController();
+            FXMLLoader url_event_pane_loader = new FXMLLoader(getClass().getResource("/fxml/URLEvent.fxml"));
+            url_event_pane = url_event_pane_loader.load();
+            url_event_controller = url_event_pane_loader.getController();
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        events.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Event> observable, Event oldValue, Event newValue) -> {
+            if (newValue != null) {
+                Pane c_pane = null;
+                switch (newValue.event_type) {
+                    case TextEvent:
+                        c_pane = text_event_pane;
+                        text_event_controller.eventProperty().set((TextEvent) newValue);
+                        break;
+                    case QuestionEvent:
+                        break;
+                    case URLEvent:
+                        c_pane = url_event_pane;
+                        url_event_controller.eventProperty().set((URLEvent) newValue);
+                        break;
+                    default:
+                        throw new AssertionError(newValue.event_type.name());
+                }
+                if (learning_pane.getChildren().isEmpty()) {
+                    learning_pane.getChildren().add(c_pane);
+                } else if (learning_pane.getChildren().get(0) != c_pane) {
+                    learning_pane.getChildren().set(0, c_pane);
+                }
+            } else {
+                text_event_controller.eventProperty().set(null);
+                url_event_controller.eventProperty().set(null);
+            }
+        });
+
         teach_accord.setExpandedPane(teach_accord.getPanes().get(0));
         teaching_lessons.setItems(Context.getContext().teachingLessonsProperty());
         teaching_lessons.setCellFactory((ListView<TeachingLessonContext> param) -> new ListCell<TeachingLessonContext>() {
@@ -239,6 +283,7 @@ public class MainController implements Initializable {
         }
 
         teaching_lessons.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends TeachingLessonContext> observable, TeachingLessonContext oldValue, TeachingLessonContext newValue) -> {
+            lesson_controller.teachingLessonContextProperty().set(newValue);
             if (newValue != null) {
                 if (teaching_pane.getChildren().isEmpty()) {
                     teaching_pane.getChildren().add(lesson_pane);
@@ -247,7 +292,6 @@ public class MainController implements Initializable {
                 }
             }
         });
-        lesson_controller.teachingLessonContextProperty().bind(teaching_lessons.getSelectionModel().selectedItemProperty());
 
         students.setItems(Context.getContext().studentsProperty());
         students.setCellFactory((ListView<StudentContext> param) -> new ListCell<StudentContext>() {
