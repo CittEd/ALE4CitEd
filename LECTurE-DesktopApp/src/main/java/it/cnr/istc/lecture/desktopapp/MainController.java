@@ -31,6 +31,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -51,6 +52,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.controlsfx.control.Notifications;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
@@ -148,6 +150,28 @@ public class MainController implements Initializable {
                     } else if (event instanceof QuestionEvent) {
                         setText(((QuestionEvent) event).question);
                         setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.QUESTION));
+                    }
+                }
+            }
+        });
+        Context.getContext().eventsProperty().addListener(new ListChangeListener<Event>() {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends Event> c) {
+                while (c.next()) {
+                    for (Event event : c.getAddedSubList()) {
+                        switch (event.event_type) {
+                            case TextEvent:
+                                Platform.runLater(() -> Notifications.create().title("Event").text(((TextEvent) event).content).show());
+                                break;
+                            case QuestionEvent:
+                                Platform.runLater(() -> Notifications.create().title("Question").text(((QuestionEvent) event).question).show());
+                                break;
+                            case URLEvent:
+                                Platform.runLater(() -> Notifications.create().title("Event").text(((URLEvent) event).content).show());
+                                break;
+                            default:
+                                throw new AssertionError(event.event_type.name());
+                        }
                     }
                 }
             }
