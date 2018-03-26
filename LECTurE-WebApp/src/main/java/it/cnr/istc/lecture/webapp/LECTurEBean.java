@@ -300,8 +300,12 @@ public class LECTurEBean {
     @Lock(LockType.WRITE)
     public void answerQuestion(long lesson_id, int question_id, int answer_id) {
         try {
+            // we notify the teacher that a student has answered a question..
             mqtt.publish(lessons.get(lesson_id).getLesson().teacher_id + "/input", JSONB.toJson(new Answer(lesson_id, question_id, answer_id)).getBytes(), 1, false);
+            // we compute the answer's consequences..
             lessons.get(lesson_id).answerQuestion(question_id, answer_id);
+            // we set the answer to the question event..
+            ((QuestionEvent) lessons.get(lesson_id).getLesson().events.stream().filter(e -> e.event_id == question_id).findAny().get()).answer = answer_id;
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -374,6 +378,10 @@ public class LECTurEBean {
             public void hideToken(SolverToken tk) {
                 // we remove the event from the lesson..
                 lesson.events.removeIf(e -> e.event_id == tk.tp);
+                if (tk.question != null) {
+                    // the token represents the answer of a question: we set the answer of the question event at null..
+                    ((QuestionEvent) lesson.events.stream().filter(e -> e.event_id == tk.question).findAny().get()).answer = null;
+                }
                 try {
                     // we notify the student associated to the token's role that a token has to be hidden..
                     mqtt.publish(lesson.roles.get(tk.template.role) + "/input", JSONB.toJson(new HideEvent(lesson.id, tk.tp)).getBytes(), 1, false);

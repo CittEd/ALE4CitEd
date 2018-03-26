@@ -154,8 +154,6 @@ public class LessonManager implements TemporalListener {
         }
         // we propagate the temporal network..
         network.propagate();
-        // we guarantee that the origin is at 0..
-        network.setValue(0, 0);
     }
 
     private void extract_timeline() {
@@ -274,13 +272,11 @@ public class LessonManager implements TemporalListener {
         listeners.forEach(l -> l.newToken(c_tk));
         prop_q.push(c_tk);
 
+        network.addConstraint(0, c_tk.tp, t_now + 1000, t_now + 1000);
         build();
 
         answer_contexts.put(c_tk, answer_context);
         answer_context = null;
-
-        // we guarantee that the origin is at 0..
-        network.setValue(c_tk.tp, t_now + 1000);
 
         // we extract the lesson timeline..
         extract_timeline();

@@ -80,9 +80,10 @@ public class MainController implements Initializable {
     private Button remove_teachers_button;
     private Pane text_event_pane;
     private TextEventController text_event_controller;
+    private Pane question_event_pane;
+    private QuestionEventController question_event_controller;
     private Pane url_event_pane;
     private URLEventController url_event_controller;
-    private Pane question_event_pane;
     @FXML
     private StackPane learning_pane;
     @FXML
@@ -208,6 +209,9 @@ public class MainController implements Initializable {
             FXMLLoader text_event_pane_loader = new FXMLLoader(getClass().getResource("/fxml/TextEvent.fxml"));
             text_event_pane = text_event_pane_loader.load();
             text_event_controller = text_event_pane_loader.getController();
+            FXMLLoader question_event_pane_loader = new FXMLLoader(getClass().getResource("/fxml/QuestionEvent.fxml"));
+            question_event_pane = question_event_pane_loader.load();
+            question_event_controller = question_event_pane_loader.getController();
             FXMLLoader url_event_pane_loader = new FXMLLoader(getClass().getResource("/fxml/URLEvent.fxml"));
             url_event_pane = url_event_pane_loader.load();
             url_event_controller = url_event_pane_loader.getController();
@@ -223,6 +227,8 @@ public class MainController implements Initializable {
                         text_event_controller.eventProperty().set((TextEvent) newValue);
                         break;
                     case QuestionEvent:
+                        c_pane = question_event_pane;
+                        question_event_controller.eventProperty().set((QuestionEvent) newValue);
                         break;
                     case URLEvent:
                         c_pane = url_event_pane;
