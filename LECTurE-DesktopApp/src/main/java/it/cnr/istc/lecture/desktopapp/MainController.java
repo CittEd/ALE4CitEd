@@ -101,6 +101,7 @@ public class MainController implements Initializable {
     private Pane lesson_pane;
     private LessonController lesson_controller;
     private Pane student_pane;
+    private StudentController student_controller;
     @FXML
     private ListView<StudentContext> students;
     @FXML
@@ -340,6 +341,25 @@ public class MainController implements Initializable {
                         setStyle("-fx-text-fill: gray;");
                         setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.UNLINK));
                     }
+                }
+            }
+        });
+
+        try {
+            FXMLLoader student_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Student.fxml"));
+            student_pane = student_pane_loader.load();
+            student_controller = student_pane_loader.getController();
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        students.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends StudentContext> observable, StudentContext oldValue, StudentContext newValue) -> {
+            student_controller.studentContextProperty().set(newValue);
+            if (newValue != null) {
+                if (teaching_pane.getChildren().isEmpty()) {
+                    teaching_pane.getChildren().add(student_pane);
+                } else if (teaching_pane.getChildren().get(0) != student_pane) {
+                    teaching_pane.getChildren().set(0, student_pane);
                 }
             }
         });
