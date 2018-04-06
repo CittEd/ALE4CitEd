@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.lecture.desktopapp;
 
+import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.desktopapp.Context.ParameterValue;
 import java.net.URL;
 import java.text.FieldPosition;
@@ -28,6 +29,7 @@ import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
@@ -41,6 +43,9 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -92,15 +97,11 @@ public class StudentController implements Initializable {
 
     private class StudentChartContext {
 
-        private final StudentContext ctx;
         private final Map<String, XYSeriesCollection> par_collections = new HashMap<>();
-        private final Map<String, Map<String, XYSeries>> par_series = new HashMap<>();
-        private final Map<String, XYPlot> par_plot = new HashMap<>();
+        private final Map<String, XYPlot> par_plots = new HashMap<>();
         private final ChartViewer viewer;
 
         private StudentChartContext(StudentContext ctx) {
-            this.ctx = ctx;
-
             final NumberAxis domain_axis = new NumberAxis("");
             domain_axis.setNumberFormatOverride(new NumberFormat() {
                 @Override
@@ -124,6 +125,77 @@ public class StudentController implements Initializable {
             JFreeChart chart = new JFreeChart(null, JFreeChart.DEFAULT_TITLE_FONT, plot, false);
             chart.setBackgroundPaint(java.awt.Color.WHITE);
             this.viewer = new ChartViewer(chart);
+
+            for (Parameter par : ctx.parameterTypesProperty()) {
+                XYSeriesCollection collection = new XYSeriesCollection();
+                par_collections.put(par.name, collection);
+                par.properties.entrySet().forEach(c_par -> collection.addSeries(new XYSeries(c_par.getKey())));
+                NumberAxis range_axis = new NumberAxis("");
+                final XYItemRenderer renderer = new StandardXYItemRenderer();
+                XYPlot c_plot = new XYPlot(collection, null, range_axis, renderer);
+                par_plots.put(par.name, c_plot);
+                plot.add(c_plot, 1);
+
+                for (ParameterValue par_v : ctx.parametersProperty()) {
+                    String[] par_name = par_v.nameProperty().get().split("\\.");
+                    if (par_name[0].equals(par.name)) {
+                        XYSeries series = par_collections.get(par_name[0]).getSeries(par_name[1]);
+                        switch (ctx.getParameter(par_name[0]).properties.get(par_name[1])) {
+                            case "numeric":
+                                par_v.updatesProperty().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
+                                par_v.updatesProperty().addListener((ListChangeListener.Change<? extends Context.ParUpdate> c) -> {
+                                    while (c.next()) {
+                                        c.getAddedSubList().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
+                                    }
+                                });
+                                break;
+                            default:
+                                throw new AssertionError(par_name[0] + " " + ctx.getParameter(par_name[0]).properties.get(par_name[1]));
+                        }
+                    }
+                }
+            }
+
+            ctx.parameterTypesProperty().addListener((ListChangeListener.Change<? extends Parameter> c) -> {
+                while (c.next()) {
+                    for (Parameter par : c.getAddedSubList()) {
+                        XYSeriesCollection collection = new XYSeriesCollection();
+                        par_collections.put(par.name, collection);
+                        par.properties.entrySet().forEach(c_par -> collection.addSeries(new XYSeries(c_par.getKey())));
+                        NumberAxis range_axis = new NumberAxis("");
+                        final XYItemRenderer renderer = new StandardXYItemRenderer();
+                        XYPlot c_plot = new XYPlot(collection, null, range_axis, renderer);
+                        par_plots.put(par.name, c_plot);
+                        plot.add(c_plot, 1);
+                    }
+                    for (Parameter par : c.getRemoved()) {
+                        par_collections.remove(par.name);
+                        XYPlot c_plot = par_plots.remove(par.name);
+                        plot.remove(c_plot);
+                    }
+                }
+            });
+
+            ctx.parametersProperty().addListener((ListChangeListener.Change<? extends ParameterValue> c) -> {
+                while (c.next()) {
+                    for (ParameterValue new_par : c.getAddedSubList()) {
+                        String[] par_name = new_par.nameProperty().get().split("\\.");
+                        XYSeries series = par_collections.get(par_name[0]).getSeries(par_name[1]);
+                        switch (ctx.getParameter(par_name[0]).properties.get(par_name[1])) {
+                            case "numeric":
+                                new_par.updatesProperty().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
+                                new_par.updatesProperty().addListener((ListChangeListener.Change<? extends Context.ParUpdate> c_c) -> {
+                                    while (c_c.next()) {
+                                        c_c.getAddedSubList().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
+                                    }
+                                });
+                                break;
+                            default:
+                                throw new AssertionError(par_name[0] + " " + ctx.getParameter(par_name[0]).properties.get(par_name[1]));
+                        }
+                    }
+                }
+            });
         }
     }
 }

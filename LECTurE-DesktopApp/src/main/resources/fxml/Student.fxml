@@ -26,9 +26,10 @@
         <TabPane tabClosingPolicy="UNAVAILABLE" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
             <tabs>
                 <Tab text="Timelines">
-               <content>
-                  <StackPane fx:id="student_chart_pane" prefHeight="150.0" prefWidth="200.0" />
-               </content></Tab>
+                    <content>
+                        <StackPane fx:id="student_chart_pane" prefHeight="150.0" prefWidth="200.0" />
+                    </content>
+                </Tab>
                 <Tab text="Table">
                     <content>
                         <TableView fx:id="parameters_table_view">

@@ -111,7 +111,7 @@ public class Context {
     /**
      * The current user's parameter values.
      */
-    private final Map<String, Map<String, StringProperty>> par_vals = new HashMap<>();
+    private final Map<String, Map<String, ParameterValue>> par_vals = new HashMap<>();
     /**
      * The current user's parameter values as a list, to be displayed on tables.
      * Notice that each parameter can aggregate more than a single value.
@@ -279,11 +279,11 @@ public class Context {
                         mqtt.publish(newValue.id + "/output", JSONB.toJson(new NewParameter(par)).getBytes(), 1, false);
                     }
                     for (Map.Entry<String, Map<String, String>> par_val : newValue.par_values.entrySet()) {
-                        Map<String, StringProperty> c_vals = new HashMap<>();
+                        Map<String, ParameterValue> c_vals = new HashMap<>();
                         for (Map.Entry<String, String> val : par_val.getValue().entrySet()) {
-                            SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                            ParameterValue val_prop = new ParameterValue(par_val.getKey() + "." + val.getKey(), val.getValue());
                             c_vals.put(val.getKey(), val_prop);
-                            par_values.add(new ParameterValue(par_val.getKey() + "." + val.getKey(), val_prop));
+                            par_values.add(val_prop);
                         }
                         par_vals.put(par_val.getKey(), c_vals);
                         // we broadcast the the new value of the parameter..
@@ -495,10 +495,10 @@ public class Context {
     }
 
     public void setParameterValue(String par_name, String sub_par, String value) {
-        par_vals.get(par_name).get(sub_par).set(value);
+        par_vals.get(par_name).get(sub_par).value.set(value);
         Map<String, String> val = new HashMap<>();
-        for (Map.Entry<String, StringProperty> v_val : par_vals.get(par_name).entrySet()) {
-            val.put(v_val.getKey(), v_val.getValue().get());
+        for (Map.Entry<String, ParameterValue> v_val : par_vals.get(par_name).entrySet()) {
+            val.put(v_val.getKey(), v_val.getValue().value.get());
         }
         try {
             mqtt.publish(user.get().id + "/output/" + par_name, JSONB.toJson(val).getBytes(), 1, true);
@@ -674,10 +674,10 @@ public class Context {
         private final StringProperty value;
         private final ObservableList<ParUpdate> updates = FXCollections.observableArrayList();
 
-        ParameterValue(String name, StringProperty value) {
+        ParameterValue(String name, String value) {
             this.name = new SimpleStringProperty(name);
-            this.value = value;
-            updates.add(new ParUpdate(System.currentTimeMillis(), value.get()));
+            this.value = new SimpleStringProperty(value);
+            this.updates.add(new ParUpdate(System.currentTimeMillis(), value));
             this.value.addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> updates.add(new ParUpdate(System.currentTimeMillis(), newValue)));
         }
 

@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -44,7 +42,7 @@ public class StudentContext {
     /**
      * The current student's parameter values.
      */
-    private final Map<String, Map<String, StringProperty>> par_vals = new HashMap<>();
+    private final Map<String, Map<String, Context.ParameterValue>> par_vals = new HashMap<>();
     /**
      * The current student's parameter values as a list, to be displayed on
      * tables. Notice that each parameter can aggregate more than a single
@@ -87,14 +85,14 @@ public class StudentContext {
     }
 
     public void setParameterValue(String par_name, Map<String, String> values) {
-        Map<String, StringProperty> c_vals = par_vals.computeIfAbsent(par_name, name -> new HashMap<>());
+        Map<String, Context.ParameterValue> c_vals = par_vals.computeIfAbsent(par_name, name -> new HashMap<>());
         for (Map.Entry<String, String> val : values.entrySet()) {
             if (c_vals.containsKey(val.getKey())) {
-                c_vals.get(val.getKey()).set(val.getValue());
+                c_vals.get(val.getKey()).valueProperty().set(val.getValue());
             } else {
-                SimpleStringProperty val_prop = new SimpleStringProperty(val.getValue());
+                Context.ParameterValue val_prop = new Context.ParameterValue(par_name + "." + val.getKey(), val.getValue());
                 c_vals.put(val.getKey(), val_prop);
-                par_values.add(new Context.ParameterValue(par_name + "." + val.getKey(), val_prop));
+                par_values.add(val_prop);
             }
         }
     }
