@@ -672,10 +672,13 @@ public class Context {
 
         private final StringProperty name;
         private final StringProperty value;
+        private final ObservableList<ParUpdate> updates = FXCollections.observableArrayList();
 
         ParameterValue(String name, StringProperty value) {
             this.name = new SimpleStringProperty(name);
             this.value = value;
+            updates.add(new ParUpdate(System.currentTimeMillis(), value.get()));
+            this.value.addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> updates.add(new ParUpdate(System.currentTimeMillis(), newValue)));
         }
 
         public StringProperty nameProperty() {
@@ -684,6 +687,21 @@ public class Context {
 
         public StringProperty valueProperty() {
             return value;
+        }
+
+        public ObservableList<ParUpdate> updatesProperty() {
+            return updates;
+        }
+    }
+
+    public static class ParUpdate {
+
+        public final long time;
+        public final String new_value;
+
+        public ParUpdate(long time, String new_value) {
+            this.time = time;
+            this.new_value = new_value;
         }
     }
 }
