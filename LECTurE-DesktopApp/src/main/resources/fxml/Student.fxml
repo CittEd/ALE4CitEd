@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
-
+<?import javafx.scene.layout.StackPane?>
 
 <GridPane hgap="10.0" vgap="10.0" xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.StudentController">
     <rowConstraints>
@@ -25,7 +25,10 @@
         <TextField fx:id="last_name" editable="false" promptText="Last name" GridPane.columnIndex="1" />
         <TabPane tabClosingPolicy="UNAVAILABLE" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
             <tabs>
-                <Tab text="Timelines" />
+                <Tab text="Timelines">
+               <content>
+                  <StackPane fx:id="student_chart_pane" prefHeight="150.0" prefWidth="200.0" />
+               </content></Tab>
                 <Tab text="Table">
                     <content>
                         <TableView fx:id="parameters_table_view">
