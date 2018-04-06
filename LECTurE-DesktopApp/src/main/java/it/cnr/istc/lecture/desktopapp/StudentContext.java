@@ -87,11 +87,7 @@ public class StudentContext {
     }
 
     public void setParameterValue(String par_name, Map<String, String> values) {
-        Map<String, StringProperty> c_vals = par_vals.get(par_name);
-        if (c_vals == null) {
-            c_vals = new HashMap<>();
-            par_vals.put(par_name, c_vals);
-        }
+        Map<String, StringProperty> c_vals = par_vals.computeIfAbsent(par_name, name -> new HashMap<>());
         for (Map.Entry<String, String> val : values.entrySet()) {
             if (c_vals.containsKey(val.getKey())) {
                 c_vals.get(val.getKey()).set(val.getValue());
