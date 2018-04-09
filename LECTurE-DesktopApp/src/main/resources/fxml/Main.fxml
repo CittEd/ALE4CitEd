@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.MainController">
+    <children>
+        <MenuBar>
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem fx:id="login" mnemonicParsing="false" onAction="#login" text="Login" />
+                        <MenuItem fx:id="logout" mnemonicParsing="false" onAction="#logout" text="Logout" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem fx:id="new_user" mnemonicParsing="false" onAction="#new_user" text="New user" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#exit" text="Exit" />
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="About" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+            <tabs>
+                <Tab text="Learn">
+                    <content>
+                        <HBox spacing="10.0">
+                            <children>
+                                <Accordion fx:id="learn_accord">
+                                    <panes>
+                                        <TitledPane text="Events">
+                                            <content>
+                                                <VBox>
+                                                    <children>
+                                                        <ListView fx:id="events" VBox.vgrow="ALWAYS" />
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </TitledPane>
+                                        <TitledPane text="Lessons">
+                                            <content>
+                                                <VBox>
+                                                    <children>
+                                                        <ListView fx:id="following_lessons" VBox.vgrow="ALWAYS" />
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </TitledPane>
+                                        <TitledPane text="Teachers">
+                                            <content>
+                                                <GridPane hgap="10.0" vgap="10.0">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="ALWAYS" />
+                                                        <ColumnConstraints hgrow="NEVER" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints vgrow="NEVER" />
+                                                        <RowConstraints vgrow="NEVER" />
+                                                        <RowConstraints vgrow="ALWAYS" />
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <ListView fx:id="teachers" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
+                                                        <Button fx:id="add_teachers_button" mnemonicParsing="false" onAction="#add_teachers" GridPane.columnIndex="1" />
+                                                        <Button fx:id="remove_teachers_button" mnemonicParsing="false" onAction="#remove_selected_teachers" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                    </children>
+                                                </GridPane>
+                                            </content>
+                                        </TitledPane>
+                                    </panes>
+                                </Accordion>
+                                <StackPane fx:id="learning_pane" HBox.hgrow="ALWAYS" />
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </HBox>
+                    </content>
+                </Tab>
+                <Tab text="Teach">
+                    <content>
+                        <HBox spacing="10.0">
+                            <children>
+                                <Accordion fx:id="teach_accord">
+                                    <panes>
+                                        <TitledPane text="Lessons">
+                                            <content>
+                                                <GridPane hgap="10.0" vgap="10.0">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="ALWAYS" />
+                                                        <ColumnConstraints hgrow="NEVER" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints vgrow="NEVER" />
+                                                        <RowConstraints vgrow="NEVER" />
+                                                        <RowConstraints vgrow="ALWAYS" />
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <ListView fx:id="teaching_lessons" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
+                                                        <Button fx:id="add_lesson_button" mnemonicParsing="false" onAction="#add_lesson" GridPane.columnIndex="1" />
+                                                        <Button fx:id="remove_lessons_button" mnemonicParsing="false" onAction="#remove_selected_lessons" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                    </children>
+                                                </GridPane>
+                                            </content>
+                                        </TitledPane>
+                                        <TitledPane text="Students">
+                                            <content>
+                                                <VBox>
+                                                    <children>
+                                                        <ListView fx:id="students" VBox.vgrow="ALWAYS" />
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </TitledPane>
+                                    </panes>
+                                </Accordion>
+                                <StackPane fx:id="teaching_pane" HBox.hgrow="ALWAYS" />
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </HBox>
+                    </content>
+                </Tab>
+                <Tab text="Parameters">
+                    <content>
+                        <VBox>
+                            <children>
+                                <TableView fx:id="parameters" editable="true" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="par_names" editable="false" prefWidth="75.0" text="Name" />
+                                        <TableColumn fx:id="par_vals" prefWidth="75.0" text="Value" />
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
+</VBox>

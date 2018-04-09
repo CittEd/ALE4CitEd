@@ -1,0 +1,135 @@
+{
+    "name": "Lesson one",
+    "roles": [
+        "Police officer",
+        "Firefighter"
+    ],
+    "events": [
+        {
+            "type": "TextEventTemplate",
+            "name": "police_0",
+            "role": "Police officer",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Hi police officer!\nThis is your first text event."
+        },
+        {
+            "type": "QuestionEventTemplate",
+            "name": "police_1",
+            "role": "Police officer",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "question": "This is your first question! Which is your answer?",
+            "answers": [
+                {
+                    "answer": "First choice",
+                    "event": "police_2"
+                },
+                {
+                    "answer": "Second choice",
+                    "event": "police_2"
+                }
+            ]
+        },
+        {
+            "type": "TextEventTemplate",
+            "name": "police_2",
+            "role": "Police officer",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "This is your second event."
+        },
+        {
+            "type": "TextEventTemplate",
+            "name": "fire_0",
+            "role": "Firefighter",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Hi firefighter!\nThis is your first text event."
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "fire_1",
+            "role": "Firefighter",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Hi firefighter!\nThis is your first cruciverba.",
+            "url": "http://www.cruciverbaonline.it/index.php"
+        },
+        {
+            "type": "TextEventTemplate",
+            "name": "fire_2",
+            "role": "Firefighter",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "This is your second event."
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "fire_3",
+            "role": "Firefighter",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Hi firefighter!\nThis is your first info about Colosseum.",
+            "url": "https://it.wikipedia.org/wiki/Colosseo"
+        }
+    ],
+    "ids": [
+        "police_0",
+        "police_1",
+        "fire_0",
+        "fire_1",
+        "fire_3"
+    ],
+    "relations": [
+        {
+            "from": "this",
+            "to": "police_0",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "police_0",
+            "to": "police_1",
+            "lb": 4,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "this",
+            "to": "fire_0",
+            "lb": 5,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "fire_0",
+            "to": "fire_1",
+            "lb": 5,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "fire_1",
+            "to": "fire_3",
+            "lb": 5,
+            "ub": 10,
+            "unit": "SECONDS"
+        }
+    ]
+}
