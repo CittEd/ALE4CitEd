@@ -99,10 +99,12 @@ public class StudentController implements Initializable {
 
         private final Map<String, XYSeriesCollection> par_collections = new HashMap<>();
         private final Map<String, XYPlot> par_plots = new HashMap<>();
+        private final Map<String, Map<String, ListChangeListener<Context.ParUpdate>>> par_updates_listener = new HashMap<>();
         private final ChartViewer viewer;
 
         private StudentChartContext(StudentContext ctx) {
             final NumberAxis domain_axis = new NumberAxis("");
+            domain_axis.setAutoRangeIncludesZero(false);
             domain_axis.setNumberFormatOverride(new NumberFormat() {
                 @Override
                 public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos) {
@@ -136,18 +138,15 @@ public class StudentController implements Initializable {
                 par_plots.put(par.name, c_plot);
                 plot.add(c_plot, 1);
 
+                par_updates_listener.put(par.name, new HashMap<>());
                 for (ParameterValue par_v : ctx.parametersProperty()) {
                     String[] par_name = par_v.nameProperty().get().split("\\.");
-                    if (par_name[0].equals(par.name)) {
+                    if (par_updates_listener.containsKey(par_name[0]) && !par_updates_listener.get(par_name[0]).containsKey(par_name[1])) {
                         XYSeries series = par_collections.get(par_name[0]).getSeries(par_name[1]);
                         switch (ctx.getParameter(par_name[0]).properties.get(par_name[1])) {
                             case "numeric":
                                 par_v.updatesProperty().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
-                                par_v.updatesProperty().addListener((ListChangeListener.Change<? extends Context.ParUpdate> c) -> {
-                                    while (c.next()) {
-                                        c.getAddedSubList().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
-                                    }
-                                });
+                                par_updates_listener.get(par_name[0]).put(par_name[1], new NumericParUpdatesListChangeListener(par_v, series));
                                 break;
                             default:
                                 throw new AssertionError(par_name[0] + " " + ctx.getParameter(par_name[0]).properties.get(par_name[1]));
@@ -167,35 +166,57 @@ public class StudentController implements Initializable {
                         XYPlot c_plot = new XYPlot(collection, null, range_axis, renderer);
                         par_plots.put(par.name, c_plot);
                         plot.add(c_plot, 1);
+
+                        par_updates_listener.put(par.name, new HashMap<>());
+                        for (ParameterValue par_v : ctx.parametersProperty()) {
+                            String[] par_name = par_v.nameProperty().get().split("\\.");
+                            if (par_updates_listener.containsKey(par_name[0]) && !par_updates_listener.get(par_name[0]).containsKey(par_name[1])) {
+                                XYSeries series = par_collections.get(par_name[0]).getSeries(par_name[1]);
+                                switch (ctx.getParameter(par_name[0]).properties.get(par_name[1])) {
+                                    case "numeric":
+                                        par_v.updatesProperty().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
+                                        par_updates_listener.get(par_name[0]).put(par_name[1], new NumericParUpdatesListChangeListener(par_v, series));
+                                        break;
+                                    default:
+                                        throw new AssertionError(par_name[0] + " " + ctx.getParameter(par_name[0]).properties.get(par_name[1]));
+                                }
+                            }
+                        }
                     }
                     for (Parameter par : c.getRemoved()) {
                         par_collections.remove(par.name);
                         XYPlot c_plot = par_plots.remove(par.name);
                         plot.remove(c_plot);
-                    }
-                }
-            });
 
-            ctx.parametersProperty().addListener((ListChangeListener.Change<? extends ParameterValue> c) -> {
-                while (c.next()) {
-                    for (ParameterValue new_par : c.getAddedSubList()) {
-                        String[] par_name = new_par.nameProperty().get().split("\\.");
-                        XYSeries series = par_collections.get(par_name[0]).getSeries(par_name[1]);
-                        switch (ctx.getParameter(par_name[0]).properties.get(par_name[1])) {
-                            case "numeric":
-                                new_par.updatesProperty().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
-                                new_par.updatesProperty().addListener((ListChangeListener.Change<? extends Context.ParUpdate> c_c) -> {
-                                    while (c_c.next()) {
-                                        c_c.getAddedSubList().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
-                                    }
-                                });
-                                break;
-                            default:
-                                throw new AssertionError(par_name[0] + " " + ctx.getParameter(par_name[0]).properties.get(par_name[1]));
+                        Map<String, ListChangeListener<Context.ParUpdate>> updates = par_updates_listener.remove(par.name);
+                        for (ListChangeListener<Context.ParUpdate> update : updates.values()) {
+                            if (update instanceof NumericParUpdatesListChangeListener) {
+                                NumericParUpdatesListChangeListener listener = (NumericParUpdatesListChangeListener) update;
+                                listener.par_v.updatesProperty().removeListener(listener);
+                            }
                         }
                     }
                 }
             });
+        }
+    }
+
+    private static class NumericParUpdatesListChangeListener implements ListChangeListener<Context.ParUpdate> {
+
+        final ParameterValue par_v;
+        final XYSeries series;
+
+        NumericParUpdatesListChangeListener(ParameterValue par_v, XYSeries series) {
+            this.par_v = par_v;
+            this.series = series;
+            this.par_v.updatesProperty().addListener(this);
+        }
+
+        @Override
+        public void onChanged(Change<? extends Context.ParUpdate> c) {
+            while (c.next()) {
+                c.getAddedSubList().forEach(update -> series.add(new XYDataItem(update.time, Double.parseDouble(update.new_value))));
+            }
         }
     }
 }
