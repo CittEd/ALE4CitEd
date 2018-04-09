@@ -19,9 +19,6 @@ package it.cnr.istc.lecture.desktopapp;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.desktopapp.Context.ParameterValue;
 import java.net.URL;
-import java.text.FieldPosition;
-import java.text.NumberFormat;
-import java.text.ParsePosition;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -39,6 +36,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.StackPane;
 import javafx.util.StringConverter;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
@@ -103,24 +101,7 @@ public class StudentController implements Initializable {
         private final ChartViewer viewer;
 
         private StudentChartContext(StudentContext ctx) {
-            final NumberAxis domain_axis = new NumberAxis("");
-            domain_axis.setAutoRangeIncludesZero(false);
-            domain_axis.setNumberFormatOverride(new NumberFormat() {
-                @Override
-                public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos) {
-                    return format((long) number, toAppendTo, pos);
-                }
-
-                @Override
-                public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos) {
-                    return toAppendTo.append(TIME_STRING_CONVERTER.toString(number));
-                }
-
-                @Override
-                public Number parse(String source, ParsePosition parsePosition) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            });
+            DateAxis domain_axis = new DateAxis("");
             CombinedDomainXYPlot plot = new CombinedDomainXYPlot(domain_axis);
             plot.setGap(10.0);
 
@@ -132,7 +113,8 @@ public class StudentController implements Initializable {
                 XYSeriesCollection collection = new XYSeriesCollection();
                 par_collections.put(par.name, collection);
                 par.properties.entrySet().forEach(c_par -> collection.addSeries(new XYSeries(c_par.getKey())));
-                NumberAxis range_axis = new NumberAxis("");
+                NumberAxis range_axis = new NumberAxis(par.name);
+                range_axis.setLabelAngle(1.5708);
                 final XYItemRenderer renderer = new StandardXYItemRenderer();
                 XYPlot c_plot = new XYPlot(collection, null, range_axis, renderer);
                 par_plots.put(par.name, c_plot);
@@ -161,7 +143,8 @@ public class StudentController implements Initializable {
                         XYSeriesCollection collection = new XYSeriesCollection();
                         par_collections.put(par.name, collection);
                         par.properties.entrySet().forEach(c_par -> collection.addSeries(new XYSeries(c_par.getKey())));
-                        NumberAxis range_axis = new NumberAxis("");
+                        NumberAxis range_axis = new NumberAxis(par.name);
+                        range_axis.setLabelAngle(1.5708);
                         final XYItemRenderer renderer = new StandardXYItemRenderer();
                         XYPlot c_plot = new XYPlot(collection, null, range_axis, renderer);
                         par_plots.put(par.name, c_plot);
