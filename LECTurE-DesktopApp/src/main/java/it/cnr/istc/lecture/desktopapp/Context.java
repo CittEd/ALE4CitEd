@@ -152,7 +152,7 @@ public class Context {
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-        this.target = client.target("http://" + properties.getProperty("host", "localhost") + ":" + properties.getProperty("service-port", "8080")).path("LECTurE-WebApp").path("LECTurE");
+        this.target = client.target("http://" + properties.getProperty("host", "lecture-host") + ":" + properties.getProperty("service-port", "8080")).path("LECTurE-WebApp-1.0").path("LECTurE");
         user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
             if (oldValue != null) {
                 // we clear the current data..
