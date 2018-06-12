@@ -495,7 +495,6 @@ public class LECTurEBean {
     @Schedule(second = "*/1", minute = "*", hour = "*", persistent = false)
     public void tick() {
         if (busy.compareAndSet(false, true)) {
-            LOG.info("tick..");
             lessons.values().stream().filter(lm -> lm.getLesson().state == Lesson.LessonState.Running).forEach(lm -> lm.tick());
             busy.set(false);
         }
