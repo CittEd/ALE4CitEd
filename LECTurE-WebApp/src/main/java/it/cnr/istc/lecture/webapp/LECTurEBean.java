@@ -102,6 +102,10 @@ public class LECTurEBean {
     private BrokerService broker;
     private MqttClient mqtt;
     /**
+     * For each user id, a boolean indicating whether the user is online.
+     */
+    private final Map<Long, Boolean> online = new HashMap<>();
+    /**
      * For each user id, a map of parameter types containing the name of the
      * parameter as key.
      */
@@ -152,6 +156,7 @@ public class LECTurEBean {
                             LOG.log(Level.INFO, "New connection: {0}", info.getClientId());
                             if (!info.getClientId().equals(mqtt_server_id)) {
                                 long user_id = Long.parseLong(info.getClientId());
+                                online.put(user_id, Boolean.TRUE);
                                 mqtt.publish(user_id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
                                 mqtt.subscribe(user_id + "/output", (String topic, MqttMessage message) -> {
                                     LOG.log(Level.INFO, "Message arrived: {0} {1}", new Object[]{topic, message});
@@ -163,7 +168,7 @@ public class LECTurEBean {
                                             break;
                                         case LostParameter:
                                             LostParameter lost_parameter = JSONB.fromJson(new String(message.getPayload()), LostParameter.class);
-                                            removeParameter(user_id, parameter_types.get(user_id).get(lost_parameter.name));
+                                            removeParameter(user_id, getParType(user_id, lost_parameter.name));
                                             break;
                                         case NewStudent:
                                             break;
@@ -182,6 +187,7 @@ public class LECTurEBean {
                             LOG.log(Level.INFO, "Lost connection: {0}", info.getClientId());
                             if (!info.getClientId().equals(mqtt_server_id)) {
                                 long user_id = Long.parseLong(info.getClientId());
+                                online.put(user_id, Boolean.FALSE);
                                 mqtt.unsubscribe(user_id + "/output");
                                 mqtt.publish(user_id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 1, true);
                             }
@@ -239,6 +245,7 @@ public class LECTurEBean {
             mqtt.close();
             LOG.info("Stopping  MQTT Broker");
             broker.stop();
+            online.clear();
             parameter_types.clear();
             parameter_values.clear();
         } catch (Exception ex) {
@@ -246,9 +253,24 @@ public class LECTurEBean {
         }
     }
 
+    @Lock(LockType.WRITE)
+    public void setOnline(long user_id, boolean online) {
+        this.online.put(user_id, online);
+    }
+
+    @Lock(LockType.READ)
+    public boolean isOnline(long user_id) {
+        return online.get(user_id);
+    }
+
     @Lock(LockType.READ)
     public Map<String, Parameter> getParTypes(long user_id) {
         return Collections.unmodifiableMap(parameter_types.get(user_id));
+    }
+
+    @Lock(LockType.READ)
+    public Parameter getParType(long user_id, String par_name) {
+        return parameter_types.get(user_id).get(par_name);
     }
 
     @Lock(LockType.READ)
@@ -258,6 +280,7 @@ public class LECTurEBean {
 
     @Lock(LockType.WRITE)
     public void newUser(long user_id) {
+        online.put(user_id, Boolean.FALSE);
         parameter_types.put(user_id, new HashMap<>());
         parameter_values.put(user_id, new HashMap<>());
     }
@@ -514,7 +537,7 @@ public class LECTurEBean {
     public void addTeacher(long student_id, long teacher_id) {
         UserEntity u = em.find(UserEntity.class, student_id);
         try {
-            mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), getParTypes(u.getId()), getParValues(u.getId())))).getBytes(), 1, false);
+            mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), isOnline(u.getId()), getParTypes(u.getId()), getParValues(u.getId())))).getBytes(), 1, false);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

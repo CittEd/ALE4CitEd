@@ -33,7 +33,7 @@ import javafx.collections.ObservableList;
 public class StudentContext {
 
     private final User student;
-    private final BooleanProperty on_line = new SimpleBooleanProperty();
+    private final BooleanProperty on_line;
     /**
      * The current student's parameter types.
      */
@@ -52,6 +52,7 @@ public class StudentContext {
 
     StudentContext(User student) {
         this.student = student;
+        this.on_line = new SimpleBooleanProperty(student.online);
         par_types.addListener((ListChangeListener.Change<? extends Parameter> c) -> {
             while (c.next()) {
                 for (Parameter par : c.getAddedSubList()) {

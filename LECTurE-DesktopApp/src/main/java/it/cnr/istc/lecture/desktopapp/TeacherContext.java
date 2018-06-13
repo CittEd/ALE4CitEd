@@ -27,10 +27,11 @@ import javafx.beans.property.SimpleBooleanProperty;
 public class TeacherContext {
 
     private final User teacher;
-    private final BooleanProperty on_line = new SimpleBooleanProperty();
+    private final BooleanProperty on_line;
 
     TeacherContext(User teacher) {
         this.teacher = teacher;
+        this.on_line = new SimpleBooleanProperty(teacher.online);
     }
 
     public User getTeacher() {
