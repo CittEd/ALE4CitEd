@@ -234,14 +234,14 @@ public class LECTurEResource {
                 Lesson l = ctx.getLessonManager(lesson.getId()).getLesson();
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, l.model, l.roles, null, l.tokens);
             }).collect(Collectors.toList());
-            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.isOnline(u.getId()), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
+            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.isOnline(std.getId()), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
             // the lessons followed as a student..
             List<Lesson> followed_lessons = u.getRoles().stream().map(role -> {
                 Lesson l = ctx.getLessonManager(role.getLesson().getId()).getLesson();
                 List<Event> events = l.events.stream().filter(e -> e.role.equals(role.getName())).collect(Collectors.toList());
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, null, l.roles, events, null);
             }).collect(Collectors.toList());
-            List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), ctx.isOnline(u.getId()), null, null)).collect(Collectors.toList());
+            List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), ctx.isOnline(tc.getId()), null, null)).collect(Collectors.toList());
 
             InitResponse init = new InitResponse(user, followed_lessons, teachers, models, following_lessons, students);
             return init;
