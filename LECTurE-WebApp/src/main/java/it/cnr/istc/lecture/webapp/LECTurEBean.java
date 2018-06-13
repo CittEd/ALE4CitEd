@@ -156,7 +156,7 @@ public class LECTurEBean {
                             LOG.log(Level.INFO, "New connection: {0}", info.getClientId());
                             if (!info.getClientId().equals(mqtt_server_id)) {
                                 long user_id = Long.parseLong(info.getClientId());
-                                online.put(user_id, Boolean.TRUE);
+                                setOnline(user_id, true);
                                 mqtt.publish(user_id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
                                 mqtt.subscribe(user_id + "/output", (String topic, MqttMessage message) -> {
                                     LOG.log(Level.INFO, "Message arrived: {0} {1}", new Object[]{topic, message});
@@ -187,7 +187,7 @@ public class LECTurEBean {
                             LOG.log(Level.INFO, "Lost connection: {0}", info.getClientId());
                             if (!info.getClientId().equals(mqtt_server_id)) {
                                 long user_id = Long.parseLong(info.getClientId());
-                                online.put(user_id, Boolean.FALSE);
+                                setOnline(user_id, false);
                                 mqtt.unsubscribe(user_id + "/output");
                                 mqtt.publish(user_id + "/output/on-line", Boolean.FALSE.toString().getBytes(), 1, true);
                             }
