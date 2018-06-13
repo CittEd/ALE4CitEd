@@ -234,7 +234,7 @@ public class LECTurEResource {
                 Lesson l = ctx.getLessonManager(lesson.getId()).getLesson();
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, l.model, l.roles, null, l.tokens);
             }).collect(Collectors.toList());
-            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.isOnline(std.getId()), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
+            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.isOnline(std.getId()), ctx.getParTypes(std.getId()), ctx.getParValues(std.getId()))).collect(Collectors.toList());
             // the lessons followed as a student..
             List<Lesson> followed_lessons = u.getRoles().stream().map(role -> {
                 Lesson l = ctx.getLessonManager(role.getLesson().getId()).getLesson();
