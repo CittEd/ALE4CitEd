@@ -46,6 +46,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -86,6 +89,7 @@ public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
     public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withAdapters(new EventAdapter()));
+    private static ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
     private static Context ctx;
 
     public static Context getContext() {
@@ -468,6 +472,17 @@ public class Context {
                 }
             }
         });
+
+        EXECUTOR.scheduleAtFixedRate(() -> {
+            students.forEach(std_ctx -> {
+                Map<String, Map<String, String>> par_vals1 = new HashMap<>();
+                std_ctx.parametersProperty().forEach(par_val -> {
+                    String[] par_name = par_val.name.get().split("\\.");
+                    par_vals1.computeIfAbsent(par_name[0], name -> new HashMap<>()).put(par_name[1], par_val.value.get());
+                });
+                par_vals1.entrySet().forEach(entry -> std_ctx.setParameterValue(entry.getKey(), entry.getValue()));
+            });
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     public Stage getStage() {
