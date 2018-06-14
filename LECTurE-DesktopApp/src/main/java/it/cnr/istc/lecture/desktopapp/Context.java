@@ -89,7 +89,7 @@ public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
     public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withAdapters(new EventAdapter()));
-    private static ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
+    private static ScheduledExecutorService EXECUTOR;
     private static Context ctx;
 
     public static Context getContext() {
@@ -300,6 +300,7 @@ public class Context {
                 }
 
                 // we simulate the passing of time..
+                EXECUTOR = Executors.newSingleThreadScheduledExecutor();
                 EXECUTOR.scheduleAtFixedRate(() -> students.forEach(std_ctx -> std_ctx.parametersProperty().forEach(par_val -> Platform.runLater(() -> par_val.updatesProperty().add(new ParUpdate(System.currentTimeMillis(), par_val.value.get()))))), 0, 1, TimeUnit.SECONDS);
             }
         });
