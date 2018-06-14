@@ -190,6 +190,12 @@ public class Context {
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
+
+                try {
+                    EXECUTOR.awaitTermination(2, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
             }
             if (newValue != null) {
                 // we set up a new user..
@@ -296,6 +302,18 @@ public class Context {
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
+
+                // we simulate the passing of time..
+                EXECUTOR.scheduleAtFixedRate(() -> {
+                    students.forEach(std_ctx -> {
+                        Map<String, Map<String, String>> par_vals1 = new HashMap<>();
+                        std_ctx.parametersProperty().forEach(par_val -> {
+                            String[] par_name = par_val.name.get().split("\\.");
+                            par_vals1.computeIfAbsent(par_name[0], name -> new HashMap<>()).put(par_name[1], par_val.value.get());
+                        });
+                        par_vals1.entrySet().forEach(entry -> std_ctx.setParameterValue(entry.getKey(), entry.getValue()));
+                    });
+                }, 0, 1, TimeUnit.SECONDS);
             }
         });
 
@@ -472,17 +490,6 @@ public class Context {
                 }
             }
         });
-
-        EXECUTOR.scheduleAtFixedRate(() -> {
-            students.forEach(std_ctx -> {
-                Map<String, Map<String, String>> par_vals1 = new HashMap<>();
-                std_ctx.parametersProperty().forEach(par_val -> {
-                    String[] par_name = par_val.name.get().split("\\.");
-                    par_vals1.computeIfAbsent(par_name[0], name -> new HashMap<>()).put(par_name[1], par_val.value.get());
-                });
-                par_vals1.entrySet().forEach(entry -> std_ctx.setParameterValue(entry.getKey(), entry.getValue()));
-            });
-        }, 0, 1, TimeUnit.SECONDS);
     }
 
     public Stage getStage() {
