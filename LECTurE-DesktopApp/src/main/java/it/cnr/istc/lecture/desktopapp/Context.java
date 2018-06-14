@@ -304,16 +304,7 @@ public class Context {
                 }
 
                 // we simulate the passing of time..
-                EXECUTOR.scheduleAtFixedRate(() -> {
-                    students.forEach(std_ctx -> {
-                        Map<String, Map<String, String>> par_vals1 = new HashMap<>();
-                        std_ctx.parametersProperty().forEach(par_val -> {
-                            String[] par_name = par_val.name.get().split("\\.");
-                            par_vals1.computeIfAbsent(par_name[0], name -> new HashMap<>()).put(par_name[1], par_val.value.get());
-                        });
-                        par_vals1.entrySet().forEach(entry -> std_ctx.setParameterValue(entry.getKey(), entry.getValue()));
-                    });
-                }, 0, 1, TimeUnit.SECONDS);
+                EXECUTOR.scheduleAtFixedRate(() -> students.forEach(std_ctx -> std_ctx.parametersProperty().forEach(par_val -> Platform.runLater(() -> par_val.updatesProperty().add(new ParUpdate(System.currentTimeMillis(), par_val.value.get()))))), 0, 1, TimeUnit.SECONDS);
             }
         });
 
