@@ -1,0 +1,85 @@
+{
+    "name": "Madonnas",
+    "roles": [
+        "Art expert",
+        "Architecture expert"
+    ],
+    "events": [
+        {
+            "type": "URLEventTemplate",
+            "name": "m_0",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "The location of Madonnas",
+            "url": "https://www.info.roma.it/monumenti.asp?categorie_monumenti=edicole%20sacre"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_1",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Immagine di Ponte",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=363"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_2",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna dell'Immacolata, via del Pellegrino",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=720"
+        },
+        {
+            "type": "TextEventTemplate",
+            "name": "not_too_far",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "You are not too far from the next point of interest. Hold on!"
+        }
+    ],
+    "ids": [
+        "m_0",
+        "not_too_far"
+    ],
+    "relations": [
+        {
+            "from": "this",
+            "to": "m_0",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_0",
+            "to": "m_1",
+            "lb": 4,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_1",
+            "to": "m_2",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_2",
+            "to": "not_too_far",
+            "lb": 8,
+            "unit": "SECONDS"
+        }
+    ]
+}
