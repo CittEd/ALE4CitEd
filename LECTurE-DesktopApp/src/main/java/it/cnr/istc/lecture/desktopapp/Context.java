@@ -191,11 +191,7 @@ public class Context {
                     LOG.log(Level.SEVERE, null, ex);
                 }
 
-                try {
-                    EXECUTOR.awaitTermination(2, TimeUnit.SECONDS);
-                } catch (InterruptedException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
+                EXECUTOR.shutdown();
             }
             if (newValue != null) {
                 // we set up a new user..
