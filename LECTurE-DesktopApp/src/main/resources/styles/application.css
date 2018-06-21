@@ -1,0 +1,11 @@
+.root {
+    -fx-font-size: 16pt;
+}
+
+.menu-bar .label {
+    -fx-font-size: 14pt;
+}
+
+.menu-item .label{
+    -fx-font-size: 14pt;
+}

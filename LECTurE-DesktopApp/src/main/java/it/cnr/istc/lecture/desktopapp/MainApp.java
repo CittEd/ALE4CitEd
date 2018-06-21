@@ -16,7 +16,7 @@ public class MainApp extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/Main.fxml"), Context.LANGUAGE);
 
         Scene scene = new Scene(root);
-        scene.getStylesheets().add("/styles/bootstrap3.css");
+        scene.getStylesheets().addAll("/styles/application.css", "/styles/bootstrap3.css");
 
         stage.getIcons().addAll(new Image(getClass().getResourceAsStream("/fxml/icon_16x16.png")), new Image(getClass().getResourceAsStream("/fxml/icon_32x32.png")));
         stage.setScene(scene);
