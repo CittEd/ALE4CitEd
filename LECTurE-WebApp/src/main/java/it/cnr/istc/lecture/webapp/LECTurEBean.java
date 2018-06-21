@@ -147,6 +147,7 @@ public class LECTurEBean {
         broker.setPersistent(false);
         try {
             TransportConnector connector = broker.addConnector(UriBuilder.fromUri("mqtt://" + mqtt_host + ":" + mqtt_port).build());
+            connector.setAllowLinkStealing(true);
             broker.setPlugins(new BrokerPlugin[]{new BrokerPlugin() {
                 @Override
                 public Broker installPlugin(Broker broker) throws Exception {
