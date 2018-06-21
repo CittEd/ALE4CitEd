@@ -40,12 +40,18 @@ public class RandomDataGenerator implements ChangeListener<Boolean> {
                 Context.getContext().parametersProperty().forEach(par -> {
                     String[] par_name = par.nameProperty().get().split("\\.");
                     if (Context.getContext().getParameter(par_name[0]).properties.get(par_name[1]).equals("numeric")) {
-                        int c_val = Integer.parseInt(par.valueProperty().toString());
-                        Context.getContext().setParameterValue(par_name[0], par_name[1], Integer.toString(c_val + (random.nextBoolean() ? random.nextInt(c_val / 5) : -random.nextInt(c_val / 5))));
+                        double c_val = Double.parseDouble(par.valueProperty().get());
+                        Context.getContext().setParameterValue(par_name[0], par_name[1], Double.toString(c_val + (random.nextBoolean() ? Math.max(1, random.nextDouble() * c_val / 100) : -Math.max(1, random.nextDouble() * c_val / 100))));
                     }
                 });
             }, 0, 1, TimeUnit.SECONDS);
         } else {
+            simulate_data_executor.shutdown();
+        }
+    }
+
+    public void shutdown() {
+        if (simulate_data_executor != null && !simulate_data_executor.isShutdown()) {
             simulate_data_executor.shutdown();
         }
     }

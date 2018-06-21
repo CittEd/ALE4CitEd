@@ -113,6 +113,7 @@ public class MainController implements Initializable {
     private TableColumn<ParameterValue, String> par_names;
     @FXML
     private TableColumn<ParameterValue, String> par_vals;
+    private final RandomDataGenerator random_data_generator = new RandomDataGenerator();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -366,7 +367,7 @@ public class MainController implements Initializable {
 
         simulate_data.graphicProperty().set(new Glyph("FontAwesome", FontAwesome.Glyph.RANDOM));
         simulate_data.disableProperty().bind(Context.getContext().userProperty().isNull());
-        simulate_data.selectedProperty().addListener(new RandomDataGenerator());
+        simulate_data.selectedProperty().addListener(random_data_generator);
 
         parameters.setItems(Context.getContext().parametersProperty());
         par_names.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -420,6 +421,7 @@ public class MainController implements Initializable {
 
     @FXML
     private void exit(ActionEvent event) {
+        random_data_generator.shutdown();
         Platform.exit();
     }
 
