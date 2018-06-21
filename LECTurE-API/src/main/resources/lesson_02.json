@@ -7,8 +7,19 @@
     "events": [
         {
             "type": "URLEventTemplate",
-            "name": "m_0",
+            "name": "m_01",
             "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "The location of Madonnas",
+            "url": "https://www.info.roma.it/monumenti.asp?categorie_monumenti=edicole%20sacre"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_02",
+            "role": "Architecture expert",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -30,13 +41,332 @@
         {
             "type": "URLEventTemplate",
             "name": "m_2",
-            "role": "Art expert",
+            "role": "Architecture expert",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
             "relations": [],
             "content": "Madonna dell'Immacolata, via del Pellegrino",
             "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=720"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_3",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna in Maestà di via di Santa Maria dell'anima",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=811"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_4",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicole della confraternita dei macellai",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1136"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_5",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna delle Grazie a via Giulia",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1243"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_6",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna dell'Immacolata di Piazza della Rotonda",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=651"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_7",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola di via della Scala",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1389"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_8",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna Addolorata su Palazzo Patrizi Montoro",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=822"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_9",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna di Piazza de Ricci",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=874"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_10",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna dell'Archetto su Palazzo Castellani",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=983"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_11",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola di via Mario de Fiori, 85",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1002"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_12",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola del miracolo dei tre fanciulli",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1274"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_13",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Assunta a via della Lungara",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1853"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_14",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna di via del Plebiscito",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1928"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_15",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna della Seggiola",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=752"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_16",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna col Bambino a via del Mascherino",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1446"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_17",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Redentore dell'Ospedale del Salvatore",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=979"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_18",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola della Pietà di via del Cipresso",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1393"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_19",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna della Pietà a via XX Settembre",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=990"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_20",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola del Scaro Cuore a via Garibaldi",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=967"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_21",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Adorazione dei Pastori a Piazza della Malva",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1391"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_22",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Vergine Refugium Peccatorum",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1403"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_23",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna e Santi di via delle Zoccolette",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1009"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_24",
+            "role": "Architecture expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna del Buon Cuore ai Pantani",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=737"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "m_25",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna dell'Immacolata a via Mario de Fiori",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=993"
+        },
+        {
+            "type": "QuestionEventTemplate",
+            "name": "art_question_1",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "question": "Do you want to continue?",
+            "answers": [
+                {
+                    "answer": "Yes",
+                    "event": "art_question_1_answer_yes"
+                },
+                {
+                    "answer": "No",
+                    "event": "art_question_1_answer_no"
+                }
+            ]
+        },
+        {
+            "type": "EventTemplate",
+            "name": "art_question_1_answer_yes",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": ["m7", "m9"],
+            "relations": [
+                {
+                    "from": "this",
+                    "to": "m7",
+                    "lb": 16,
+                    "ub": 30,
+                    "unit": "SECONDS"
+                },
+                {
+                    "from": "m7",
+                    "to": "m9",
+                    "lb": 14,
+                    "ub": 40,
+                    "unit": "SECONDS"
+                }]
+        },
+        {
+            "type": "EventTemplate",
+            "name": "art_question_1_answer_no",
+            "role": "Art expert",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": ["not_too_far", "m11"],
+            "relations": [
+                {
+                    "from": "this",
+                    "to": "not_too_far",
+                    "lb": 9,
+                    "ub": 30,
+                    "unit": "SECONDS"
+                },
+                {
+                    "from": "this",
+                    "to": "m11",
+                    "lb": 26,
+                    "ub": 40,
+                    "unit": "SECONDS"
+                }]
         },
         {
             "type": "TextEventTemplate",
@@ -50,21 +380,33 @@
         }
     ],
     "ids": [
-        "m_0",
+        "m_00",
+        "m_01",
         "m_1",
         "m_2",
+        "m_3",
+        "m_4",
+        "m_5",
+        "m_6",
         "not_too_far"
     ],
     "relations": [
         {
             "from": "this",
-            "to": "m_0",
+            "to": "m_00",
             "lb": 6,
             "ub": 10,
             "unit": "SECONDS"
         },
         {
-            "from": "m_0",
+            "from": "this",
+            "to": "m_01",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_00",
             "to": "m_1",
             "lb": 4,
             "ub": 10,
@@ -72,9 +414,37 @@
         },
         {
             "from": "m_1",
+            "to": "m_3",
+            "lb": 16,
+            "ub": 30,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_3",
+            "to": "m_5",
+            "lb": 16,
+            "ub": 30,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_01",
             "to": "m_2",
-            "lb": 6,
+            "lb": 5,
             "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_2",
+            "to": "m_4",
+            "lb": 12,
+            "ub": 50,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_4",
+            "to": "m_6",
+            "lb": 12,
+            "ub": 50,
             "unit": "SECONDS"
         },
         {
