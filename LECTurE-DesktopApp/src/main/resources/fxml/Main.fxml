@@ -47,13 +47,13 @@
                     <content>
                         <HBox spacing="10.0">
                             <children>
-                                <Accordion fx:id="learn_accord">
+                                <Accordion id="list" fx:id="learn_accord">
                                     <panes>
                                         <TitledPane text="%EVENTS">
                                             <content>
                                                 <VBox>
                                                     <children>
-                                                        <ListView fx:id="events" VBox.vgrow="ALWAYS" />
+                                                        <ListView id="list" fx:id="events" VBox.vgrow="ALWAYS" />
                                                     </children>
                                                 </VBox>
                                             </content>
@@ -62,7 +62,7 @@
                                             <content>
                                                 <VBox>
                                                     <children>
-                                                        <ListView fx:id="following_lessons" VBox.vgrow="ALWAYS" />
+                                                        <ListView id="list" fx:id="following_lessons" VBox.vgrow="ALWAYS" />
                                                     </children>
                                                 </VBox>
                                             </content>
@@ -80,7 +80,7 @@
                                                         <RowConstraints vgrow="ALWAYS" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <ListView fx:id="teachers" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
+                                                        <ListView id="list" fx:id="teachers" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
                                                         <Button fx:id="add_teachers_button" mnemonicParsing="false" onAction="#add_teachers" GridPane.columnIndex="1" />
                                                         <Button fx:id="remove_teachers_button" mnemonicParsing="false" onAction="#remove_selected_teachers" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
@@ -89,7 +89,7 @@
                                         </TitledPane>
                                     </panes>
                                 </Accordion>
-                                <StackPane fx:id="learning_pane" HBox.hgrow="ALWAYS" />
+                                <StackPane id="pane" fx:id="learning_pane" HBox.hgrow="ALWAYS" />
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -101,7 +101,7 @@
                     <content>
                         <HBox spacing="10.0">
                             <children>
-                                <Accordion fx:id="teach_accord">
+                                <Accordion id="list" fx:id="teach_accord">
                                     <panes>
                                         <TitledPane text="%LESSONS">
                                             <content>
@@ -116,7 +116,7 @@
                                                         <RowConstraints vgrow="ALWAYS" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <ListView fx:id="teaching_lessons" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
+                                                        <ListView id="list" fx:id="teaching_lessons" GridPane.hgrow="NEVER" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
                                                         <Button fx:id="add_lesson_button" mnemonicParsing="false" onAction="#add_lesson" GridPane.columnIndex="1" />
                                                         <Button fx:id="remove_lessons_button" mnemonicParsing="false" onAction="#remove_selected_lessons" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
@@ -127,14 +127,14 @@
                                             <content>
                                                 <VBox>
                                                     <children>
-                                                        <ListView fx:id="students" VBox.vgrow="ALWAYS" />
+                                                        <ListView id="list" fx:id="students" VBox.vgrow="ALWAYS" />
                                                     </children>
                                                 </VBox>
                                             </content>
                                         </TitledPane>
                                     </panes>
                                 </Accordion>
-                                <StackPane fx:id="teaching_pane" HBox.hgrow="ALWAYS" />
+                                <StackPane id="pane" fx:id="teaching_pane" HBox.hgrow="ALWAYS" />
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
