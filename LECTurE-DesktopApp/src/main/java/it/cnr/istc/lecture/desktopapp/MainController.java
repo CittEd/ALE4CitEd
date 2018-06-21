@@ -155,24 +155,21 @@ public class MainController implements Initializable {
                 }
             }
         });
-        Context.getContext().eventsProperty().addListener(new ListChangeListener<Event>() {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends Event> c) {
-                while (c.next()) {
-                    for (Event event : c.getAddedSubList()) {
-                        switch (event.event_type) {
-                            case TextEvent:
-                                Platform.runLater(() -> Notifications.create().title("Event").text(((TextEvent) event).content).show());
-                                break;
-                            case QuestionEvent:
-                                Platform.runLater(() -> Notifications.create().title("Question").text(((QuestionEvent) event).question).show());
-                                break;
-                            case URLEvent:
-                                Platform.runLater(() -> Notifications.create().title("Event").text(((URLEvent) event).content).show());
-                                break;
-                            default:
-                                throw new AssertionError(event.event_type.name());
-                        }
+        Context.getContext().eventsProperty().addListener((ListChangeListener.Change<? extends Event> c) -> {
+            while (c.next()) {
+                for (Event event : c.getAddedSubList()) {
+                    switch (event.event_type) {
+                        case TextEvent:
+                            Platform.runLater(() -> Notifications.create().title(Context.LANGUAGE.getString("EVENT")).text(((TextEvent) event).content).show());
+                            break;
+                        case QuestionEvent:
+                            Platform.runLater(() -> Notifications.create().title(Context.LANGUAGE.getString("QUESTION")).text(((QuestionEvent) event).question).show());
+                            break;
+                        case URLEvent:
+                            Platform.runLater(() -> Notifications.create().title(Context.LANGUAGE.getString("EVENT")).text(((URLEvent) event).content).show());
+                            break;
+                        default:
+                            throw new AssertionError(event.event_type.name());
                     }
                 }
             }
@@ -385,7 +382,7 @@ public class MainController implements Initializable {
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
-                alert.setTitle("Exception");
+                alert.setTitle(Context.LANGUAGE.getString("EXCEPTION"));
                 alert.setHeaderText(e.getMessage());
                 alert.showAndWait();
             }
@@ -407,7 +404,7 @@ public class MainController implements Initializable {
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
-                alert.setTitle("Exception");
+                alert.setTitle(Context.LANGUAGE.getString("EXCEPTION"));
                 alert.setHeaderText(e.getMessage());
                 alert.showAndWait();
             }

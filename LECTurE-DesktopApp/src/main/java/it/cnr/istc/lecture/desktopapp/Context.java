@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -89,6 +90,7 @@ public class Context {
 
     private static final Logger LOG = Logger.getLogger(Context.class.getName());
     public static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withAdapters(new EventAdapter()));
+    public static final ResourceBundle LANGUAGE = ResourceBundle.getBundle("language");
     private static ScheduledExecutorService EXECUTOR;
     private static Context ctx;
 

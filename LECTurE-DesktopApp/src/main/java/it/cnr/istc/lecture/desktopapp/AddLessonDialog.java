@@ -16,7 +16,6 @@
  */
 package it.cnr.istc.lecture.desktopapp;
 
-import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.model.LessonModel;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,9 +71,9 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
     private final Button open_button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FILE_CODE_ALT));
     private final ObservableList<StudentRole> roles = FXCollections.observableArrayList();
     private final TableView<StudentRole> roles_table_view = new TableView<>(roles);
-    private final TableColumn<StudentRole, String> role_column = new TableColumn<>("Role");
-    private final TableColumn<StudentRole, StudentContext> student_column = new TableColumn<>("Student");
-    private final ButtonType add_button = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
+    private final TableColumn<StudentRole, String> role_column = new TableColumn<>(Context.LANGUAGE.getString("ROLE"));
+    private final TableColumn<StudentRole, StudentContext> student_column = new TableColumn<>(Context.LANGUAGE.getString("STUDENT"));
+    private final ButtonType add_button = new ButtonType(Context.LANGUAGE.getString("ADD"), ButtonBar.ButtonData.OK_DONE);
     private LessonModel lesson_model;
 
     @SuppressWarnings("unchecked")
@@ -86,10 +85,10 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         setVgrow(roles_table_view, Priority.ALWAYS);
         setHgrow(roles_table_view, Priority.ALWAYS);
 
-        setTitle("Add lesson");
+        setTitle(Context.LANGUAGE.getString("ADD LESSON"));
 
-        grid.add(new Label("Lesson type:"), 0, 0);
-        lesson_types.setPromptText("Lesson type");
+        grid.add(new Label(Context.LANGUAGE.getString("LESSON TYPE") + ":"), 0, 0);
+        lesson_types.setPromptText(Context.LANGUAGE.getString("LESSON TYPE"));
         lesson_types.setEditable(false);
         lesson_types.setItems(Context.getContext().modelsProperty());
         lesson_types.valueProperty().addListener((ObservableValue<? extends LessonModel> observable, LessonModel oldValue, LessonModel newValue) -> {
@@ -120,13 +119,13 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
 
             @Override
             public LessonModel fromString(String string) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                throw new UnsupportedOperationException("Not supported yet..");
             }
         });
         grid.add(lesson_types, 1, 0);
         grid.add(open_button, 2, 0);
-        grid.add(new Label("Lesson name:"), 0, 1);
-        lesson_name.setPromptText("Lesson name");
+        grid.add(new Label(Context.LANGUAGE.getString("LESSON NAME") + ":"), 0, 1);
+        lesson_name.setPromptText(Context.LANGUAGE.getString("LESSON NAME"));
         grid.add(lesson_name, 1, 1, 2, 1);
         grid.add(roles_table_view, 0, 2, 3, 1);
 
@@ -140,7 +139,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             @Override
             public String toString(StudentContext std_ctx) {
                 if (std_ctx == null) {
-                    return "Select one";
+                    return Context.LANGUAGE.getString("SELECT ONE");
                 } else {
                     return std_ctx.getStudent().first_name + " " + std_ctx.getStudent().last_name;
                 }
@@ -148,7 +147,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
 
             @Override
             public StudentContext fromString(String string) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException("Not supported yet..");
             }
         }, Context.getContext().studentsProperty()));
         student_column.setEditable(true);
@@ -159,12 +158,12 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         getDialogPane().setContent(grid);
 
         open_button.setOnAction((ActionEvent event) -> {
-            FILE_CHOOSER.setTitle("Open Lesson File");
+            FILE_CHOOSER.setTitle(Context.LANGUAGE.getString("OPEN LESSON FILE"));
             FILE_CHOOSER.setInitialDirectory(new File(System.getProperty("user.home")));
             FILE_CHOOSER.getExtensionFilters().clear();
             FILE_CHOOSER.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("Lesson", "*.json"),
-                    new FileChooser.ExtensionFilter("All Files", "*.*")
+                    new FileChooser.ExtensionFilter(Context.LANGUAGE.getString("LESSON"), "*.json"),
+                    new FileChooser.ExtensionFilter(Context.LANGUAGE.getString("ALL FILES"), "*.*")
             );
             File lesson_file = FILE_CHOOSER.showOpenDialog(Context.getContext().getStage());
             if (lesson_file != null) {

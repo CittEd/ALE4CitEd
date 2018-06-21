@@ -260,9 +260,9 @@ public class LessonController implements Initializable {
         });
         XYPlot plot = new XYPlot(series_collection, domain_axis, range_axis, renderer);
         plot.setShadowGenerator(new DefaultShadowGenerator(5, java.awt.Color.black, 1, 2, -45));
-        plot.setNoDataMessage("No data");
+        plot.setNoDataMessage(Context.LANGUAGE.getString("NO DATA"));
         plot.setRangeGridlinesVisible(false);
-        t_now.setLabel("now");
+        t_now.setLabel(Context.LANGUAGE.getString("NOW"));
         t_now.setLabelAnchor(RectangleAnchor.TOP_LEFT);
         t_now.setLabelTextAnchor(TextAnchor.TOP_RIGHT);
         plot.addDomainMarker(t_now);
@@ -434,16 +434,12 @@ public class LessonController implements Initializable {
 
     private class NavigateContextMenu extends ContextMenu {
 
-        private final MenuItem go_to = new MenuItem("Go to", new Glyph("FontAwesome", FontAwesome.Glyph.SHARE));
-        private final MenuItem edit = new MenuItem("Edit time", new Glyph("FontAwesome", FontAwesome.Glyph.EDIT));
+        private final MenuItem go_to = new MenuItem(Context.LANGUAGE.getString("GO TO"), new Glyph("FontAwesome", FontAwesome.Glyph.SHARE));
+        private final MenuItem edit = new MenuItem(Context.LANGUAGE.getString("EDIT TIME"), new Glyph("FontAwesome", FontAwesome.Glyph.EDIT));
 
         public NavigateContextMenu(TableRow<TokenRow> row) {
-            go_to.setOnAction((ActionEvent event) -> {
-                Context.getContext().goTo(l_ctx.get().getLesson(), row.getItem().getTime());
-            });
-            edit.setOnAction((ActionEvent event) -> {
-                tokens_table_view.edit(row.getIndex(), tokens_table_view.getColumns().get(0));
-            });
+            go_to.setOnAction((ActionEvent event) -> Context.getContext().goTo(l_ctx.get().getLesson(), row.getItem().getTime()));
+            edit.setOnAction((ActionEvent event) -> tokens_table_view.edit(row.getIndex(), tokens_table_view.getColumns().get(0)));
             edit.disableProperty().bind(row.getItem().executedProperty());
             getItems().addAll(go_to, new SeparatorMenuItem(), edit);
         }

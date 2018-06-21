@@ -42,18 +42,18 @@ public class AddTeachersDialog extends Dialog<User[]> {
 
     private final GridPane grid = new GridPane();
     private final TextField find_field = new TextField();
-    private final Button find_button = new Button("Find");
+    private final Button find_button = new Button(Context.LANGUAGE.getString("FIND"));
     private final ObservableList<User> found_users = FXCollections.observableArrayList();
     private ListView<User> found_users_list_view = new ListView<>(found_users);
-    private final ButtonType add_button = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
+    private final ButtonType add_button = new ButtonType(Context.LANGUAGE.getString("ADD"), ButtonBar.ButtonData.OK_DONE);
 
     public AddTeachersDialog() {
-        setTitle("Add teachers");
+        setTitle(Context.LANGUAGE.getString("ADD TEACHERS"));
 
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.add(new Label("Find:"), 0, 0);
-        find_field.setPromptText("Teacher");
+        grid.add(new Label(Context.LANGUAGE.getString("FIND") + ":"), 0, 0);
+        find_field.setPromptText(Context.LANGUAGE.getString("TEACHER"));
         grid.add(find_field, 1, 0);
         grid.add(find_button, 2, 0);
         grid.add(found_users_list_view, 0, 1, 3, 1);

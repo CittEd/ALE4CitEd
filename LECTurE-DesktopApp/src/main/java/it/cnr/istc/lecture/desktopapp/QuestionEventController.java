@@ -48,7 +48,7 @@ public class QuestionEventController implements Initializable {
     private final ObjectProperty<QuestionEvent> event = new SimpleObjectProperty<>();
     private final ToggleGroup group = new ToggleGroup();
     private final List<RadioButton> answer_buttons = new ArrayList<>();
-    private final Button send_answer = new Button("Send");
+    private final Button send_answer = new Button(Context.LANGUAGE.getString("SEND"));
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

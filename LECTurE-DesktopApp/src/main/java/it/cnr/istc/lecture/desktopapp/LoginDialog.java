@@ -36,18 +36,18 @@ public class LoginDialog extends Dialog<LoginDialog.LoginResult> {
     private final GridPane grid = new GridPane();
     private final TextField email_field = new TextField();
     private final PasswordField password_field = new PasswordField();
-    private final ButtonType login_button = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
+    private final ButtonType login_button = new ButtonType(Context.LANGUAGE.getString("LOGIN"), ButtonBar.ButtonData.OK_DONE);
 
     public LoginDialog() {
         setTitle("Login");
 
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.add(new Label("E-Mail:"), 0, 0);
-        email_field.setPromptText("E-Mail");
+        grid.add(new Label(Context.LANGUAGE.getString("E-MAIL") + ":"), 0, 0);
+        email_field.setPromptText(Context.LANGUAGE.getString("E-MAIL"));
         grid.add(email_field, 1, 0);
-        grid.add(new Label("Password:"), 0, 1);
-        password_field.setPromptText("Password");
+        grid.add(new Label(Context.LANGUAGE.getString("PASSWORD") + ":"), 0, 1);
+        password_field.setPromptText(Context.LANGUAGE.getString("PASSWORD"));
         grid.add(password_field, 1, 1);
         getDialogPane().setContent(grid);
 

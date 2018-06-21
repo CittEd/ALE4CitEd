@@ -37,24 +37,24 @@ public class NewUserDialog extends Dialog<NewUserDialog.NewUserResult> {
     private final PasswordField password_field = new PasswordField();
     private final TextField first_name_field = new TextField();
     private final TextField last_name_field = new TextField();
-    private final ButtonType create_button = new ButtonType("Create", ButtonData.OK_DONE);
+    private final ButtonType create_button = new ButtonType(Context.LANGUAGE.getString("CREATE"), ButtonData.OK_DONE);
 
     public NewUserDialog() {
-        setTitle("New user");
+        setTitle(Context.LANGUAGE.getString("NEW USER"));
 
         grid.setHgap(10);
         grid.setVgap(10);
-        email_field.setPromptText("E-Mail");
-        grid.add(new Label("E-Mail:"), 0, 0);
+        email_field.setPromptText(Context.LANGUAGE.getString("E-MAIL"));
+        grid.add(new Label(Context.LANGUAGE.getString("E-MAIL") + ":"), 0, 0);
         grid.add(email_field, 1, 0);
-        password_field.setPromptText("Password");
-        grid.add(new Label("Password:"), 0, 1);
+        password_field.setPromptText(Context.LANGUAGE.getString("PASSWORD"));
+        grid.add(new Label(Context.LANGUAGE.getString("PASSWORD") + ":"), 0, 1);
         grid.add(password_field, 1, 1);
-        first_name_field.setPromptText("First name");
-        grid.add(new Label("First name:"), 0, 2);
+        first_name_field.setPromptText(Context.LANGUAGE.getString("FIRST NAME"));
+        grid.add(new Label(Context.LANGUAGE.getString("FIRST NAME") + ":"), 0, 2);
         grid.add(first_name_field, 1, 2);
-        grid.add(new Label("Last name:"), 0, 3);
-        last_name_field.setPromptText("Last name");
+        grid.add(new Label(Context.LANGUAGE.getString("LAST NAME") + ":"), 0, 3);
+        last_name_field.setPromptText(Context.LANGUAGE.getString("LAST NAME"));
         grid.add(last_name_field, 1, 3);
         getDialogPane().setContent(grid);
 
