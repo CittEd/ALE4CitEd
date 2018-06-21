@@ -502,6 +502,14 @@ public class Context {
         return user;
     }
 
+    public ObservableList<Parameter> parameterTypesProperty() {
+        return par_types;
+    }
+
+    public Parameter getParameter(String par_name) {
+        return id_par_types.get(par_name);
+    }
+
     public ObservableList<ParameterValue> parametersProperty() {
         return par_values;
     }

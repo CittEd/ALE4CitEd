@@ -46,6 +46,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Pane;
@@ -102,6 +103,8 @@ public class MainController implements Initializable {
     private LessonController lesson_controller;
     private Pane student_pane;
     private StudentController student_controller;
+    @FXML
+    private ToggleButton simulate_data;
     @FXML
     private ListView<StudentContext> students;
     @FXML
@@ -360,6 +363,10 @@ public class MainController implements Initializable {
                 }
             }
         });
+
+        simulate_data.graphicProperty().set(new Glyph("FontAwesome", FontAwesome.Glyph.RANDOM));
+        simulate_data.disableProperty().bind(Context.getContext().userProperty().isNull());
+        simulate_data.selectedProperty().addListener(new RandomDataGenerator());
 
         parameters.setItems(Context.getContext().parametersProperty());
         par_names.setCellValueFactory(new PropertyValueFactory<>("name"));

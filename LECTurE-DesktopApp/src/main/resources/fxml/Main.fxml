@@ -13,6 +13,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -146,6 +147,14 @@
                     <content>
                         <VBox>
                             <children>
+                                <HBox nodeOrientation="RIGHT_TO_LEFT">
+                                    <children>
+                                        <ToggleButton fx:id="simulate_data" mnemonicParsing="false" />
+                                    </children>
+                                    <VBox.margin>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </VBox.margin>
+                                </HBox>
                                 <TableView fx:id="parameters" editable="true" VBox.vgrow="ALWAYS">
                                     <columns>
                                         <TableColumn fx:id="par_names" editable="false" prefWidth="75.0" text="%NAME" />
