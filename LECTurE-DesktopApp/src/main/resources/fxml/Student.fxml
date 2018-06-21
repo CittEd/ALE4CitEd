@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<GridPane hgap="10.0" vgap="10.0" xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.StudentController">
+<GridPane hgap="10.0" vgap="10.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.cnr.istc.lecture.desktopapp.StudentController">
     <rowConstraints>
         <RowConstraints />
         <RowConstraints vgrow="ALWAYS" />
@@ -21,21 +21,21 @@
         <ColumnConstraints hgrow="ALWAYS" />
     </columnConstraints>
     <children>
-        <TextField fx:id="first_name" editable="false" promptText="First name" />
-        <TextField fx:id="last_name" editable="false" promptText="Last name" GridPane.columnIndex="1" />
+        <TextField fx:id="first_name" editable="false" promptText="%FIRST NAME" />
+        <TextField fx:id="last_name" editable="false" promptText="%LAST NAME" GridPane.columnIndex="1" />
         <TabPane tabClosingPolicy="UNAVAILABLE" GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
             <tabs>
-                <Tab text="Timelines">
+                <Tab text="%TIMELINES">
                     <content>
                         <StackPane fx:id="student_chart_pane" prefHeight="150.0" prefWidth="200.0" />
                     </content>
                 </Tab>
-                <Tab text="Table">
+                <Tab text="%TABLE">
                     <content>
                         <TableView fx:id="parameters_table_view">
                             <columns>
-                                <TableColumn fx:id="name_column" editable="false" prefWidth="75.0" text="Name" />
-                                <TableColumn fx:id="value_column" editable="false" prefWidth="75.0" text="Value" />
+                                <TableColumn fx:id="name_column" editable="false" prefWidth="75.0" text="%NAME" />
+                                <TableColumn fx:id="value_column" editable="false" prefWidth="75.0" text="%VALUE" />
                             </columns>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

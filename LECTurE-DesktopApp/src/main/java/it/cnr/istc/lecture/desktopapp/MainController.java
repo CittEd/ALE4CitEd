@@ -303,7 +303,7 @@ public class MainController implements Initializable {
         remove_lessons_button.disableProperty().bind(Bindings.isEmpty(teaching_lessons.selectionModelProperty().get().getSelectedItems()));
 
         try {
-            FXMLLoader lesson_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Lesson.fxml"));
+            FXMLLoader lesson_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Lesson.fxml"), Context.LANGUAGE);
             lesson_pane = lesson_pane_loader.load();
             lesson_controller = lesson_pane_loader.getController();
         } catch (IOException ex) {
@@ -343,7 +343,7 @@ public class MainController implements Initializable {
         });
 
         try {
-            FXMLLoader student_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Student.fxml"));
+            FXMLLoader student_pane_loader = new FXMLLoader(getClass().getResource("/fxml/Student.fxml"), Context.LANGUAGE);
             student_pane = student_pane_loader.load();
             student_controller = student_pane_loader.getController();
         } catch (IOException ex) {

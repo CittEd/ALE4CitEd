@@ -13,7 +13,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         Context.getContext().setStage(stage);
-        Parent root = FXMLLoader.load(getClass().getResource("/fxml/Main.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/fxml/Main.fxml"), Context.LANGUAGE);
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add("/styles/bootstrap3.css");
