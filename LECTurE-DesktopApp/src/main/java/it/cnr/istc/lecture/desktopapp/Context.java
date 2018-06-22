@@ -165,16 +165,20 @@ public class Context {
                 try {
                     par_values.clear();
                     par_vals.clear();
-                    for (Parameter par : par_types) {
-                        // we broadcast the lost of a parameter..
-                        mqtt.publish(oldValue.id + "/output", JSONB.toJson(new LostParameter(par.name)).getBytes(), 1, false);
+                    if (mqtt.isConnected()) { // a user might become null as a consequence of a connection loss..
+                        for (Parameter par : par_types) {
+                            // we broadcast the lost of a parameter..
+                            mqtt.publish(oldValue.id + "/output", JSONB.toJson(new LostParameter(par.name)).getBytes(), 1, false);
+                        }
                     }
                     par_types.clear();
                     events.clear();
-                    for (FollowingLessonContext l_ctx : following_lessons) {
-                        // we unsubscribe from the lesson's time and state..
-                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
-                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                    if (mqtt.isConnected()) {
+                        for (FollowingLessonContext l_ctx : following_lessons) {
+                            // we unsubscribe from the lesson's time and state..
+                            mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
+                            mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                        }
                     }
                     following_lessons.clear();
                     teachers.clear();
@@ -182,12 +186,16 @@ public class Context {
                     for (TeachingLessonContext l_ctx : teaching_lessons) {
                         l_ctx.tokensProperty().clear();
                         // we unsubscribe from the lesson's time and state..
-                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
-                        mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                        if (mqtt.isConnected()) {
+                            mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/time");
+                            mqtt.unsubscribe(oldValue.id + "/input/lesson-" + l_ctx.getLesson().id + "/state");
+                        }
                     }
                     teaching_lessons.clear();
                     students.clear();
-                    mqtt.disconnect();
+                    if (mqtt.isConnected()) {
+                        mqtt.disconnect();
+                    }
                     mqtt.close();
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
@@ -203,7 +211,7 @@ public class Context {
                         @Override
                         public void connectionLost(Throwable cause) {
                             LOG.log(Level.SEVERE, null, cause);
-                            user.set(null);
+                            Platform.runLater(() -> user.set(null));
                         }
 
                         @Override
