@@ -1,5 +1,5 @@
 {
-    "name": "Madonnas",
+    "name": "Madonne",
     "roles": [
         "Esperto d'arte",
         "Esperto d'architettura"
@@ -24,7 +24,7 @@
             "execution_condition": null,
             "ids": [],
             "relations": [],
-            "content": "The location of Madonnas",
+            "content": "Posizione delle Madonne",
             "url": "https://www.info.roma.it/monumenti.asp?categorie_monumenti=edicole%20sacre"
         },
         {
@@ -57,7 +57,7 @@
             "execution_condition": null,
             "ids": [],
             "relations": [],
-            "content": "Madonna in Maestà di via di Santa Maria dell'anima",
+            "content": "Madonna in Maesta' di via di Santa Maria dell'anima",
             "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=811"
         },
         {
@@ -222,7 +222,7 @@
             "execution_condition": null,
             "ids": [],
             "relations": [],
-            "content": "Edicola della Pietà di via del Cipresso",
+            "content": "Edicola della Pieta' di via del Cipresso",
             "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1393"
         },
         {
@@ -313,7 +313,7 @@
             "question": "Vuoi continuare?",
             "answers": [
                 {
-                    "answer": "Sì",
+                    "answer": "Si",
                     "event": "art_question_1_answer_yes"
                 },
                 {
