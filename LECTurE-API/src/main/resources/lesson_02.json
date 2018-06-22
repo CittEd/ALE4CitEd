@@ -328,7 +328,10 @@
             "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
-            "ids": ["m7", "m9"],
+            "ids": [
+                "m7", 
+                "m9"
+            ],
             "relations": [
                 {
                     "from": "this",
@@ -351,7 +354,10 @@
             "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
-            "ids": ["not_too_far", "m11"],
+            "ids": [
+                "not_too_far",
+                "m11"
+            ],
             "relations": [
                 {
                     "from": "this",
