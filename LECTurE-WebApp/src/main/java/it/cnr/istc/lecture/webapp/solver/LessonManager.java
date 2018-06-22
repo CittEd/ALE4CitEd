@@ -135,7 +135,11 @@ public class LessonManager implements TemporalListener {
         for (Relation rel : tk.template.relations) {
             double lb = rel.lb != null ? TimeUnit.MILLISECONDS.convert(rel.lb, rel.unit) : Double.NEGATIVE_INFINITY;
             double ub = rel.ub != null ? TimeUnit.MILLISECONDS.convert(rel.ub, rel.unit) : Double.NEGATIVE_INFINITY;
-            network.addConstraint(c_tks.get(rel.from).tp, c_tks.get(rel.to).tp, lb, ub);
+            if (rel.from.equals(THIS)) {
+                network.addConstraint(tk.tp, c_tks.get(rel.to).tp, lb, ub);
+            } else {
+                network.addConstraint(c_tks.get(rel.from).tp, c_tks.get(rel.to).tp, lb, ub);
+            }
         }
 
         if (answer_context != null) {
