@@ -104,7 +104,7 @@ public class LessonManager implements TemporalListener {
         // we enforce the temporal relations..
         for (Relation rel : lesson_model.relations) {
             double lb = rel.lb != null ? TimeUnit.MILLISECONDS.convert(rel.lb, rel.unit) : Double.NEGATIVE_INFINITY;
-            double ub = rel.ub != null ? TimeUnit.MILLISECONDS.convert(rel.ub, rel.unit) : Double.NEGATIVE_INFINITY;
+            double ub = rel.ub != null ? TimeUnit.MILLISECONDS.convert(rel.ub, rel.unit) : Double.POSITIVE_INFINITY;
             if (rel.from.equals(THIS)) {
                 network.addConstraint(0, c_tks.get(rel.to).tp, lb, ub);
             } else {
@@ -134,7 +134,7 @@ public class LessonManager implements TemporalListener {
         // we enforce the temporal relations..
         for (Relation rel : tk.template.relations) {
             double lb = rel.lb != null ? TimeUnit.MILLISECONDS.convert(rel.lb, rel.unit) : Double.NEGATIVE_INFINITY;
-            double ub = rel.ub != null ? TimeUnit.MILLISECONDS.convert(rel.ub, rel.unit) : Double.NEGATIVE_INFINITY;
+            double ub = rel.ub != null ? TimeUnit.MILLISECONDS.convert(rel.ub, rel.unit) : Double.POSITIVE_INFINITY;
             if (rel.from.equals(THIS)) {
                 network.addConstraint(tk.tp, c_tks.get(rel.to).tp, lb, ub);
             } else {
