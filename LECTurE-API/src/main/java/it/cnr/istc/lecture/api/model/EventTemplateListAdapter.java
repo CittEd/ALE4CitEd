@@ -24,6 +24,7 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.bind.adapter.JsonbAdapter;
 
@@ -105,7 +106,7 @@ public class EventTemplateListAdapter implements JsonbAdapter<ArrayList<EventTem
             Condition execution_condition = et_object.containsKey("execution_condition") && !et_object.isNull("execution_condition") ? CONDITION_ADAPTER.adaptFromJson(et_object.getJsonObject("execution_condition")) : null;
             List<String> ids = new ArrayList<>(et_object.getJsonArray("ids").size());
             for (JsonValue id : et_object.getJsonArray("ids")) {
-                ids.add(id.toString());
+                ids.add(((JsonString) id).getString());
             }
             List<Relation> relations = new ArrayList<>(et_object.getJsonArray("relations").size());
             for (JsonValue rel_val : et_object.getJsonArray("relations")) {
