@@ -44,6 +44,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
@@ -70,6 +71,8 @@ public class MainController implements Initializable {
     @FXML
     private MenuItem new_user;
     @FXML
+    private Tab learn_tab;
+    @FXML
     private Accordion learn_accord;
     @FXML
     private ListView<Event> events;
@@ -90,6 +93,8 @@ public class MainController implements Initializable {
     @FXML
     private StackPane learning_pane;
     @FXML
+    private Tab teach_tab;
+    @FXML
     private Accordion teach_accord;
     @FXML
     private ListView<TeachingLessonContext> teaching_lessons;
@@ -103,6 +108,8 @@ public class MainController implements Initializable {
     private LessonController lesson_controller;
     private Pane student_pane;
     private StudentController student_controller;
+    @FXML
+    private Tab parameters_tab;
     @FXML
     private ToggleButton simulate_data;
     @FXML
@@ -135,6 +142,7 @@ public class MainController implements Initializable {
         new_user.disableProperty().bind(user.isNotNull());
         logout.disableProperty().bind(user.isNull());
 
+        learn_tab.setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.BOOK).color(Color.rgb(0, 0, 102)).size(20));
         learn_accord.setExpandedPane(learn_accord.getPanes().get(0));
 
         events.setItems(new SortedList<>(Context.getContext().eventsProperty(), (Event e0, Event e1) -> Long.compare(e0.time, e1.time)));
@@ -274,6 +282,7 @@ public class MainController implements Initializable {
             }
         });
 
+        teach_tab.setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.BULLHORN).color(Color.rgb(0, 0, 102)).size(20));
         teach_accord.setExpandedPane(teach_accord.getPanes().get(0));
         teaching_lessons.setItems(Context.getContext().teachingLessonsProperty());
         teaching_lessons.setCellFactory((ListView<TeachingLessonContext> param) -> new ListCell<TeachingLessonContext>() {
@@ -365,6 +374,7 @@ public class MainController implements Initializable {
             }
         });
 
+        parameters_tab.setGraphic(new Glyph("FontAwesome", FontAwesome.Glyph.STETHOSCOPE).color(Color.rgb(0, 0, 102)).size(20));
         simulate_data.graphicProperty().set(new Glyph("FontAwesome", FontAwesome.Glyph.RANDOM));
         simulate_data.disableProperty().bind(Context.getContext().userProperty().isNull());
         simulate_data.selectedProperty().addListener(random_data_generator);
