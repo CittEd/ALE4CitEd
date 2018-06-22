@@ -296,11 +296,11 @@ public class Context {
                     }
                     for (Map.Entry<String, Map<String, String>> par_val : newValue.par_values.entrySet()) {
                         Map<String, ParameterValue> c_vals = new HashMap<>();
-                        for (Map.Entry<String, String> val : par_val.getValue().entrySet()) {
+                        par_val.getValue().entrySet().forEach(val -> {
                             ParameterValue val_prop = new ParameterValue(par_val.getKey() + "." + val.getKey(), val.getValue());
                             c_vals.put(val.getKey(), val_prop);
                             par_values.add(val_prop);
-                        }
+                        });
                         par_vals.put(par_val.getKey(), c_vals);
                         // we broadcast the the new value of the parameter..
                         mqtt.publish(newValue.id + "/output/" + par_val.getKey(), JSONB.toJson(par_val.getValue()).getBytes(), 1, true);
@@ -317,7 +317,7 @@ public class Context {
 
         following_lessons.addListener((ListChangeListener.Change<? extends FollowingLessonContext> c) -> {
             while (c.next()) {
-                for (FollowingLessonContext flc : c.getAddedSubList()) {
+                c.getAddedSubList().forEach(flc -> {
                     id_following_lessons.put(flc.getLesson().id, flc);
                     flc.eventsProperty().addAll(flc.getLesson().events);
                     try {
@@ -332,8 +332,8 @@ public class Context {
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
-                }
-                for (FollowingLessonContext flc : c.getRemoved()) {
+                });
+                c.getRemoved().forEach(flc -> {
                     id_following_lessons.remove(flc.getLesson().id);
                     events.removeAll(flc.eventsProperty());
                     flc.eventsProperty().clear();
@@ -346,21 +346,21 @@ public class Context {
                             LOG.log(Level.SEVERE, null, ex);
                         }
                     }
-                }
+                });
             }
         });
 
         teachers.addListener((ListChangeListener.Change<? extends TeacherContext> c) -> {
             while (c.next()) {
-                for (TeacherContext tch_ctx : c.getAddedSubList()) {
+                c.getAddedSubList().forEach(tch_ctx -> {
                     try {
                         mqtt.subscribe(tch_ctx.getTeacher().id + "/output/on-line", (String topic, MqttMessage message) -> Platform.runLater(() -> tch_ctx.onlineProperty().set(Boolean.parseBoolean(new String(message.getPayload())))));
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                     id_teachers.put(tch_ctx.getTeacher().id, tch_ctx);
-                }
-                for (TeacherContext tch_ctx : c.getRemoved()) {
+                });
+                c.getRemoved().forEach(tch_ctx -> {
                     try {
                         if (mqtt.isConnected()) { // we might be removing teachers as a consequence of a connection loss..
                             mqtt.unsubscribe(tch_ctx.getTeacher().id + "/output/on-line");
@@ -369,13 +369,13 @@ public class Context {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                     id_teachers.remove(tch_ctx.getTeacher().id);
-                }
+                });
             }
         });
 
         teaching_lessons.addListener((ListChangeListener.Change<? extends TeachingLessonContext> c) -> {
             while (c.next()) {
-                for (TeachingLessonContext tlc : c.getAddedSubList()) {
+                c.getAddedSubList().forEach(tlc -> {
                     id_teaching_lessons.put(tlc.getLesson().id, tlc);
                     try {
                         // we subscribe to the lesson's time..
@@ -389,8 +389,8 @@ public class Context {
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
-                }
-                for (TeachingLessonContext tlc : c.getRemoved()) {
+                });
+                c.getRemoved().forEach(tlc -> {
                     id_teaching_lessons.remove(tlc.getLesson().id);
                     if (user.isNotNull().get() && mqtt.isConnected()) {
                         try {
@@ -401,7 +401,7 @@ public class Context {
                             LOG.log(Level.SEVERE, null, ex);
                         }
                     }
-                }
+                });
             }
         });
 
@@ -416,7 +416,7 @@ public class Context {
                         std_ctx.parameterTypesProperty().addListener((ListChangeListener.Change<? extends Parameter> c1) -> {
                             while (c1.next()) {
                                 // we subscribe to the new user's parameters..
-                                for (Parameter par : c1.getAddedSubList()) {
+                                c1.getAddedSubList().forEach(par -> {
                                     try {
                                         mqtt.subscribe(std_ctx.getStudent().id + "/output/" + par.name, (String topic, MqttMessage message) -> {
                                             Map<String, String> c_par_vals = JSONB.fromJson(new String(message.getPayload()), new HashMap<String, String>() {
@@ -426,16 +426,16 @@ public class Context {
                                     } catch (MqttException ex) {
                                         LOG.log(Level.SEVERE, null, ex);
                                     }
-                                }
+                                });
                                 // we unsubscribe from the removed parameters..
                                 if (mqtt.isConnected()) {
-                                    for (Parameter par : c1.getRemoved()) {
+                                    c1.getRemoved().forEach(par -> {
                                         try {
                                             mqtt.unsubscribe(student_id + "/output/" + par.name);
                                         } catch (MqttException ex) {
                                             LOG.log(Level.SEVERE, null, ex);
                                         }
-                                    }
+                                    });
                                 }
                             }
                         });
@@ -462,15 +462,13 @@ public class Context {
                                     throw new AssertionError(m.message_type.name());
                             }
                         });
-                        for (Map.Entry<String, Map<String, String>> par_val : std_ctx.getStudent().par_values.entrySet()) {
-                            std_ctx.setParameterValue(par_val.getKey(), par_val.getValue());
-                        }
+                        std_ctx.getStudent().par_values.entrySet().forEach(par_val -> std_ctx.setParameterValue(par_val.getKey(), par_val.getValue()));
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                     id_students.put(std_ctx.getStudent().id, std_ctx);
                 }
-                for (StudentContext std_ctx : c.getRemoved()) {
+                c.getRemoved().forEach(std_ctx -> {
                     try {
                         if (mqtt.isConnected()) {
                             mqtt.unsubscribe(std_ctx.getStudent().id + "/output/on-line");
@@ -480,18 +478,14 @@ public class Context {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                     id_students.remove(std_ctx.getStudent().id);
-                }
+                });
             }
         });
 
         par_types.addListener((ListChangeListener.Change<? extends Parameter> c) -> {
             while (c.next()) {
-                for (Parameter par : c.getAddedSubList()) {
-                    id_par_types.put(par.name, par);
-                }
-                for (Parameter par : c.getRemoved()) {
-                    id_par_types.remove(par.name);
-                }
+                c.getAddedSubList().forEach(par -> id_par_types.put(par.name, par));
+                c.getRemoved().forEach(par -> id_par_types.remove(par.name));
             }
         });
     }
@@ -531,9 +525,7 @@ public class Context {
     public void setParameterValue(String par_name, String sub_par, String value) {
         par_vals.get(par_name).get(sub_par).value.set(value);
         Map<String, String> val = new HashMap<>();
-        for (Map.Entry<String, ParameterValue> v_val : par_vals.get(par_name).entrySet()) {
-            val.put(v_val.getKey(), v_val.getValue().value.get());
-        }
+        par_vals.get(par_name).entrySet().forEach(v_val -> val.put(v_val.getKey(), v_val.getValue().value.get()));
         try {
             mqtt.publish(user.get().id + "/output/" + par_name, JSONB.toJson(val).getBytes(), 1, true);
         } catch (MqttException ex) {
