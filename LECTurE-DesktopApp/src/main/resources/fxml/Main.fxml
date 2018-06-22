@@ -44,7 +44,7 @@
         </MenuBar>
         <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
             <tabs>
-                <Tab text="%LEARN">
+                <Tab fx:id="learn_tab" text="%LEARN">
                     <content>
                         <HBox spacing="10.0">
                             <children>
@@ -98,7 +98,7 @@
                         </HBox>
                     </content>
                 </Tab>
-                <Tab text="%TEACH">
+                <Tab fx:id="teach_tab" text="%TEACH">
                     <content>
                         <HBox spacing="10.0">
                             <children>
@@ -143,7 +143,7 @@
                         </HBox>
                     </content>
                 </Tab>
-                <Tab text="%PARAMETERS">
+                <Tab fx:id="parameters_tab" text="%PARAMETERS">
                     <content>
                         <VBox>
                             <children>
