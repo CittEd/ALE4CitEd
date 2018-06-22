@@ -347,7 +347,7 @@ public class LessonController implements Initializable {
                     if (et instanceof TextEventTemplate) {
                         setText(((TextEventTemplate) et).content);
                     } else if (et instanceof URLEventTemplate) {
-                        setText(((URLEventTemplate) et).url);
+                        setText(((URLEventTemplate) et).content);
                     } else if (et instanceof QuestionEventTemplate) {
                         setText(((QuestionEventTemplate) et).question);
                     }
