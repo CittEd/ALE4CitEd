@@ -337,7 +337,7 @@ public class Context {
                     id_following_lessons.remove(flc.getLesson().id);
                     events.removeAll(flc.eventsProperty());
                     flc.eventsProperty().clear();
-                    if (user.isNotNull().get()) {
+                    if (user.isNotNull().get() && mqtt.isConnected()) {
                         try {
                             // we subscribe from the lesson's time and state..
                             mqtt.unsubscribe(user.get().id + "/input/lesson-" + flc.getLesson().id + "/time");
@@ -362,7 +362,9 @@ public class Context {
                 }
                 for (TeacherContext tch_ctx : c.getRemoved()) {
                     try {
-                        mqtt.unsubscribe(tch_ctx.getTeacher().id + "/output/on-line");
+                        if (mqtt.isConnected()) { // we might be removing teachers as a consequence of a connection loss..
+                            mqtt.unsubscribe(tch_ctx.getTeacher().id + "/output/on-line");
+                        }
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
@@ -390,7 +392,7 @@ public class Context {
                 }
                 for (TeachingLessonContext tlc : c.getRemoved()) {
                     id_teaching_lessons.remove(tlc.getLesson().id);
-                    if (user.isNotNull().get()) {
+                    if (user.isNotNull().get() && mqtt.isConnected()) {
                         try {
                             // we unsubscribe from the lesson's time and state..
                             mqtt.unsubscribe(user.get().id + "/input/lesson-" + tlc.getLesson().id + "/time");
@@ -426,11 +428,13 @@ public class Context {
                                     }
                                 }
                                 // we unsubscribe from the removed parameters..
-                                for (Parameter par : c1.getRemoved()) {
-                                    try {
-                                        mqtt.unsubscribe(student_id + "/output/" + par.name);
-                                    } catch (MqttException ex) {
-                                        LOG.log(Level.SEVERE, null, ex);
+                                if (mqtt.isConnected()) {
+                                    for (Parameter par : c1.getRemoved()) {
+                                        try {
+                                            mqtt.unsubscribe(student_id + "/output/" + par.name);
+                                        } catch (MqttException ex) {
+                                            LOG.log(Level.SEVERE, null, ex);
+                                        }
                                     }
                                 }
                             }
@@ -468,7 +472,9 @@ public class Context {
                 }
                 for (StudentContext std_ctx : c.getRemoved()) {
                     try {
-                        mqtt.unsubscribe(std_ctx.getStudent().id + "/output/on-line");
+                        if (mqtt.isConnected()) {
+                            mqtt.unsubscribe(std_ctx.getStudent().id + "/output/on-line");
+                        }
                         std_ctx.parameterTypesProperty().clear();
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
