@@ -180,6 +180,10 @@ public class TemporalNetwork {
                 System.arraycopy(vals, 0, tp_vals, 0, vals.length);
                 vals = tp_vals;
 
+                TemporalConstraintList[] tp_watches = new TemporalConstraintList[capacity];
+                System.arraycopy(watches, 0, tp_watches, 0, watches.length);
+                watches = tp_watches;
+
                 double[][] tp_dist = new double[capacity][capacity];
                 for (int i = 0; i < dist.length; i++) {
                     System.arraycopy(dist[i], 0, tp_dist[i], 0, dist[i].length);
