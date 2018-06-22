@@ -1,25 +1,25 @@
 {
     "name": "Madonnas",
     "roles": [
-        "Art expert",
-        "Architecture expert"
+        "Esperto d'arte",
+        "Esperto d'architettura"
     ],
     "events": [
         {
             "type": "URLEventTemplate",
             "name": "m_01",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
             "relations": [],
-            "content": "The location of Madonnas",
+            "content": "Posizione delle Madonne",
             "url": "https://www.info.roma.it/monumenti.asp?categorie_monumenti=edicole%20sacre"
         },
         {
             "type": "URLEventTemplate",
             "name": "m_02",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -30,7 +30,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_1",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -41,7 +41,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_2",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -52,7 +52,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_3",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -63,7 +63,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_4",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -74,7 +74,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_5",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -85,7 +85,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_6",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -96,7 +96,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_7",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -107,7 +107,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_8",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -118,7 +118,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_9",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -129,7 +129,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_10",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -140,7 +140,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_11",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -151,7 +151,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_12",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -162,7 +162,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_13",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -173,7 +173,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_14",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -184,7 +184,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_15",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -195,7 +195,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_16",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -206,7 +206,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_17",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -217,7 +217,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_18",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -228,7 +228,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_19",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -239,7 +239,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_20",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -250,7 +250,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_21",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -261,7 +261,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_22",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -272,7 +272,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_23",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -283,7 +283,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_24",
-            "role": "Architecture expert",
+            "role": "Esperto d'architettura",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -294,7 +294,7 @@
         {
             "type": "URLEventTemplate",
             "name": "m_25",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -305,15 +305,15 @@
         {
             "type": "QuestionEventTemplate",
             "name": "art_question_1",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
             "relations": [],
-            "question": "Do you want to continue?",
+            "question": "Vuoi continuare?",
             "answers": [
                 {
-                    "answer": "Yes",
+                    "answer": "Sì",
                     "event": "art_question_1_answer_yes"
                 },
                 {
@@ -325,7 +325,7 @@
         {
             "type": "EventTemplate",
             "name": "art_question_1_answer_yes",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": ["m7", "m9"],
@@ -348,7 +348,7 @@
         {
             "type": "EventTemplate",
             "name": "art_question_1_answer_no",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": ["not_too_far", "m11"],
@@ -371,7 +371,7 @@
         {
             "type": "TextEventTemplate",
             "name": "not_too_far",
-            "role": "Art expert",
+            "role": "Esperto d'arte",
             "trigger_condition": null,
             "execution_condition": null,
             "ids": [],
@@ -380,24 +380,18 @@
         }
     ],
     "ids": [
-        "m_00",
         "m_01",
+        "m_02",
         "m_1",
         "m_2",
         "m_3",
         "m_4",
         "m_5",
         "m_6",
+        "art_question_1",
         "not_too_far"
     ],
     "relations": [
-        {
-            "from": "this",
-            "to": "m_00",
-            "lb": 6,
-            "ub": 10,
-            "unit": "SECONDS"
-        },
         {
             "from": "this",
             "to": "m_01",
@@ -406,7 +400,14 @@
             "unit": "SECONDS"
         },
         {
-            "from": "m_00",
+            "from": "this",
+            "to": "m_02",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_01",
             "to": "m_1",
             "lb": 4,
             "ub": 10,
@@ -427,7 +428,14 @@
             "unit": "SECONDS"
         },
         {
-            "from": "m_01",
+            "from": "m_5",
+            "to": "art_question_1",
+            "lb": 26,
+            "ub": 50,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "m_02",
             "to": "m_2",
             "lb": 5,
             "ub": 10,
