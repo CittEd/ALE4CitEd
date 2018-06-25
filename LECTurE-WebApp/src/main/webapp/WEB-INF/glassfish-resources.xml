@@ -12,4 +12,9 @@
     <jdbc-resource enabled="true" jndi-name="java:app/jdbc/LECTurE-DataSource" object-type="user" pool-name="LECTurE-ConnectionPool">
         <description/>
     </jdbc-resource>
+    <custom-resource res-type="java.util.Properties" jndi-name="java:app/config" factory-class="org.glassfish.resources.custom.factory.PropertiesFactory">
+        <property name="mqtt-host" value="localhost" />
+        <property name="mqtt-port" value="1883" />
+        <property name="mqtt-server-id" value="LECTurE-Server" />
+    </custom-resource>
 </resources>

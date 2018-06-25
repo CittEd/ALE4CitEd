@@ -46,7 +46,6 @@ import it.cnr.istc.lecture.webapp.entities.UserEntity;
 import it.cnr.istc.lecture.webapp.solver.LessonManager;
 import it.cnr.istc.lecture.webapp.solver.LessonManagerListener;
 import it.cnr.istc.lecture.webapp.solver.SolverToken;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +59,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.Lock;
@@ -98,7 +98,8 @@ public class LECTurEBean {
 
     private static final Logger LOG = Logger.getLogger(LECTurEBean.class.getName());
     public static final Jsonb JSONB = JsonbBuilder.create();
-    private final Properties properties = new Properties();
+    @Resource(name = "java:app/config")
+    private Properties properties;
     private BrokerService broker;
     private MqttClient mqtt;
     /**
@@ -128,15 +129,6 @@ public class LECTurEBean {
     private void startup() {
         LOG.info("Starting LECTurE Server");
 
-        try {
-            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties"));
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-        final String mqtt_host = properties.getProperty("mqtt-host", "localhost");
-        final String mqtt_port = properties.getProperty("mqtt-port", "1883");
-        final String mqtt_server_id = properties.getProperty("mqtt-server-id", "LECTurE-Server");
-
         // we init the current state..
         for (UserEntity ue : em.createQuery("SELECT u FROM UserEntity u", UserEntity.class).getResultList()) {
             newUser(ue.getId());
@@ -146,7 +138,7 @@ public class LECTurEBean {
         broker = new BrokerService();
         broker.setPersistent(false);
         try {
-            TransportConnector connector = broker.addConnector(UriBuilder.fromUri("mqtt://" + mqtt_host + ":" + mqtt_port).build());
+            TransportConnector connector = broker.addConnector(UriBuilder.fromUri("mqtt://" + properties.getProperty("mqtt-host") + ":" + properties.getProperty("mqtt-port")).build());
             connector.setAllowLinkStealing(true);
             broker.setPlugins(new BrokerPlugin[]{new BrokerPlugin() {
                 @Override
@@ -155,7 +147,7 @@ public class LECTurEBean {
                         @Override
                         public void addConnection(ConnectionContext context, ConnectionInfo info) throws Exception {
                             LOG.log(Level.INFO, "New connection: {0}", info.getClientId());
-                            if (!info.getClientId().equals(mqtt_server_id)) {
+                            if (!info.getClientId().equals(properties.getProperty("mqtt-server-id"))) {
                                 long user_id = Long.parseLong(info.getClientId());
                                 setOnline(user_id, true);
                                 mqtt.publish(user_id + "/output/on-line", Boolean.TRUE.toString().getBytes(), 1, true);
@@ -186,7 +178,7 @@ public class LECTurEBean {
                         @Override
                         public void removeConnection(ConnectionContext context, ConnectionInfo info, Throwable error) throws Exception {
                             LOG.log(Level.INFO, "Lost connection: {0}", info.getClientId());
-                            if (!info.getClientId().equals(mqtt_server_id)) {
+                            if (!info.getClientId().equals(properties.getProperty("mqtt-server-id"))) {
                                 long user_id = Long.parseLong(info.getClientId());
                                 setOnline(user_id, false);
                                 mqtt.unsubscribe(user_id + "/output");
@@ -201,7 +193,7 @@ public class LECTurEBean {
             broker.start();
 
             // we connect an MQTT client..
-            mqtt = new MqttClient("tcp://" + mqtt_host + ":" + mqtt_port, mqtt_server_id, new MemoryPersistence());
+            mqtt = new MqttClient("tcp://" + properties.getProperty("mqtt-host") + ":" + properties.getProperty("mqtt-port"), properties.getProperty("mqtt-server-id"), new MemoryPersistence());
             mqtt.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
