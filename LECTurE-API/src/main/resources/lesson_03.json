@@ -1,0 +1,434 @@
+{
+    "name": "Madonnelle",
+    "roles": [
+        "Interesse architettonico/urbanisitco",
+        "Interesse religioso"
+    ],
+    "events": [
+        {
+            "type": "URLEventTemplate",
+            "name": "info_0",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Informazioni generali su madonnelle.",
+            "url": "https://www.comune.roma.it/pcr/it/newsview.page?contentId=NEW406023"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "info_1",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Informazioni generali su madonnelle.",
+            "url": "https://www.comune.roma.it/pcr/it/newsview.page?contentId=NEW406023"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_00",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna del Rosario.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=748"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_01",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna del Rosario.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=748"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_10",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola Sacra.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=8050"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_11",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola Sacra.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=8050"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_20",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna del Buon Cuore.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=737"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_21",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna del Buon Cuore.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=737"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_30",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna del Buon Cuore.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=363"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_31",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna del Buon Cuore.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=363"
+        },
+        {
+            "type": "QuestionEventTemplate",
+            "name": "eng_q_0",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "question": "Come sta andando?",
+            "answers": [
+                {
+                    "answer": "Bene",
+                    "event": "eng_q_0_ok"
+                },
+                {
+                    "answer": "Insomma",
+                    "event": null
+                },
+                {
+                    "answer": "Non bene",
+                    "event": "eng_q_0_not_ok"
+                }
+            ]
+        },
+        {
+            "type": "EventTemplate",
+            "name": "eng_q_0_ok",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": ["std_40", "std_50"],
+            "relations": [
+                {
+                    "from": "this",
+                    "to": "std_40",
+                    "lb": 16,
+                    "ub": 30,
+                    "unit": "SECONDS"
+                },
+                {
+                    "from": "std_40",
+                    "to": "std_50",
+                    "lb": 24,
+                    "ub": 40,
+                    "unit": "SECONDS"
+                }]
+        },
+        {
+            "type": "EventTemplate",
+            "name": "eng_q_0_not_ok",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": ["arc_0", "arc_1", "arc_2"],
+            "relations": [
+                {
+                    "from": "this",
+                    "to": "arc_0",
+                    "lb": 16,
+                    "ub": 30,
+                    "unit": "SECONDS"
+                },
+                {
+                    "from": "arc_0",
+                    "to": "arc_1",
+                    "lb": 24,
+                    "ub": 40,
+                    "unit": "SECONDS"
+                },
+                {
+                    "from": "arc_1",
+                    "to": "arc_2",
+                    "lb": 32,
+                    "ub": 40,
+                    "unit": "SECONDS"
+                }]
+        },
+        {
+            "type": "QuestionEventTemplate",
+            "name": "eng_q_1",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "question": "Come sta andando?",
+            "answers": [
+                {
+                    "answer": "Bene",
+                    "event": "eng_q_1_ok"
+                },
+                {
+                    "answer": "Insomma",
+                    "event": null
+                },
+                {
+                    "answer": "Non bene",
+                    "event": "eng_q_1_not_ok"
+                }
+            ]
+        },
+        {
+            "type": "EventTemplate",
+            "name": "eng_q_1_ok",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": ["std_41", "std_51"],
+            "relations": [
+                {
+                    "from": "this",
+                    "to": "std_41",
+                    "lb": 16,
+                    "ub": 30,
+                    "unit": "SECONDS"
+                },
+                {
+                    "from": "std_41",
+                    "to": "std_51",
+                    "lb": 24,
+                    "ub": 40,
+                    "unit": "SECONDS"
+                }]
+        },
+        {
+            "type": "EventTemplate",
+            "name": "eng_q_1_not_ok",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": ["rel_0"],
+            "relations": [
+                {
+                    "from": "this",
+                    "to": "rel_0",
+                    "lb": 16,
+                    "ub": 30,
+                    "unit": "SECONDS"
+                }]
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_40",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna dell'accoglienza.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=11226"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_41",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Madonna dell'accoglienza.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=11226"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_50",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola del Monte di Pieta'.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1006"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "std_51",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Edicola del Monte di Pieta'.",
+            "url": "https://www.info.roma.it/monumenti_dettaglio.asp?ID_schede=1006"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "arc_0",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Largo del Pallaro.",
+            "url": "https://www.romasegreta.it/parione/largo-del-pallaro.html"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "arc_1",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Via degli Uffici del Vicario.",
+            "url": "https://www.romasegreta.it/colonna/via-degli-uffici-del-vicario.html"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "arc_2",
+            "role": "Interesse architettonico/urbanisitco",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Via della Posta Vecchia.",
+            "url": "https://www.romasegreta.it/parione/via-della-posta-vecchia.html"
+        },
+        {
+            "type": "URLEventTemplate",
+            "name": "rel_0",
+            "role": "Interesse religioso",
+            "trigger_condition": null,
+            "execution_condition": null,
+            "ids": [],
+            "relations": [],
+            "content": "Le Madonnelle Prodigiose.",
+            "url": "http://roma.andreapollett.com/S2/romac13i.htm"
+        }
+    ],
+    "ids": ["info_0", "info_1", "std_00", "std_01", "std_10", "std_11", "std_20", "std_21", "std_30", "std_31", "eng_q_0", "eng_q_1"],
+    "relations": [
+        {
+            "from": "this",
+            "to": "info_0",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "this",
+            "to": "info_1",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "info_0",
+            "to": "std_00",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "info_1",
+            "to": "std_01",
+            "lb": 6,
+            "ub": 10,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_00",
+            "to": "std_10",
+            "lb": 16,
+            "ub": 20,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_01",
+            "to": "std_11",
+            "lb": 16,
+            "ub": 20,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_10",
+            "to": "std_20",
+            "lb": 26,
+            "ub": 30,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_11",
+            "to": "std_21",
+            "lb": 26,
+            "ub": 30,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_20",
+            "to": "std_30",
+            "lb": 16,
+            "ub": 20,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_21",
+            "to": "std_31",
+            "lb": 16,
+            "ub": 20,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_30",
+            "to": "eng_q_0",
+            "lb": 32,
+            "ub": 50,
+            "unit": "SECONDS"
+        },
+        {
+            "from": "std_31",
+            "to": "eng_q_1",
+            "lb": 32,
+            "ub": 50,
+            "unit": "SECONDS"
+        }
+    ]
+}
