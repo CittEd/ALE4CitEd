@@ -182,8 +182,8 @@ public class LessonController implements Initializable {
                 for (int i = 0; i < tokens.getItemCount(); i++) {
                     if (((TokenXYDataItem) tokens.getDataItem(i)).t == tk_row) {
                         tokens.remove(i);
+                        break;
                     }
-                    break;
                 }
             });
         }
