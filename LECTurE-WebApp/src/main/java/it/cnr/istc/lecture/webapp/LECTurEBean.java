@@ -364,6 +364,8 @@ public class LECTurEBean {
             public void executeToken(SolverToken tk) {
                 String tk_json = null;
                 switch (tk.template.type) {
+                    case EventTemplate: // nothing to do..
+                        break;
                     case TextEventTemplate:
                         TextEvent te = new TextEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((TextEventTemplate) tk.template).content);
                         lesson.events.add(te);
