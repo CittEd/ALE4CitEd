@@ -48,7 +48,7 @@
                 <TableColumn fx:id="min_column" prefWidth="75.0" text="%MIN" />
                 <TableColumn fx:id="max_column" prefWidth="75.0" text="%MAX" />
                 <TableColumn fx:id="id_column" prefWidth="75.0" text="%ID" />
-                <TableColumn fx:id="role_column" prefWidth="75.0" text="%ROLE" />
+                <TableColumn fx:id="role_column" prefWidth="75.0" text="%STUDENT" />
                 <TableColumn fx:id="subject_column" prefWidth="75.0" text="%SUBJECT" />
             </columns>
             <columnResizePolicy>

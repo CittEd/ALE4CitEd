@@ -320,7 +320,7 @@ public class LessonController implements Initializable {
                 } else {
                     EventTemplate et = l_ctx.get().getModel().events.get(getIndex());
                     StudentContext student_ctx = Context.getContext().getStudentContext(l_ctx.get().getLesson().roles.get(et.role));
-                    setText(et.role + " (" + student_ctx.getStudent().first_name + " " + student_ctx.getStudent().last_name + ")");
+                    setText(student_ctx.getStudent().first_name + " " + student_ctx.getStudent().last_name);
 
                     TokenRow row = getTableView().getItems().get(getIndex());
                     styleProperty().bind(Bindings.createStringBinding(() -> {
