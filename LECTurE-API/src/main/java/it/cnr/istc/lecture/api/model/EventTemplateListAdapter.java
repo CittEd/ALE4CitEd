@@ -67,6 +67,7 @@ public class EventTemplateListAdapter implements JsonbAdapter<ArrayList<EventTem
                     rel_builder.add("ub", rel.ub);
                 }
                 rel_builder.add("unit", rel.unit.name());
+                rels_builder.add(rel_builder);
             }
             et_object.add("relations", rels_builder);
             switch (et.type) {
