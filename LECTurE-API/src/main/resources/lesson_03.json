@@ -1,9 +1,6 @@
 {
     "name": "Madonnelle",
-    "roles": [
-        "Interesse architettonico/urbanisitco",
-        "Interesse religioso"
-    ],
+    "roles": ["Interesse architettonico/urbanisitco", "Interesse religioso"],
     "events": [
         {
             "type": "URLEventTemplate",
@@ -131,7 +128,7 @@
                 },
                 {
                     "answer": "Insomma",
-                    "event": null
+                    "event": "eng_q_0_insomma"
                 },
                 {
                     "answer": "Non bene",
@@ -208,7 +205,7 @@
                 },
                 {
                     "answer": "Insomma",
-                    "event": null
+                    "event": "eng_q_1_insomma"
                 },
                 {
                     "answer": "Non bene",
