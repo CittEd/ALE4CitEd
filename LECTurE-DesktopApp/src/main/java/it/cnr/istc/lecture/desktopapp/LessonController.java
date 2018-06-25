@@ -318,11 +318,11 @@ public class LessonController implements Initializable {
                     styleProperty().unbind();
                     setStyle("");
                 } else {
-                    EventTemplate et = l_ctx.get().getModel().events.get(getIndex());
+                    TokenRow row = getTableView().getItems().get(getIndex());
+                    EventTemplate et = l_ctx.get().getModel().events.stream().filter(evt -> evt.name.equals(row.getName())).findAny().get();
                     StudentContext student_ctx = Context.getContext().getStudentContext(l_ctx.get().getLesson().roles.get(et.role));
                     setText(student_ctx.getStudent().first_name + " " + student_ctx.getStudent().last_name);
 
-                    TokenRow row = getTableView().getItems().get(getIndex());
                     styleProperty().bind(Bindings.createStringBinding(() -> {
                         if (row.getExecuted()) {
                             return "-fx-font-weight: bold;";
@@ -343,7 +343,8 @@ public class LessonController implements Initializable {
                     styleProperty().unbind();
                     setStyle("");
                 } else {
-                    EventTemplate et = l_ctx.get().getModel().events.get(getIndex());
+                    TokenRow row = getTableView().getItems().get(getIndex());
+                    EventTemplate et = l_ctx.get().getModel().events.stream().filter(evt -> evt.name.equals(row.getName())).findAny().get();
                     if (et instanceof TextEventTemplate) {
                         setText(((TextEventTemplate) et).content);
                     } else if (et instanceof URLEventTemplate) {
@@ -352,7 +353,6 @@ public class LessonController implements Initializable {
                         setText(((QuestionEventTemplate) et).question);
                     }
 
-                    TokenRow row = getTableView().getItems().get(getIndex());
                     styleProperty().bind(Bindings.createStringBinding(() -> {
                         if (row.getExecuted()) {
                             return "-fx-font-weight: bold;";
