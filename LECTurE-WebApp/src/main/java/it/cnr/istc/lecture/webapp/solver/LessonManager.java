@@ -126,7 +126,7 @@ public class LessonManager implements TemporalListener {
         for (String id : tk.template.ids) {
             SolverToken c_tk = new SolverToken(tk, network.newTimePoint(), event_templates.get(id), null);
             tokens.add(c_tk);
-            listeners.forEach(l -> l.newToken(tk));
+            listeners.forEach(l -> l.newToken(c_tk));
             c_tks.put(id, c_tk);
             prop_q.push(c_tk);
         }
