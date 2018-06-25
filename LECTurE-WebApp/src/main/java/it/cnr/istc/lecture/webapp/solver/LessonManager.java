@@ -173,9 +173,7 @@ public class LessonManager implements TemporalListener {
                 tks = new ArrayList<>();
                 at.put(pulse, tks);
             }
-            if (tk.template.type != EventTemplate.EventTemplateType.EventTemplate) {
-                tks.add(tk);
-            }
+            tks.add(tk);
         });
         Long[] c_arr_pulses = c_pulses.toArray(new Long[c_pulses.size()]);
         Arrays.sort(c_arr_pulses);

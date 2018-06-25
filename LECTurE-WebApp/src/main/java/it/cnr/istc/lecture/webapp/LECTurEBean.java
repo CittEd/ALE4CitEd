@@ -37,6 +37,7 @@ import it.cnr.istc.lecture.api.messages.TextEvent;
 import it.cnr.istc.lecture.api.messages.Token;
 import it.cnr.istc.lecture.api.messages.TokenUpdate;
 import it.cnr.istc.lecture.api.messages.URLEvent;
+import it.cnr.istc.lecture.api.model.EventTemplate;
 import it.cnr.istc.lecture.api.model.LessonModel;
 import it.cnr.istc.lecture.api.model.QuestionEventTemplate;
 import it.cnr.istc.lecture.api.model.TextEventTemplate;
@@ -362,31 +363,33 @@ public class LECTurEBean {
 
             @Override
             public void executeToken(SolverToken tk) {
-                String tk_json = null;
-                switch (tk.template.type) {
-                    case TextEventTemplate:
-                        TextEvent te = new TextEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((TextEventTemplate) tk.template).content);
-                        lesson.events.add(te);
-                        tk_json = JSONB.toJson(te);
-                        break;
-                    case URLEventTemplate:
-                        URLEvent ue = new URLEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url);
-                        lesson.events.add(ue);
-                        tk_json = JSONB.toJson(ue);
-                        break;
-                    case QuestionEventTemplate:
-                        QuestionEvent qe = new QuestionEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null);
-                        lesson.events.add(qe);
-                        tk_json = JSONB.toJson(qe);
-                        break;
-                    default:
-                        throw new AssertionError(tk.template.type.name());
-                }
-                try {
-                    // we notify the student associated to the token's role that a token has to be executed..
-                    mqtt.publish(lesson.roles.get(tk.template.role) + "/input", tk_json.getBytes(), 1, false);
-                } catch (MqttException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
+                if (tk.template.type != EventTemplate.EventTemplateType.EventTemplate) {
+                    String tk_json = null;
+                    switch (tk.template.type) {
+                        case TextEventTemplate:
+                            TextEvent te = new TextEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((TextEventTemplate) tk.template).content);
+                            lesson.events.add(te);
+                            tk_json = JSONB.toJson(te);
+                            break;
+                        case URLEventTemplate:
+                            URLEvent ue = new URLEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url);
+                            lesson.events.add(ue);
+                            tk_json = JSONB.toJson(ue);
+                            break;
+                        case QuestionEventTemplate:
+                            QuestionEvent qe = new QuestionEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null);
+                            lesson.events.add(qe);
+                            tk_json = JSONB.toJson(qe);
+                            break;
+                        default:
+                            throw new AssertionError(tk.template.type.name());
+                    }
+                    try {
+                        // we notify the student associated to the token's role that a token has to be executed..
+                        mqtt.publish(lesson.roles.get(tk.template.role) + "/input", tk_json.getBytes(), 1, false);
+                    } catch (MqttException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
 
