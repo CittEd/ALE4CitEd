@@ -16,6 +16,9 @@
  */
 package it.cnr.istc.lecture.api.messages;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  *
  * @author Riccardo De Benedictis
@@ -25,18 +28,20 @@ public abstract class Event extends Message {
     public EventType event_type;
     public long lesson_id;
     public int event_id;
-    public String role;
+    public ArrayList<Long> targets;
     public long time;
 
     public Event() {
     }
 
-    public Event(EventType event_type, long lesson_id, int event_id, String role, long time) {
+    public Event(EventType event_type, long lesson_id, int event_id, Collection<Long> targets, long time) {
         super(MessageType.Event);
         this.event_type = event_type;
         this.lesson_id = lesson_id;
         this.event_id = event_id;
-        this.role = role;
+        if (targets != null) {
+            this.targets = new ArrayList<>(targets);
+        }
         this.time = time;
     }
 

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -45,14 +46,16 @@ public class UserEntity implements Serializable {
     private String password;
     private String first_name;
     private String last_name;
+    @ElementCollection
+    private final Collection<String> interests = new ArrayList<>();
     @ManyToMany
     private final Collection<UserEntity> teachers = new ArrayList<>();
     @ManyToMany(mappedBy = "teachers")
     private final Collection<UserEntity> students = new ArrayList<>();
     @OneToMany(mappedBy = "teacher")
     private final Collection<LessonEntity> lessons = new ArrayList<>();
-    @OneToMany(mappedBy = "student")
-    private List<RoleEntity> roles;
+    @ManyToMany(mappedBy = "students")
+    private List<LessonEntity> followedLessons;
     @OneToMany
     private final Collection<LessonModelEntity> models = new ArrayList<>();
 
@@ -92,6 +95,18 @@ public class UserEntity implements Serializable {
         this.last_name = last_name;
     }
 
+    public Collection<String> getInterests() {
+        return Collections.unmodifiableCollection(interests);
+    }
+
+    public void addInterest(String interest) {
+        interests.add(interest);
+    }
+
+    public void removeInterest(String interest) {
+        interests.remove(interest);
+    }
+
     public Collection<UserEntity> getTeachers() {
         return Collections.unmodifiableCollection(teachers);
     }
@@ -128,16 +143,16 @@ public class UserEntity implements Serializable {
         lessons.remove(lesson);
     }
 
-    public Collection<RoleEntity> getRoles() {
-        return Collections.unmodifiableCollection(roles);
+    public Collection<LessonEntity> getFollowedLessons() {
+        return Collections.unmodifiableCollection(followedLessons);
     }
 
-    public void addRole(RoleEntity role) {
-        roles.add(role);
+    public void addFollowedLesson(LessonEntity role) {
+        followedLessons.add(role);
     }
 
-    public void removeRole(RoleEntity role) {
-        roles.remove(role);
+    public void removeFollowedLesson(LessonEntity role) {
+        followedLessons.remove(role);
     }
 
     public Collection<LessonModelEntity> getModels() {

@@ -18,6 +18,8 @@ package it.cnr.istc.lecture.api.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.json.bind.annotation.JsonbTypeAdapter;
 
 /**
@@ -44,5 +46,11 @@ public class LessonModel {
         this.events = new ArrayList<>(events);
         this.ids = new ArrayList<>(ids);
         this.relations = new ArrayList<>(relations);
+    }
+
+    public Set<String> getTopics() {
+        Set<String> topics = new HashSet<>();
+        events.forEach(e -> topics.addAll(e.topics));
+        return topics;
     }
 }

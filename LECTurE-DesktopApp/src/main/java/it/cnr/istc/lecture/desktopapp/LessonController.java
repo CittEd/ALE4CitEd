@@ -17,6 +17,7 @@
 package it.cnr.istc.lecture.desktopapp;
 
 import it.cnr.istc.lecture.api.Lesson.LessonState;
+import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.model.EventTemplate;
 import it.cnr.istc.lecture.api.model.QuestionEventTemplate;
 import it.cnr.istc.lecture.api.model.TextEventTemplate;
@@ -29,6 +30,7 @@ import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -320,8 +322,8 @@ public class LessonController implements Initializable {
                 } else {
                     TokenRow row = getTableView().getItems().get(getIndex());
                     EventTemplate et = l_ctx.get().getModel().events.stream().filter(evt -> evt.name.equals(row.getName())).findAny().get();
-                    StudentContext student_ctx = Context.getContext().getStudentContext(l_ctx.get().getLesson().roles.get(et.role));
-                    setText(student_ctx.getStudent().first_name + " " + student_ctx.getStudent().last_name);
+                    List<User> target_students = l_ctx.get().getLesson().students.stream().map(std_id -> Context.getContext().getStudentContext(std_id).getStudent()).filter(std -> et.topics.stream().anyMatch(topic -> (std.interests.contains(topic)))).collect(Collectors.toList());
+                    setText(et.topics.stream().collect(Collectors.joining(", ")) + " (" + target_students.stream().map(std -> std.first_name + " " + std.last_name).collect(Collectors.joining(", ")) + ")");
 
                     styleProperty().bind(Bindings.createStringBinding(() -> {
                         if (row.getExecuted()) {

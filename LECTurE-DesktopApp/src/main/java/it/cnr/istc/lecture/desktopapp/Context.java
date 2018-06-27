@@ -573,15 +573,15 @@ public class Context {
         return models;
     }
 
-    public void addLesson(String lesson_name, LessonModel model, Map<String, Long> roles) {
+    public void addLesson(String lesson_name, LessonModel model, Collection<Long> students) {
         // we create a new lesson..
         NewLessonRequest new_lesson;
         Lesson lesson;
         if (model.id != null) {
-            new_lesson = new NewLessonRequest(user.get().id, lesson_name, model.id, roles);
+            new_lesson = new NewLessonRequest(user.get().id, lesson_name, model.id, students);
             lesson = target.path("new_lesson_by_model_id").request(MediaType.APPLICATION_JSON).post(Entity.json(new_lesson), Lesson.class);
         } else {
-            new_lesson = new NewLessonRequest(user.get().id, lesson_name, model, roles);
+            new_lesson = new NewLessonRequest(user.get().id, lesson_name, model, students);
             lesson = target.path("new_lesson_by_model").request(MediaType.APPLICATION_JSON).post(Entity.json(new_lesson), Lesson.class);
         }
         teaching_lessons.add(new TeachingLessonContext(lesson, model));

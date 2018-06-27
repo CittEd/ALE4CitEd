@@ -20,8 +20,6 @@ import it.cnr.istc.lecture.api.messages.Event;
 import it.cnr.istc.lecture.api.messages.Token;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import javax.json.bind.annotation.JsonbTypeAdapter;
 
 /**
@@ -36,7 +34,7 @@ public class Lesson {
     public LessonState state;
     public long time;
     public Long model;
-    public HashMap<String, Long> roles;
+    public ArrayList<Long> students;
     @JsonbTypeAdapter(EventListAdapter.class)
     public ArrayList<Event> events;
     public ArrayList<Token> tokens;
@@ -44,14 +42,16 @@ public class Lesson {
     public Lesson() {
     }
 
-    public Lesson(long id, long teacher_id, String name, LessonState state, long time, Long model, Map<String, Long> roles, Collection<Event> events, Collection<Token> tokens) {
+    public Lesson(long id, long teacher_id, String name, LessonState state, long time, Long model, Collection<Long> students, Collection<Event> events, Collection<Token> tokens) {
         this.id = id;
         this.teacher_id = teacher_id;
         this.name = name;
         this.state = state;
         this.time = time;
         this.model = model;
-        this.roles = new HashMap<>(roles);
+        if (students != null) {
+            this.students = new ArrayList<>(students);
+        }
         if (events != null) {
             this.events = new ArrayList<>(events);
         }

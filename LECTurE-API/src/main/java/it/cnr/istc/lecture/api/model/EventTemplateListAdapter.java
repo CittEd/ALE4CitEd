@@ -19,6 +19,7 @@ package it.cnr.istc.lecture.api.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -43,18 +44,14 @@ public class EventTemplateListAdapter implements JsonbAdapter<ArrayList<EventTem
             JsonObjectBuilder et_object = Json.createObjectBuilder();
             et_object.add("type", et.type.name());
             et_object.add("name", et.name);
-            et_object.add("role", et.role);
+            et_object.add("topics", Json.createArrayBuilder(et.topics));
             if (et.trigger_condition != null) {
                 et_object.add("trigger_condition", Json.createObjectBuilder(CONDITION_ADAPTER.adaptToJson(et.trigger_condition)));
             }
             if (et.execution_condition != null) {
                 et_object.add("execution_condition", Json.createObjectBuilder(CONDITION_ADAPTER.adaptToJson(et.execution_condition)));
             }
-            JsonArrayBuilder ids_builder = Json.createArrayBuilder();
-            for (String id : et.ids) {
-                ids_builder.add(id);
-            }
-            et_object.add("ids", ids_builder);
+            et_object.add("ids", Json.createArrayBuilder(et.ids));
             JsonArrayBuilder rels_builder = Json.createArrayBuilder();
             for (Relation rel : et.relations) {
                 JsonObjectBuilder rel_builder = Json.createObjectBuilder();
@@ -102,13 +99,10 @@ public class EventTemplateListAdapter implements JsonbAdapter<ArrayList<EventTem
         for (JsonValue et_value : obj) {
             JsonObject et_object = et_value.asJsonObject();
             String name = et_object.getString("name");
-            String role = et_object.getString("role");
+            List<String> topics = et_object.getJsonArray("topics").stream().map(id -> ((JsonString) id).getString()).collect(Collectors.toList());
             Condition trigger_condition = et_object.containsKey("trigger_condition") && !et_object.isNull("trigger_condition") ? CONDITION_ADAPTER.adaptFromJson(et_object.getJsonObject("trigger_condition")) : null;
             Condition execution_condition = et_object.containsKey("execution_condition") && !et_object.isNull("execution_condition") ? CONDITION_ADAPTER.adaptFromJson(et_object.getJsonObject("execution_condition")) : null;
-            List<String> ids = new ArrayList<>(et_object.getJsonArray("ids").size());
-            for (JsonValue id : et_object.getJsonArray("ids")) {
-                ids.add(((JsonString) id).getString());
-            }
+            List<String> ids = et_object.getJsonArray("ids").stream().map(id -> ((JsonString) id).getString()).collect(Collectors.toList());
             List<Relation> relations = new ArrayList<>(et_object.getJsonArray("relations").size());
             for (JsonValue rel_val : et_object.getJsonArray("relations")) {
                 JsonObject rel_obj = rel_val.asJsonObject();
@@ -116,13 +110,13 @@ public class EventTemplateListAdapter implements JsonbAdapter<ArrayList<EventTem
             }
             switch (EventTemplate.EventTemplateType.valueOf(et_object.getString("type"))) {
                 case EventTemplate:
-                    ets.add(new EventTemplate(EventTemplate.EventTemplateType.EventTemplate, name, role, trigger_condition, execution_condition, ids, relations));
+                    ets.add(new EventTemplate(EventTemplate.EventTemplateType.EventTemplate, name, topics, trigger_condition, execution_condition, ids, relations));
                     break;
                 case TextEventTemplate:
-                    ets.add(new TextEventTemplate(name, role, trigger_condition, execution_condition, ids, relations, et_object.getString("content")));
+                    ets.add(new TextEventTemplate(name, topics, trigger_condition, execution_condition, ids, relations, et_object.getString("content")));
                     break;
                 case URLEventTemplate:
-                    ets.add(new URLEventTemplate(name, role, trigger_condition, execution_condition, ids, relations, et_object.getString("content"), et_object.getString("url")));
+                    ets.add(new URLEventTemplate(name, topics, trigger_condition, execution_condition, ids, relations, et_object.getString("content"), et_object.getString("url")));
                     break;
                 case QuestionEventTemplate:
                     JsonArray answers_array = et_object.getJsonArray("answers");
@@ -131,7 +125,7 @@ public class EventTemplateListAdapter implements JsonbAdapter<ArrayList<EventTem
                         JsonObject ans_onject = ans_value.asJsonObject();
                         answers.add(new QuestionEventTemplate.Answer(ans_onject.getString("answer"), ans_onject.getString("event")));
                     }
-                    ets.add(new QuestionEventTemplate(name, role, trigger_condition, execution_condition, ids, relations, et_object.getString("question"), answers));
+                    ets.add(new QuestionEventTemplate(name, topics, trigger_condition, execution_condition, ids, relations, et_object.getString("question"), answers));
                     break;
                 default:
                     throw new AssertionError(EventTemplate.EventTemplateType.valueOf(et_object.getString("type")).name());

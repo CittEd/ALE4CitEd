@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.lecture.api.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -30,8 +31,8 @@ public class URLEventTemplate extends EventTemplate {
     public URLEventTemplate() {
     }
 
-    public URLEventTemplate(String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String content, String url) {
-        super(EventTemplateType.URLEventTemplate, name, role, trigger_condition, execution_condition, events, relations);
+    public URLEventTemplate(String name, Collection<String> topics, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String content, String url) {
+        super(EventTemplateType.URLEventTemplate, name, topics, trigger_condition, execution_condition, events, relations);
         this.content = content;
         this.url = url;
     }

@@ -43,7 +43,7 @@ public class LessonEntity implements Serializable {
     @ManyToOne
     private UserEntity teacher;
     @OneToMany(mappedBy = "lesson")
-    private final List<RoleEntity> roles = new ArrayList<>();
+    private final List<UserEntity> students = new ArrayList<>();
     @ManyToOne
     private LessonModelEntity model;
 
@@ -71,16 +71,16 @@ public class LessonEntity implements Serializable {
         this.teacher = teacher;
     }
 
-    public Collection<RoleEntity> getRoles() {
-        return Collections.unmodifiableCollection(roles);
+    public Collection<UserEntity> getStudents() {
+        return Collections.unmodifiableCollection(students);
     }
 
-    public void addRole(RoleEntity role) {
-        roles.add(role);
+    public void addStudent(UserEntity student) {
+        students.add(student);
     }
 
-    public void removeRole(RoleEntity role) {
-        roles.remove(role);
+    public void removeStudent(UserEntity student) {
+        students.remove(student);
     }
 
     public LessonModelEntity getModel() {

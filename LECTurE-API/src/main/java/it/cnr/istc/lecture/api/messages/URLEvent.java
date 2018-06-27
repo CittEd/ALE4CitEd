@@ -16,6 +16,8 @@
  */
 package it.cnr.istc.lecture.api.messages;
 
+import java.util.Collection;
+
 /**
  *
  * @author Riccardo De Benedictis
@@ -28,8 +30,8 @@ public class URLEvent extends Event {
     public URLEvent() {
     }
 
-    public URLEvent(long lesson_id, int event_id, String role, long time, String content, String url) {
-        super(EventType.URLEvent, lesson_id, event_id, role, time);
+    public URLEvent(long lesson_id, int event_id, Collection<Long> targets, long time, String content, String url) {
+        super(EventType.URLEvent, lesson_id, event_id, targets, time);
         this.content = content;
         this.url = url;
     }

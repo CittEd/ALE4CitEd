@@ -23,6 +23,7 @@ import static it.cnr.istc.lecture.api.Lesson.LessonState.Stopped;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.messages.Answer;
+import it.cnr.istc.lecture.api.messages.Event;
 import it.cnr.istc.lecture.api.messages.HideEvent;
 import it.cnr.istc.lecture.api.messages.LostLesson;
 import it.cnr.istc.lecture.api.messages.LostParameter;
@@ -223,7 +224,7 @@ public class LECTurEBean {
         List<LessonEntity> c_lessons = em.createQuery("SELECT l FROM LessonEntity l", LessonEntity.class).getResultList();
         for (LessonEntity l_entity : c_lessons) {
             // warning! we do not store the current time of the lesson, nor its state.. if the service is restarted, the lesson is not lost, yet its state is!
-            Lesson l = new Lesson(l_entity.getId(), l_entity.getTeacher().getId(), l_entity.getName(), Lesson.LessonState.Stopped, 0, l_entity.getModel().getId(), l_entity.getRoles().stream().collect(Collectors.toMap(r -> r.getName(), r -> r.getStudent().getId())), Collections.emptyList(), Collections.emptyList());
+            Lesson l = new Lesson(l_entity.getId(), l_entity.getTeacher().getId(), l_entity.getName(), Lesson.LessonState.Stopped, 0, l_entity.getModel().getId(), l_entity.getStudents().stream().map(std -> std.getId()).collect(Collectors.toList()), Collections.emptyList(), Collections.emptyList());
             LessonModel lm = JSONB.fromJson(l_entity.getModel().getModel(), LessonModel.class);
             newLesson(l, lm);
             solveLesson(l.id);
@@ -364,20 +365,21 @@ public class LECTurEBean {
             @Override
             public void executeToken(SolverToken tk) {
                 if (tk.template.type != EventTemplate.EventTemplateType.EventTemplate) {
+                    List<Long> targets = lesson.students.stream().filter(std_id -> tk.template.topics.stream().anyMatch(tpc -> em.find(UserEntity.class, std_id).getInterests().contains(tpc))).collect(Collectors.toList());
                     String tk_json = null;
                     switch (tk.template.type) {
                         case TextEventTemplate:
-                            TextEvent te = new TextEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((TextEventTemplate) tk.template).content);
+                            TextEvent te = new TextEvent(lesson.id, tk.tp, targets, System.currentTimeMillis(), ((TextEventTemplate) tk.template).content);
                             lesson.events.add(te);
                             tk_json = JSONB.toJson(te);
                             break;
                         case URLEventTemplate:
-                            URLEvent ue = new URLEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url);
+                            URLEvent ue = new URLEvent(lesson.id, tk.tp, targets, System.currentTimeMillis(), ((URLEventTemplate) tk.template).content, ((URLEventTemplate) tk.template).url);
                             lesson.events.add(ue);
                             tk_json = JSONB.toJson(ue);
                             break;
                         case QuestionEventTemplate:
-                            QuestionEvent qe = new QuestionEvent(lesson.id, tk.tp, tk.template.role, System.currentTimeMillis(), ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null);
+                            QuestionEvent qe = new QuestionEvent(lesson.id, tk.tp, targets, System.currentTimeMillis(), ((QuestionEventTemplate) tk.template).question, ((QuestionEventTemplate) tk.template).answers.stream().map(ans -> ans.answer).collect(Collectors.toList()), null);
                             lesson.events.add(qe);
                             tk_json = JSONB.toJson(qe);
                             break;
@@ -385,8 +387,10 @@ public class LECTurEBean {
                             throw new AssertionError(tk.template.type.name());
                     }
                     try {
-                        // we notify the student associated to the token's role that a token has to be executed..
-                        mqtt.publish(lesson.roles.get(tk.template.role) + "/input", tk_json.getBytes(), 1, false);
+                        // we notify the interested students that a token has to be executed..
+                        for (Long std_id : targets) {
+                            mqtt.publish(std_id + "/input", tk_json.getBytes(), 1, false);
+                        }
                     } catch (MqttException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
@@ -396,14 +400,17 @@ public class LECTurEBean {
             @Override
             public void hideToken(SolverToken tk) {
                 // we remove the event from the lesson..
-                lesson.events.removeIf(e -> e.event_id == tk.tp);
+                Event event = lesson.events.stream().filter(e -> e.event_id == tk.tp).findAny().get();
+                lesson.events.remove(event);
                 if (tk.question != null) {
                     // the token represents the answer of a question: we set the answer of the question event at null..
                     ((QuestionEvent) lesson.events.stream().filter(e -> e.event_id == tk.question).findAny().get()).answer = null;
                 }
                 try {
-                    // we notify the student associated to the token's role that a token has to be hidden..
-                    mqtt.publish(lesson.roles.get(tk.template.role) + "/input", JSONB.toJson(new HideEvent(lesson.id, tk.tp)).getBytes(), 1, false);
+                    // we notify the interested students that an event has to be hidden..
+                    for (Long std_id : event.targets) {
+                        mqtt.publish(std_id + "/input", JSONB.toJson(new HideEvent(lesson.id, tk.tp)).getBytes(), 1, false);
+                    }
                 } catch (MqttException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
@@ -433,7 +440,7 @@ public class LECTurEBean {
         });
 
         // we notify all the students that a new lesson has been created..
-        for (Long student_id : lesson.roles.values()) {
+        for (Long student_id : lesson.students) {
             try {
                 mqtt.publish(student_id + "/input", JSONB.toJson(new NewLesson(lesson)).getBytes(), 1, false);
             } catch (MqttException ex) {
@@ -499,7 +506,7 @@ public class LECTurEBean {
     public void removeLesson(long lesson_id) {
         Lesson lesson = lessons.get(lesson_id).getLesson();
         // we notify all the students that a new lesson has been created..
-        for (Long student_id : lesson.roles.values()) {
+        for (Long student_id : lesson.students) {
             try {
                 mqtt.publish(student_id + "/input", JSONB.toJson(new LostLesson(lesson.id)).getBytes(), 1, false);
             } catch (MqttException ex) {
@@ -533,7 +540,7 @@ public class LECTurEBean {
     public void addTeacher(long student_id, long teacher_id) {
         UserEntity u = em.find(UserEntity.class, student_id);
         try {
-            mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), isOnline(u.getId()), getParTypes(u.getId()), getParValues(u.getId())))).getBytes(), 1, false);
+            mqtt.publish(teacher_id + "/input", JSONB.toJson(new NewStudent(new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), isOnline(u.getId()), u.getInterests(), getParTypes(u.getId()), getParValues(u.getId())))).getBytes(), 1, false);
         } catch (MqttException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }

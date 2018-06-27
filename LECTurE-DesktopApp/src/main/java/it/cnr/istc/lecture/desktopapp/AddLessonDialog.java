@@ -20,8 +20,8 @@ import it.cnr.istc.lecture.api.model.LessonModel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -179,7 +179,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         getDialogPane().lookupButton(add_button).disableProperty().set(true);
         getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         ((Stage) getDialogPane().getScene().getWindow()).getIcons().addAll(Context.getContext().getStage().getIcons());
-        setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().collect(Collectors.toMap(StudentRole::getRole, StudentRole::getStudentId))) : null);
+        setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().map(std -> std.getStudentId()).collect(Collectors.toList())) : null);
     }
 
     public class StudentRoleBinding extends BooleanBinding {
@@ -225,12 +225,12 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
 
         private final LessonModel model;
         private final String lesson_name;
-        private final Map<String, Long> roles;
+        private final Collection<Long> students;
 
-        private AddLessonResult(LessonModel model, String lesson_name, Map<String, Long> roles) {
+        private AddLessonResult(LessonModel model, String lesson_name, Collection<Long> students) {
             this.model = model;
             this.lesson_name = lesson_name;
-            this.roles = roles;
+            this.students = students;
         }
 
         public LessonModel getModel() {
@@ -241,8 +241,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
             return lesson_name;
         }
 
-        public Map<String, Long> getRoles() {
-            return Collections.unmodifiableMap(roles);
+        public Collection< Long> getRoles() {
+            return Collections.unmodifiableCollection(students);
         }
     }
 }

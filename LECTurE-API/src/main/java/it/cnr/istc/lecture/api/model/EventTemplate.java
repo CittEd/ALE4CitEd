@@ -28,7 +28,7 @@ public class EventTemplate {
 
     public EventTemplateType type;
     public String name;
-    public String role;
+    public ArrayList<String> topics;
     @JsonbTypeAdapter(ConditionAdapter.class)
     public Condition trigger_condition;
     @JsonbTypeAdapter(ConditionAdapter.class)
@@ -39,10 +39,10 @@ public class EventTemplate {
     public EventTemplate() {
     }
 
-    public EventTemplate(EventTemplateType type, String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> ids, Collection<Relation> relations) {
+    public EventTemplate(EventTemplateType type, String name, Collection<String> topics, Condition trigger_condition, Condition execution_condition, Collection<String> ids, Collection<Relation> relations) {
         this.type = type;
         this.name = name;
-        this.role = role;
+        this.topics = new ArrayList<>(topics);
         this.trigger_condition = trigger_condition;
         this.execution_condition = execution_condition;
         this.ids = new ArrayList<>(ids);

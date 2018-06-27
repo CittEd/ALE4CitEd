@@ -16,6 +16,7 @@
  */
 package it.cnr.istc.lecture.api.messages;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -31,8 +32,8 @@ public class QuestionEvent extends Event {
     public QuestionEvent() {
     }
 
-    public QuestionEvent(long lesson_id, int event_id, String role, long time, String question, List<String> answers, Integer answer) {
-        super(EventType.QuestionEvent, lesson_id, event_id, role, time);
+    public QuestionEvent(long lesson_id, int event_id, Collection<Long> targets, long time, String question, List<String> answers, Integer answer) {
+        super(EventType.QuestionEvent, lesson_id, event_id, targets, time);
         this.question = question;
         this.answers = answers;
         this.answer = answer;

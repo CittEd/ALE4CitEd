@@ -16,6 +16,8 @@
  */
 package it.cnr.istc.lecture.api.messages;
 
+import java.util.Collection;
+
 /**
  *
  * @author Riccardo De Benedictis
@@ -27,8 +29,8 @@ public class TextEvent extends Event {
     public TextEvent() {
     }
 
-    public TextEvent(long lesson_id, int event_id, String role, long time, String content) {
-        super(EventType.TextEvent, lesson_id, event_id, role, time);
+    public TextEvent(long lesson_id, int event_id, Collection<Long> targets, long time, String content) {
+        super(EventType.TextEvent, lesson_id, event_id, targets, time);
         this.content = content;
     }
 }

@@ -31,8 +31,8 @@ public class QuestionEventTemplate extends EventTemplate {
     public QuestionEventTemplate() {
     }
 
-    public QuestionEventTemplate(String name, String role, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String question, Collection<Answer> answers) {
-        super(EventTemplateType.QuestionEventTemplate, name, role, trigger_condition, execution_condition, events, relations);
+    public QuestionEventTemplate(String name, Collection<String> topics, Condition trigger_condition, Condition execution_condition, Collection<String> events, Collection<Relation> relations, String question, Collection<Answer> answers) {
+        super(EventTemplateType.QuestionEventTemplate, name, topics, trigger_condition, execution_condition, events, relations);
         this.question = question;
         this.answers = new ArrayList<>(answers);
     }

@@ -18,9 +18,10 @@ package it.cnr.istc.lecture.api.messages;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
@@ -39,7 +40,7 @@ public class EventAdapter implements JsonbAdapter<Event, JsonObject> {
         c_object.add("event_type", obj.event_type.name());
         c_object.add("lesson_id", obj.lesson_id);
         c_object.add("event_id", obj.event_id);
-        c_object.add("role", obj.role);
+        c_object.add("targets", Json.createArrayBuilder(obj.targets));
         c_object.add("time", obj.time);
         switch (obj.event_type) {
             case TextEvent:
@@ -47,11 +48,7 @@ public class EventAdapter implements JsonbAdapter<Event, JsonObject> {
                 break;
             case QuestionEvent:
                 c_object.add("question", ((QuestionEvent) obj).question);
-                JsonArrayBuilder answers_builder = Json.createArrayBuilder();
-                for (String answer : ((QuestionEvent) obj).answers) {
-                    answers_builder.add(answer);
-                }
-                c_object.add("answers", answers_builder);
+                c_object.add("answers", Json.createArrayBuilder(((QuestionEvent) obj).answers));
                 if (((QuestionEvent) obj).answer != null) {
                     c_object.add("answer", ((QuestionEvent) obj).answer);
                 }
@@ -70,11 +67,11 @@ public class EventAdapter implements JsonbAdapter<Event, JsonObject> {
     public Event adaptFromJson(JsonObject obj) throws Exception {
         long lesson_id = obj.getJsonNumber("lesson_id").longValue();
         int event_id = obj.getInt("event_id");
-        String role = obj.getString("role");
+        List<Long> targets = obj.getJsonArray("targets").stream().map(id -> ((JsonNumber) id).longValue()).collect(Collectors.toList());
         long time = obj.getJsonNumber("time").longValue();
         switch (Event.EventType.valueOf(obj.getString("event_type"))) {
             case TextEvent:
-                return new TextEvent(lesson_id, event_id, role, time, obj.getString("content"));
+                return new TextEvent(lesson_id, event_id, targets, time, obj.getString("content"));
             case QuestionEvent:
                 String question = obj.getString("question");
                 JsonArray answers_array = obj.getJsonArray("answers");
@@ -82,9 +79,9 @@ public class EventAdapter implements JsonbAdapter<Event, JsonObject> {
                 for (JsonValue answer_value : answers_array) {
                     answers.add(answer_value.toString());
                 }
-                return new QuestionEvent(lesson_id, event_id, role, time, question, answers, obj.containsKey("answer") ? obj.getInt("answer") : null);
+                return new QuestionEvent(lesson_id, event_id, targets, time, question, answers, obj.containsKey("answer") ? obj.getInt("answer") : null);
             case URLEvent:
-                return new URLEvent(lesson_id, event_id, role, time, obj.getString("content"), obj.getString("url"));
+                return new URLEvent(lesson_id, event_id, targets, time, obj.getString("content"), obj.getString("url"));
             default:
                 throw new AssertionError(Event.EventType.valueOf(obj.getString("event_type")).name());
         }
