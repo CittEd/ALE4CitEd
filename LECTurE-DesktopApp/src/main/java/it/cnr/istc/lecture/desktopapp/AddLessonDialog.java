@@ -25,14 +25,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -42,11 +35,8 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.layout.GridPane;
 import static javafx.scene.layout.GridPane.setHgrow;
 import static javafx.scene.layout.GridPane.setVgrow;
@@ -55,6 +45,7 @@ import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import org.controlsfx.control.CheckListView;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 
@@ -69,10 +60,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
     private final ComboBox<LessonModel> lesson_types = new ComboBox<>();
     private final TextField lesson_name = new TextField();
     private final Button open_button = new Button("", new Glyph("FontAwesome", FontAwesome.Glyph.FILE_CODE_ALT));
-    private final ObservableList<StudentRole> roles = FXCollections.observableArrayList();
-    private final TableView<StudentRole> roles_table_view = new TableView<>(roles);
-    private final TableColumn<StudentRole, String> role_column = new TableColumn<>(Context.LANGUAGE.getString("ROLE"));
-    private final TableColumn<StudentRole, StudentContext> student_column = new TableColumn<>(Context.LANGUAGE.getString("STUDENT"));
+    private final CheckListView<StudentContext> students_list = new CheckListView<>(Context.getContext().studentsProperty());
     private final ButtonType add_button = new ButtonType(Context.LANGUAGE.getString("ADD"), ButtonBar.ButtonData.OK_DONE);
     private LessonModel lesson_model;
 
@@ -82,8 +70,8 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         grid.setVgap(10);
         setHgrow(lesson_types, Priority.ALWAYS);
         setHgrow(lesson_name, Priority.ALWAYS);
-        setVgrow(roles_table_view, Priority.ALWAYS);
-        setHgrow(roles_table_view, Priority.ALWAYS);
+        setVgrow(students_list, Priority.ALWAYS);
+        setHgrow(students_list, Priority.ALWAYS);
 
         setTitle(Context.LANGUAGE.getString("ADD LESSON"));
 
@@ -93,12 +81,7 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         lesson_types.setItems(Context.getContext().modelsProperty());
         lesson_types.valueProperty().addListener((ObservableValue<? extends LessonModel> observable, LessonModel oldValue, LessonModel newValue) -> {
             lesson_model = newValue;
-            roles.clear();
-            if (newValue != null) {
-                lesson_model.roles.forEach(role -> roles.add(new StudentRole(role, null)));
-            }
-            getDialogPane().lookupButton(add_button).disableProperty().unbind();
-            getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_types.valueProperty().isNull().or(lesson_name.textProperty().isEmpty()).or(new StudentRoleBinding()));
+            students_list.getCheckModel().clearChecks();
         });
         lesson_types.setCellFactory((ListView<LessonModel> param) -> new ListCell<LessonModel>() {
             @Override
@@ -122,38 +105,21 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
                 throw new UnsupportedOperationException("Not supported yet..");
             }
         });
+
+        students_list.setCellFactory(listView -> new CheckBoxListCell<StudentContext>(students_list::getItemBooleanProperty) {
+            @Override
+            public void updateItem(StudentContext student, boolean empty) {
+                super.updateItem(student, empty);
+                setText(student == null ? "" : student.getStudent().first_name + " " + student.getStudent().last_name);
+            }
+        });
+
         grid.add(lesson_types, 1, 0);
         grid.add(open_button, 2, 0);
         grid.add(new Label(Context.LANGUAGE.getString("LESSON NAME") + ":"), 0, 1);
         lesson_name.setPromptText(Context.LANGUAGE.getString("LESSON NAME"));
         grid.add(lesson_name, 1, 1, 2, 1);
-        grid.add(roles_table_view, 0, 2, 3, 1);
-
-        roles_table_view.getColumns().addAll(role_column, student_column);
-        roles_table_view.setEditable(true);
-
-        roles_table_view.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        role_column.setCellValueFactory(new PropertyValueFactory<>("role"));
-        student_column.setCellValueFactory(new PropertyValueFactory<>("student"));
-        student_column.setCellFactory(ComboBoxTableCell.forTableColumn(new StringConverter<StudentContext>() {
-            @Override
-            public String toString(StudentContext std_ctx) {
-                if (std_ctx == null) {
-                    return Context.LANGUAGE.getString("SELECT ONE");
-                } else {
-                    return std_ctx.getStudent().first_name + " " + std_ctx.getStudent().last_name;
-                }
-            }
-
-            @Override
-            public StudentContext fromString(String string) {
-                throw new UnsupportedOperationException("Not supported yet..");
-            }
-        }, Context.getContext().studentsProperty()));
-        student_column.setEditable(true);
-        student_column.setOnEditCommit((TableColumn.CellEditEvent<StudentRole, StudentContext> event) -> {
-            roles.get(event.getTablePosition().getRow()).student.set(event.getNewValue());
-        });
+        grid.add(students_list, 0, 2, 3, 1);
 
         getDialogPane().setContent(grid);
 
@@ -176,49 +142,10 @@ public class AddLessonDialog extends Dialog<AddLessonDialog.AddLessonResult> {
         });
 
         getDialogPane().getButtonTypes().add(add_button);
-        getDialogPane().lookupButton(add_button).disableProperty().set(true);
+        getDialogPane().lookupButton(add_button).disableProperty().bind(lesson_types.valueProperty().isNull().or(lesson_name.textProperty().isEmpty()));
         getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         ((Stage) getDialogPane().getScene().getWindow()).getIcons().addAll(Context.getContext().getStage().getIcons());
-        setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), roles.stream().map(std -> std.getStudentId()).collect(Collectors.toList())) : null);
-    }
-
-    public class StudentRoleBinding extends BooleanBinding {
-
-        public StudentRoleBinding() {
-            roles.forEach(role -> bind(role.student));
-        }
-
-        @Override
-        protected boolean computeValue() {
-            return roles.stream().anyMatch(role -> role.student.get() == null);
-        }
-    }
-
-    public static class StudentRole {
-
-        public final StringProperty role;
-        public final ObjectProperty<StudentContext> student;
-
-        public StudentRole(String name, StudentContext student) {
-            this.role = new SimpleStringProperty(name);
-            this.student = new SimpleObjectProperty<>(student);
-        }
-
-        public String getRole() {
-            return role.get();
-        }
-
-        public StringProperty roleProperty() {
-            return role;
-        }
-
-        public long getStudentId() {
-            return student.get().getStudent().id;
-        }
-
-        public ObjectProperty<StudentContext> studentProperty() {
-            return student;
-        }
+        setResultConverter((ButtonType param) -> param == add_button ? new AddLessonResult(lesson_model, lesson_name.getText(), students_list.getCheckModel().getCheckedItems().stream().map(s -> s.getStudent().id).collect(Collectors.toList())) : null);
     }
 
     public static class AddLessonResult {

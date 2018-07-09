@@ -55,7 +55,7 @@ public class UserEntity implements Serializable {
     @OneToMany(mappedBy = "teacher")
     private final Collection<LessonEntity> lessons = new ArrayList<>();
     @ManyToMany(mappedBy = "students")
-    private List<LessonEntity> followedLessons;
+    private final List<LessonEntity> followedLessons = new ArrayList<>();
     @OneToMany
     private final Collection<LessonModelEntity> models = new ArrayList<>();
 

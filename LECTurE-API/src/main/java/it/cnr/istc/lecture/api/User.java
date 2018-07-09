@@ -44,7 +44,9 @@ public class User {
         this.first_name = firstName;
         this.last_name = lastName;
         this.online = online;
-        this.interests = new ArrayList<>(interests);
+        if (interests != null) {
+            this.interests = new ArrayList<>(interests);
+        }
         this.par_types = par_types;
         this.par_values = par_values;
     }
