@@ -414,9 +414,9 @@ public class MainController implements Initializable {
 
     @FXML
     private void new_user(ActionEvent event) {
-        NewUserDialog new_user_dialog = new NewUserDialog();
-        new_user_dialog.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
-        new_user_dialog.showAndWait().ifPresent(user -> {
+        CreateUserWizard w = new CreateUserWizard();
+        w.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
+        w.showAndWait().ifPresent(user -> {
             try {
                 Context.getContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
             } catch (Exception e) {

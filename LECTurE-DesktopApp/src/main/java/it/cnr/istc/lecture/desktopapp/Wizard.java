@@ -37,8 +37,8 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 
 /**
@@ -63,12 +63,28 @@ public class Wizard<T> extends Dialog<T> {
         currentPage = getFlow().advance(currentPage.orElse(null));
         updatePage();
     };
-    private final ObjectProperty<Flow> flow = new SimpleObjectProperty<>();
+    private final ObjectProperty<Flow> flow = new SimpleObjectProperty<Flow>() {
+        @Override
+        protected void invalidated() {
+            updatePage();
+        }
+
+        @Override
+        public void set(Flow flow) {
+            super.set(flow);
+            pageHistory.clear();
+            if (flow != null) {
+                currentPage = flow.advance(currentPage.orElse(null));
+                updatePage();
+            }
+        }
+    };
 
     public Wizard(String title) {
         setTitle(title);
 
         invalid.addListener((o, ov, nv) -> validateActionState());
+        ((Stage) getDialogPane().getScene().getWindow()).getIcons().addAll(Context.getContext().getStage().getIcons());
     }
 
     public final Flow getFlow() {
@@ -123,26 +139,17 @@ public class Wizard<T> extends Dialog<T> {
                 buttons.add(ButtonType.CANCEL);
             }
 
-            // then give user a chance to modify the default actions
             page.onEnteringPage(this);
 
-            // Remove from DecorationPane which has been created by e.g. validation
-            if (page.getParent() != null && page.getParent() instanceof Pane) {
-                Pane parentOfCurrentPage = (Pane) page.getParent();
-                parentOfCurrentPage.getChildren().remove(page);
-            }
-
-            // Get current position and size
             double previousX = getX();
             double previousY = getY();
             double previousWidth = getWidth();
             double previousHeight = getHeight();
-            // and then switch to the new pane
+
             setDialogPane(page);
-            // Resize Wizard to new page
+
             Window wizard = page.getScene().getWindow();
             wizard.sizeToScene();
-            // Center resized Wizard to previous position
 
             if (!Double.isNaN(previousX) && !Double.isNaN(previousY)) {
                 double newWidth = getWidth();
