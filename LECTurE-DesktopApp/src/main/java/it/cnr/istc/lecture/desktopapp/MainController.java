@@ -418,7 +418,7 @@ public class MainController implements Initializable {
         w.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
         w.showAndWait().ifPresent(user -> {
             try {
-                Context.getContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName());
+                Context.getContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName(), user.getConcrete(), user.getPresident(), user.getStructurer(), user.getIngenious(), user.getExplorer(), user.getEvaluator(), user.getWorker(), user.getObjectivist());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());

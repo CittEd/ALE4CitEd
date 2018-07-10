@@ -46,6 +46,14 @@ public class UserEntity implements Serializable {
     private String password;
     private String first_name;
     private String last_name;
+    private int concrete;
+    private int president;
+    private int structurer;
+    private int ingenious;
+    private int explorer;
+    private int evaluator;
+    private int worker;
+    private int objectivist;
     @ElementCollection
     private final Collection<String> interests = new ArrayList<>();
     @ManyToMany
@@ -93,6 +101,70 @@ public class UserEntity implements Serializable {
 
     public void setLastName(String last_name) {
         this.last_name = last_name;
+    }
+
+    public int getConcrete() {
+        return concrete;
+    }
+
+    public void setConcrete(int concrete) {
+        this.concrete = concrete;
+    }
+
+    public int getPresident() {
+        return president;
+    }
+
+    public void setPresident(int president) {
+        this.president = president;
+    }
+
+    public int getStructurer() {
+        return structurer;
+    }
+
+    public void setStructurer(int structurer) {
+        this.structurer = structurer;
+    }
+
+    public int getIngenious() {
+        return ingenious;
+    }
+
+    public void setIngenious(int ingenious) {
+        this.ingenious = ingenious;
+    }
+
+    public int getExplorer() {
+        return explorer;
+    }
+
+    public void setExplorer(int explorer) {
+        this.explorer = explorer;
+    }
+
+    public int getEvaluator() {
+        return evaluator;
+    }
+
+    public void setEvaluator(int evaluator) {
+        this.evaluator = evaluator;
+    }
+
+    public int getWorker() {
+        return worker;
+    }
+
+    public void setWorker(int worker) {
+        this.worker = worker;
+    }
+
+    public int getObjectivist() {
+        return objectivist;
+    }
+
+    public void setObjectivist(int objectivist) {
+        this.objectivist = objectivist;
     }
 
     public Collection<String> getInterests() {

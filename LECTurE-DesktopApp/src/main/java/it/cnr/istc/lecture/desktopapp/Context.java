@@ -669,8 +669,8 @@ public class Context {
         user.set(null);
     }
 
-    public void newUser(String email, String password, String first_name, String last_name) {
-        NewUserRequest new_user = new NewUserRequest(email, password, first_name, last_name);
+    public void newUser(String email, String password, String first_name, String last_name, int concrete, int president, int structurer, int ingenious, int explorer, int evaluator, int worker, int objectivist) {
+        NewUserRequest new_user = new NewUserRequest(email, password, first_name, last_name, concrete, president, structurer, ingenious, explorer, evaluator, worker, objectivist);
         User u = target.path("new_user").request(MediaType.APPLICATION_JSON).post(Entity.json(new_user), User.class);
         u.par_types = load_pars();
         u.par_values = load_par_vals();

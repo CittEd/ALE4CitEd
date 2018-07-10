@@ -51,65 +51,28 @@ public class CreateUserWizard extends Wizard<CreateUserWizard.NewUserResult> {
 
         setResultConverter((ButtonType param) -> {
             if (param.getButtonData() == FINISH) {
+                final int concrete = (int) q1.spinners[6].valueProperty().get() + (int) q2.spinners[0].valueProperty().get() + (int) q3.spinners[7].valueProperty().get() + (int) q4.spinners[3].valueProperty().get() + (int) q5.spinners[1].valueProperty().get() + (int) q6.spinners[5].valueProperty().get() + (int) q7.spinners[4].valueProperty().get();
+                final int president = (int) q1.spinners[3].valueProperty().get() + (int) q2.spinners[1].valueProperty().get() + (int) q3.spinners[0].valueProperty().get() + (int) q4.spinners[7].valueProperty().get() + (int) q5.spinners[5].valueProperty().get() + (int) q6.spinners[2].valueProperty().get() + (int) q7.spinners[6].valueProperty().get();
+                final int structurer = (int) q1.spinners[5].valueProperty().get() + (int) q2.spinners[4].valueProperty().get() + (int) q3.spinners[2].valueProperty().get() + (int) q4.spinners[1].valueProperty().get() + (int) q5.spinners[3].valueProperty().get() + (int) q6.spinners[6].valueProperty().get() + (int) q7.spinners[0].valueProperty().get();
+                final int ingenious = (int) q1.spinners[2].valueProperty().get() + (int) q2.spinners[6].valueProperty().get() + (int) q3.spinners[3].valueProperty().get() + (int) q4.spinners[4].valueProperty().get() + (int) q5.spinners[7].valueProperty().get() + (int) q6.spinners[0].valueProperty().get() + (int) q7.spinners[5].valueProperty().get();
+                final int explorer = (int) q1.spinners[0].valueProperty().get() + (int) q2.spinners[2].valueProperty().get() + (int) q3.spinners[5].valueProperty().get() + (int) q4.spinners[6].valueProperty().get() + (int) q5.spinners[4].valueProperty().get() + (int) q6.spinners[7].valueProperty().get() + (int) q7.spinners[3].valueProperty().get();
+                final int evaluator = (int) q1.spinners[7].valueProperty().get() + (int) q2.spinners[3].valueProperty().get() + (int) q3.spinners[6].valueProperty().get() + (int) q4.spinners[2].valueProperty().get() + (int) q5.spinners[0].valueProperty().get() + (int) q6.spinners[4].valueProperty().get() + (int) q7.spinners[1].valueProperty().get();
+                final int worker = (int) q1.spinners[1].valueProperty().get() + (int) q2.spinners[5].valueProperty().get() + (int) q3.spinners[4].valueProperty().get() + (int) q4.spinners[0].valueProperty().get() + (int) q5.spinners[2].valueProperty().get() + (int) q6.spinners[1].valueProperty().get() + (int) q7.spinners[7].valueProperty().get();
+                final int objectivist = (int) q1.spinners[4].valueProperty().get() + (int) q2.spinners[7].valueProperty().get() + (int) q3.spinners[1].valueProperty().get() + (int) q4.spinners[5].valueProperty().get() + (int) q5.spinners[6].valueProperty().get() + (int) q6.spinners[3].valueProperty().get() + (int) q7.spinners[2].valueProperty().get();
                 return new NewUserResult(
                         cp.email_field.getText(),
                         cp.password_field.getText(),
                         cp.first_name_field.getText(),
                         cp.last_name_field.getText(),
-                        (int) q1.spinners[0].valueProperty().get(),
-                        (int) q1.spinners[1].valueProperty().get(),
-                        (int) q1.spinners[2].valueProperty().get(),
-                        (int) q1.spinners[3].valueProperty().get(),
-                        (int) q1.spinners[4].valueProperty().get(),
-                        (int) q1.spinners[5].valueProperty().get(),
-                        (int) q1.spinners[6].valueProperty().get(),
-                        (int) q1.spinners[7].valueProperty().get(),
-                        (int) q2.spinners[0].valueProperty().get(),
-                        (int) q2.spinners[1].valueProperty().get(),
-                        (int) q2.spinners[2].valueProperty().get(),
-                        (int) q2.spinners[3].valueProperty().get(),
-                        (int) q2.spinners[4].valueProperty().get(),
-                        (int) q2.spinners[5].valueProperty().get(),
-                        (int) q3.spinners[0].valueProperty().get(),
-                        (int) q3.spinners[1].valueProperty().get(),
-                        (int) q3.spinners[2].valueProperty().get(),
-                        (int) q3.spinners[3].valueProperty().get(),
-                        (int) q3.spinners[4].valueProperty().get(),
-                        (int) q3.spinners[5].valueProperty().get(),
-                        (int) q3.spinners[6].valueProperty().get(),
-                        (int) q3.spinners[7].valueProperty().get(),
-                        (int) q4.spinners[0].valueProperty().get(),
-                        (int) q4.spinners[1].valueProperty().get(),
-                        (int) q4.spinners[2].valueProperty().get(),
-                        (int) q4.spinners[3].valueProperty().get(),
-                        (int) q4.spinners[4].valueProperty().get(),
-                        (int) q4.spinners[5].valueProperty().get(),
-                        (int) q4.spinners[6].valueProperty().get(),
-                        (int) q4.spinners[7].valueProperty().get(),
-                        (int) q5.spinners[0].valueProperty().get(),
-                        (int) q5.spinners[1].valueProperty().get(),
-                        (int) q5.spinners[2].valueProperty().get(),
-                        (int) q5.spinners[3].valueProperty().get(),
-                        (int) q5.spinners[4].valueProperty().get(),
-                        (int) q5.spinners[5].valueProperty().get(),
-                        (int) q5.spinners[6].valueProperty().get(),
-                        (int) q5.spinners[7].valueProperty().get(),
-                        (int) q6.spinners[0].valueProperty().get(),
-                        (int) q6.spinners[1].valueProperty().get(),
-                        (int) q6.spinners[2].valueProperty().get(),
-                        (int) q6.spinners[3].valueProperty().get(),
-                        (int) q6.spinners[4].valueProperty().get(),
-                        (int) q6.spinners[5].valueProperty().get(),
-                        (int) q6.spinners[6].valueProperty().get(),
-                        (int) q6.spinners[7].valueProperty().get(),
-                        (int) q7.spinners[0].valueProperty().get(),
-                        (int) q7.spinners[1].valueProperty().get(),
-                        (int) q7.spinners[2].valueProperty().get(),
-                        (int) q7.spinners[3].valueProperty().get(),
-                        (int) q7.spinners[4].valueProperty().get(),
-                        (int) q7.spinners[5].valueProperty().get(),
-                        (int) q7.spinners[6].valueProperty().get(),
-                        (int) q7.spinners[7].valueProperty().get());
+                        concrete,
+                        president,
+                        structurer,
+                        ingenious,
+                        explorer,
+                        evaluator,
+                        worker,
+                        objectivist
+                );
             } else {
                 return null;
             }
@@ -211,120 +174,28 @@ public class CreateUserWizard extends Wizard<CreateUserWizard.NewUserResult> {
         private final String password;
         private final String first_name;
         private final String last_name;
-        private final int qs1a;
-        private final int qs1b;
-        private final int qs1c;
-        private final int qs1d;
-        private final int qs1e;
-        private final int qs1f;
-        private final int qs1g;
-        private final int qs1h;
-        private final int qs2a;
-        private final int qs2b;
-        private final int qs2c;
-        private final int qs2d;
-        private final int qs2e;
-        private final int qs2f;
-        private final int qs3a;
-        private final int qs3b;
-        private final int qs3c;
-        private final int qs3d;
-        private final int qs3e;
-        private final int qs3f;
-        private final int qs3g;
-        private final int qs3h;
-        private final int qs4a;
-        private final int qs4b;
-        private final int qs4c;
-        private final int qs4d;
-        private final int qs4e;
-        private final int qs4f;
-        private final int qs4g;
-        private final int qs4h;
-        private final int qs5a;
-        private final int qs5b;
-        private final int qs5c;
-        private final int qs5d;
-        private final int qs5e;
-        private final int qs5f;
-        private final int qs5g;
-        private final int qs5h;
-        private final int qs6a;
-        private final int qs6b;
-        private final int qs6c;
-        private final int qs6d;
-        private final int qs6e;
-        private final int qs6f;
-        private final int qs6g;
-        private final int qs6h;
-        private final int qs7a;
-        private final int qs7b;
-        private final int qs7c;
-        private final int qs7d;
-        private final int qs7e;
-        private final int qs7f;
-        private final int qs7g;
-        private final int qs7h;
+        private final int concrete;
+        private final int president;
+        private final int structurer;
+        private final int ingenious;
+        private final int explorer;
+        private final int evaluator;
+        private final int worker;
+        private final int objectivist;
 
-        public NewUserResult(String email, String password, String first_name, String last_name, int qs1a, int qs1b, int qs1c, int qs1d, int qs1e, int qs1f, int qs1g, int qs1h, int qs2a, int qs2b, int qs2c, int qs2d, int qs2e, int qs2f, int qs3a, int qs3b, int qs3c, int qs3d, int qs3e, int qs3f, int qs3g, int qs3h, int qs4a, int qs4b, int qs4c, int qs4d, int qs4e, int qs4f, int qs4g, int qs4h, int qs5a, int qs5b, int qs5c, int qs5d, int qs5e, int qs5f, int qs5g, int qs5h, int qs6a, int qs6b, int qs6c, int qs6d, int qs6e, int qs6f, int qs6g, int qs6h, int qs7a, int qs7b, int qs7c, int qs7d, int qs7e, int qs7f, int qs7g, int qs7h) {
+        public NewUserResult(String email, String password, String first_name, String last_name, int concrete, int president, int structurer, int ingenious, int explorer, int evaluator, int worker, int objectivist) {
             this.email = email;
             this.password = password;
             this.first_name = first_name;
             this.last_name = last_name;
-            this.qs1a = qs1a;
-            this.qs1b = qs1b;
-            this.qs1c = qs1c;
-            this.qs1d = qs1d;
-            this.qs1e = qs1e;
-            this.qs1f = qs1f;
-            this.qs1g = qs1g;
-            this.qs1h = qs1h;
-            this.qs2a = qs2a;
-            this.qs2b = qs2b;
-            this.qs2c = qs2c;
-            this.qs2d = qs2d;
-            this.qs2e = qs2e;
-            this.qs2f = qs2f;
-            this.qs3a = qs3a;
-            this.qs3b = qs3b;
-            this.qs3c = qs3c;
-            this.qs3d = qs3d;
-            this.qs3e = qs3e;
-            this.qs3f = qs3f;
-            this.qs3g = qs3g;
-            this.qs3h = qs3h;
-            this.qs4a = qs4a;
-            this.qs4b = qs4b;
-            this.qs4c = qs4c;
-            this.qs4d = qs4d;
-            this.qs4e = qs4e;
-            this.qs4f = qs4f;
-            this.qs4g = qs4g;
-            this.qs4h = qs4h;
-            this.qs5a = qs5a;
-            this.qs5b = qs5b;
-            this.qs5c = qs5c;
-            this.qs5d = qs5d;
-            this.qs5e = qs5e;
-            this.qs5f = qs5f;
-            this.qs5g = qs5g;
-            this.qs5h = qs5h;
-            this.qs6a = qs6a;
-            this.qs6b = qs6b;
-            this.qs6c = qs6c;
-            this.qs6d = qs6d;
-            this.qs6e = qs6e;
-            this.qs6f = qs6f;
-            this.qs6g = qs6g;
-            this.qs6h = qs6h;
-            this.qs7a = qs7a;
-            this.qs7b = qs7b;
-            this.qs7c = qs7c;
-            this.qs7d = qs7d;
-            this.qs7e = qs7e;
-            this.qs7f = qs7f;
-            this.qs7g = qs7g;
-            this.qs7h = qs7h;
+            this.concrete = concrete;
+            this.president = president;
+            this.structurer = structurer;
+            this.ingenious = ingenious;
+            this.explorer = explorer;
+            this.evaluator = evaluator;
+            this.worker = worker;
+            this.objectivist = objectivist;
         }
 
         public String getEmail() {
@@ -343,220 +214,36 @@ public class CreateUserWizard extends Wizard<CreateUserWizard.NewUserResult> {
             return last_name;
         }
 
-        public int getQs1a() {
-            return qs1a;
+        public int getConcrete() {
+            return concrete;
         }
 
-        public int getQs1b() {
-            return qs1b;
+        public int getPresident() {
+            return president;
         }
 
-        public int getQs1c() {
-            return qs1c;
+        public int getStructurer() {
+            return structurer;
         }
 
-        public int getQs1d() {
-            return qs1d;
+        public int getIngenious() {
+            return ingenious;
         }
 
-        public int getQs1e() {
-            return qs1e;
+        public int getExplorer() {
+            return explorer;
         }
 
-        public int getQs1f() {
-            return qs1f;
+        public int getEvaluator() {
+            return evaluator;
         }
 
-        public int getQs1g() {
-            return qs1g;
+        public int getWorker() {
+            return worker;
         }
 
-        public int getQs1h() {
-            return qs1h;
-        }
-
-        public int getQs2a() {
-            return qs2a;
-        }
-
-        public int getQs2b() {
-            return qs2b;
-        }
-
-        public int getQs2c() {
-            return qs2c;
-        }
-
-        public int getQs2d() {
-            return qs2d;
-        }
-
-        public int getQs2e() {
-            return qs2e;
-        }
-
-        public int getQs2f() {
-            return qs2f;
-        }
-
-        public int getQs3a() {
-            return qs3a;
-        }
-
-        public int getQs3b() {
-            return qs3b;
-        }
-
-        public int getQs3c() {
-            return qs3c;
-        }
-
-        public int getQs3d() {
-            return qs3d;
-        }
-
-        public int getQs3e() {
-            return qs3e;
-        }
-
-        public int getQs3f() {
-            return qs3f;
-        }
-
-        public int getQs3g() {
-            return qs3g;
-        }
-
-        public int getQs3h() {
-            return qs3h;
-        }
-
-        public int getQs4a() {
-            return qs4a;
-        }
-
-        public int getQs4b() {
-            return qs4b;
-        }
-
-        public int getQs4c() {
-            return qs4c;
-        }
-
-        public int getQs4d() {
-            return qs4d;
-        }
-
-        public int getQs4e() {
-            return qs4e;
-        }
-
-        public int getQs4f() {
-            return qs4f;
-        }
-
-        public int getQs4g() {
-            return qs4g;
-        }
-
-        public int getQs4h() {
-            return qs4h;
-        }
-
-        public int getQs5a() {
-            return qs5a;
-        }
-
-        public int getQs5b() {
-            return qs5b;
-        }
-
-        public int getQs5c() {
-            return qs5c;
-        }
-
-        public int getQs5d() {
-            return qs5d;
-        }
-
-        public int getQs5e() {
-            return qs5e;
-        }
-
-        public int getQs5f() {
-            return qs5f;
-        }
-
-        public int getQs5g() {
-            return qs5g;
-        }
-
-        public int getQs5h() {
-            return qs5h;
-        }
-
-        public int getQs6a() {
-            return qs6a;
-        }
-
-        public int getQs6b() {
-            return qs6b;
-        }
-
-        public int getQs6c() {
-            return qs6c;
-        }
-
-        public int getQs6d() {
-            return qs6d;
-        }
-
-        public int getQs6e() {
-            return qs6e;
-        }
-
-        public int getQs6f() {
-            return qs6f;
-        }
-
-        public int getQs6g() {
-            return qs6g;
-        }
-
-        public int getQs6h() {
-            return qs6h;
-        }
-
-        public int getQs7a() {
-            return qs7a;
-        }
-
-        public int getQs7b() {
-            return qs7b;
-        }
-
-        public int getQs7c() {
-            return qs7c;
-        }
-
-        public int getQs7d() {
-            return qs7d;
-        }
-
-        public int getQs7e() {
-            return qs7e;
-        }
-
-        public int getQs7f() {
-            return qs7f;
-        }
-
-        public int getQs7g() {
-            return qs7g;
-        }
-
-        public int getQs7h() {
-            return qs7h;
+        public int getObjectivist() {
+            return objectivist;
         }
     }
 }

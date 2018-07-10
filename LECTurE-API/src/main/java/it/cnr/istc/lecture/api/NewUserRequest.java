@@ -26,14 +26,30 @@ public class NewUserRequest {
     public String password;
     public String first_name;
     public String last_name;
+    public int concrete;
+    public int president;
+    public int structurer;
+    public int ingenious;
+    public int explorer;
+    public int evaluator;
+    public int worker;
+    public int objectivist;
 
     public NewUserRequest() {
     }
 
-    public NewUserRequest(String email, String password, String first_name, String last_name) {
+    public NewUserRequest(String email, String password, String first_name, String last_name, int concrete, int president, int structurer, int ingenious, int explorer, int evaluator, int worker, int objectivist) {
         this.email = email;
         this.password = password;
         this.first_name = first_name;
         this.last_name = last_name;
+        this.concrete = concrete;
+        this.president = president;
+        this.structurer = structurer;
+        this.ingenious = ingenious;
+        this.explorer = explorer;
+        this.evaluator = evaluator;
+        this.worker = worker;
+        this.objectivist = objectivist;
     }
 }

@@ -30,7 +30,15 @@ public class User {
     public String email;
     public String first_name;
     public String last_name;
-    public boolean online;
+    public Boolean online;
+    public Integer concrete;
+    public Integer president;
+    public Integer structurer;
+    public Integer ingenious;
+    public Integer explorer;
+    public Integer evaluator;
+    public Integer worker;
+    public Integer objectivist;
     public ArrayList<String> interests;
     public Map<String, Parameter> par_types;
     public Map<String, Map<String, String>> par_values;
@@ -38,12 +46,20 @@ public class User {
     public User() {
     }
 
-    public User(long id, String email, String firstName, String lastName, boolean online, Collection<String> interests, Map<String, Parameter> par_types, Map<String, Map<String, String>> par_values) {
+    public User(long id, String email, String firstName, String lastName, Boolean online, Integer concrete, Integer president, Integer structurer, Integer ingenious, Integer explorer, Integer evaluator, Integer worker, Integer objectivist, Collection<String> interests, Map<String, Parameter> par_types, Map<String, Map<String, String>> par_values) {
         this.id = id;
         this.email = email;
         this.first_name = firstName;
         this.last_name = lastName;
         this.online = online;
+        this.concrete = concrete;
+        this.president = president;
+        this.structurer = structurer;
+        this.ingenious = ingenious;
+        this.explorer = explorer;
+        this.evaluator = evaluator;
+        this.worker = worker;
+        this.objectivist = objectivist;
         if (interests != null) {
             this.interests = new ArrayList<>(interests);
         }

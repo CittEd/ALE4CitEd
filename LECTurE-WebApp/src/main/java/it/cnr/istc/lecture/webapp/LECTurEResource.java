@@ -95,10 +95,18 @@ public class LECTurEResource {
             u.setPassword(new_user.password);
             u.setFirstName(new_user.first_name);
             u.setLastName(new_user.last_name);
+            u.setConcrete(new_user.concrete);
+            u.setPresident(new_user.president);
+            u.setStructurer(new_user.structurer);
+            u.setIngenious(new_user.ingenious);
+            u.setExplorer(new_user.explorer);
+            u.setEvaluator(new_user.evaluator);
+            u.setWorker(new_user.worker);
+            u.setObjectivist(new_user.objectivist);
             em.persist(u);
             ctx.newUser(u.getId());
             utx.commit();
-            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.isOnline(u.getId()), u.getInterests(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()));
+            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, null, null, null, null, null, null, null, null, null, null, null);
         } catch (IllegalStateException | SecurityException | HeuristicMixedException | HeuristicRollbackException | NotSupportedException | RollbackException | SystemException ex) {
             try {
                 utx.rollback();
@@ -114,7 +122,7 @@ public class LECTurEResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<User> getUsers() {
         List<UserEntity> users = em.createQuery("SELECT u FROM UserEntity u", UserEntity.class).getResultList();
-        return users.stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.isOnline(u.getId()), u.getInterests(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
+        return users.stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.isOnline(u.getId()), u.getConcrete(), u.getPresident(), u.getStructurer(), u.getIngenious(), u.getExplorer(), u.getEvaluator(), u.getWorker(), u.getObjectivist(), u.getInterests(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()))).collect(Collectors.toList());
     }
 
     @GET
@@ -123,7 +131,7 @@ public class LECTurEResource {
     public Collection<User> findUsers(@PathParam("search_string") String search_string) {
         TypedQuery<UserEntity> query = em.createQuery("SELECT u FROM UserEntity u WHERE u.first_name LIKE :search_string OR u.last_name LIKE :search_string", UserEntity.class);
         query.setParameter("search_string", search_string);
-        return query.getResultList().stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.isOnline(u.getId()), null, null, null)).collect(Collectors.toList());
+        return query.getResultList().stream().map(u -> new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, null, null, null, null, null, null, null, null, null, null, null)).collect(Collectors.toList());
     }
 
     @GET
@@ -132,7 +140,7 @@ public class LECTurEResource {
     public User getUser(@PathParam("user_id") long user_id) {
         UserEntity u = em.find(UserEntity.class, user_id);
         if (u != null) {
-            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.isOnline(u.getId()), u.getInterests(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()));
+            return new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.isOnline(u.getId()), u.getConcrete(), u.getPresident(), u.getStructurer(), u.getIngenious(), u.getExplorer(), u.getEvaluator(), u.getWorker(), u.getObjectivist(), u.getInterests(), ctx.getParTypes(u.getId()), ctx.getParValues(u.getId()));
         } else {
             throw new WebApplicationException("Cannot find user id");
         }
@@ -221,7 +229,7 @@ public class LECTurEResource {
             query.setParameter("email", credentials.email);
             query.setParameter("password", credentials.password);
             UserEntity u = query.getSingleResult();
-            User user = new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), ctx.isOnline(u.getId()), u.getInterests(), null, null);
+            User user = new User(u.getId(), u.getEmail(), u.getFirstName(), u.getLastName(), null, u.getConcrete(), u.getPresident(), u.getStructurer(), u.getIngenious(), u.getExplorer(), u.getEvaluator(), u.getWorker(), u.getObjectivist(), u.getInterests(), null, null);
             Collection<LessonModel> models = u.getModels().stream().map(model -> {
                 LessonModel m = JSONB.fromJson(model.getModel(), LessonModel.class);
                 m.id = model.getId();
@@ -232,14 +240,14 @@ public class LECTurEResource {
                 Lesson l = ctx.getLessonManager(lesson.getId()).getLesson();
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, l.model, l.students, null, l.tokens);
             }).collect(Collectors.toList());
-            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.isOnline(std.getId()), std.getInterests(), ctx.getParTypes(std.getId()), ctx.getParValues(std.getId()))).collect(Collectors.toList());
+            List<User> students = u.getStudents().stream().map(std -> new User(std.getId(), std.getEmail(), std.getFirstName(), std.getLastName(), ctx.isOnline(std.getId()), std.getConcrete(), std.getPresident(), std.getStructurer(), std.getIngenious(), std.getExplorer(), std.getEvaluator(), std.getWorker(), std.getObjectivist(), std.getInterests(), ctx.getParTypes(std.getId()), ctx.getParValues(std.getId()))).collect(Collectors.toList());
             // the lessons followed as a student..
             List<Lesson> followed_lessons = u.getFollowedLessons().stream().map(fl -> {
                 Lesson l = ctx.getLessonManager(fl.getId()).getLesson();
                 List<Event> events = l.events.stream().filter(e -> e.targets.contains(u.getId())).collect(Collectors.toList());
                 return new Lesson(l.id, l.teacher_id, l.name, l.state, l.time, null, l.students, events, null);
             }).collect(Collectors.toList());
-            List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), ctx.isOnline(tc.getId()), null, null, null)).collect(Collectors.toList());
+            List<User> teachers = u.getTeachers().stream().map(tc -> new User(tc.getId(), tc.getEmail(), tc.getFirstName(), tc.getLastName(), ctx.isOnline(tc.getId()), null, null, null, null, null, null, null, null, null, null, null)).collect(Collectors.toList());
 
             InitResponse init = new InitResponse(user, followed_lessons, teachers, models, following_lessons, students);
             return init;
