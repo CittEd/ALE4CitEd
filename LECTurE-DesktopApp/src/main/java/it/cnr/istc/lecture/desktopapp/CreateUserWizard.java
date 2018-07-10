@@ -175,7 +175,6 @@ public class CreateUserWizard extends Wizard<CreateUserWizard.NewUserResult> {
                 this.spinners[i].getStyleClass().add(Spinner.STYLE_CLASS_ARROWS_ON_RIGHT_HORIZONTAL);
                 this.spinners[i].valueProperty().addListener(this);
                 this.spinners[i].setPrefWidth(150);
-                this.spinners[i].setMinHeight(50);
                 grid.add(this.spinners[i], 1, i + 1);
             }
 
