@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -121,6 +122,7 @@ public class MainController implements Initializable {
     @FXML
     private TableColumn<ParameterValue, String> par_vals;
     private final RandomDataGenerator random_data_generator = new RandomDataGenerator();
+    private final Preferences prefs = Preferences.userNodeForPackage(MainController.class);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -388,6 +390,18 @@ public class MainController implements Initializable {
             String[] par_name = par_value.nameProperty().get().split("\\.");
             Context.getContext().setParameterValue(par_name[0], par_name[1], event.getNewValue());
         });
+
+        try {
+            if (prefs.nodeExists("email") && prefs.nodeExists("password")) {
+                Context.getContext().login(prefs.get("email", null), prefs.get("password", null));
+            }
+        } catch (Exception ex) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
+            alert.setTitle(Context.LANGUAGE.getString("EXCEPTION"));
+            alert.setHeaderText(ex.getMessage());
+            alert.showAndWait();
+        }
     }
 
     @FXML
@@ -397,6 +411,8 @@ public class MainController implements Initializable {
         login_dialog.showAndWait().ifPresent(user -> {
             try {
                 Context.getContext().login(user.getEmail(), user.getPassword());
+                prefs.put("email", user.getEmail());
+                prefs.put("password", user.getPassword());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
