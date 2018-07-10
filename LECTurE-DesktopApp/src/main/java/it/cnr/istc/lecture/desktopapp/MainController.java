@@ -392,7 +392,7 @@ public class MainController implements Initializable {
         });
 
         try {
-            if (prefs.nodeExists("email") && prefs.nodeExists("password")) {
+            if (prefs.get("email", null) == null && prefs.get("password", null) == null) {
                 Context.getContext().login(prefs.get("email", null), prefs.get("password", null));
             }
         } catch (Exception ex) {
@@ -435,6 +435,8 @@ public class MainController implements Initializable {
         w.showAndWait().ifPresent(user -> {
             try {
                 Context.getContext().newUser(user.getEmail(), user.getPassword(), user.getFirstName(), user.getLastName(), user.getConcrete(), user.getPresident(), user.getStructurer(), user.getIngenious(), user.getExplorer(), user.getEvaluator(), user.getWorker(), user.getObjectivist());
+                prefs.put("email", user.getEmail());
+                prefs.put("password", user.getPassword());
             } catch (Exception e) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.getDialogPane().getStylesheets().addAll(Context.getContext().getStage().getScene().getStylesheets());
