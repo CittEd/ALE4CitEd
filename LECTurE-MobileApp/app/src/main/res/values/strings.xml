@@ -3,4 +3,8 @@
     <string name="learn">Learn</string>
     <string name="teach">Teach</string>
     <string name="LECTurE_logo">LECTurE Logo</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="create_account">No account yet? Create one</string>
 </resources>
