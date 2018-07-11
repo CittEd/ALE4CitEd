@@ -7,11 +7,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import it.cnr.istc.lecture.api.Credentials;
+import it.cnr.istc.lecture.api.InitResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 public class LoginActivity extends AppCompatActivity {
 
     private EditText email;
     private EditText password;
     private Button btn_login;
+    private Retrofit retrofit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +32,17 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View v) {
-        Toast.makeText(this, "email: " + email.getText(), Toast.LENGTH_SHORT).show();
+        LECTurEContext.getInstance().getResource().login(new Credentials(email.getText().toString(), password.getText().toString())).enqueue(new Callback<InitResponse>() {
+            @Override
+            public void onResponse(Call<InitResponse> call, Response<InitResponse> response) {
+                InitResponse init = response.body();
+                Toast.makeText(LoginActivity.this, init.user.first_name, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Call<InitResponse> call, Throwable t) {
+                call.cancel();
+            }
+        });
     }
 }
