@@ -19,7 +19,6 @@ package it.cnr.istc.lecture.api.messages;
 import java.util.List;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class QuestionEvent extends Event {

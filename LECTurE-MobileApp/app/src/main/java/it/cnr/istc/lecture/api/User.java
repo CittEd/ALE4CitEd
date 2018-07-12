@@ -19,7 +19,6 @@ package it.cnr.istc.lecture.api;
 import java.util.Map;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class User {

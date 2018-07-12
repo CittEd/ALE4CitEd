@@ -17,7 +17,6 @@
 package it.cnr.istc.lecture.api.messages;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class TokenUpdate extends Message {

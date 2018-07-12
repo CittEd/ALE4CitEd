@@ -1,5 +1,7 @@
 package it.cnr.istc.lecture;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -12,6 +14,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
+import java.io.IOException;
 
 import it.cnr.istc.lecture.api.Credentials;
 import it.cnr.istc.lecture.api.InitResponse;
@@ -26,8 +30,6 @@ import it.cnr.istc.lecture.api.messages.NewStudent;
 import it.cnr.istc.lecture.api.messages.RemoveToken;
 import it.cnr.istc.lecture.api.messages.Token;
 import it.cnr.istc.lecture.api.messages.TokenUpdate;
-import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -35,28 +37,27 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class LECTurEContext {
 
     private static final String TAG = "LECTurEContext";
-    private static LECTurEContext instance;
     private static final Gson GSON = new Gson();
+    private static LECTurEContext instance;
+    private LECTurEResource resource;
+    private MqttClient mqtt;
+    private LECTurEContext() {
+        Retrofit retrofit = new Retrofit.Builder().baseUrl("http://" + BuildConfig.LECTURE_HOST + ":" + BuildConfig.SERVICE_PORT).addConverterFactory(GsonConverterFactory.create()).build();
+        resource = retrofit.create(LECTurEResource.class);
+    }
 
     public static LECTurEContext getInstance() {
         if (instance == null) instance = new LECTurEContext();
         return instance;
     }
 
-    private LECTurEResource resource;
-    private MqttClient mqtt;
-
-    private LECTurEContext() {
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("http://" + BuildConfig.LECTURE_HOST + ":" + BuildConfig.SERVICE_PORT).addConverterFactory(GsonConverterFactory.create()).build();
-        resource = retrofit.create(LECTurEResource.class);
-    }
-
-    public void login(String email, String password) {
-        resource.login(new Credentials(email, password)).enqueue(new Callback<InitResponse>() {
-            @Override
-            public void onResponse(Call<InitResponse> call, Response<InitResponse> response) {
+    public boolean login(@NonNull final Context ctx, @NonNull final String email, @NonNull final String password) {
+        try {
+            Response<InitResponse> response = resource.login(new Credentials(email, password)).execute();
+            if (response.isSuccessful()) {
                 Log.i(TAG, "Login successful..");
                 InitResponse init = response.body();
+
                 try {
                     mqtt = new MqttClient("tcp://" + BuildConfig.LECTURE_HOST + ":" + BuildConfig.MQTT_PORT, String.valueOf(init.user.id), new MemoryPersistence());
                     mqtt.setCallback(new MqttCallback() {
@@ -130,15 +131,16 @@ public class LECTurEContext {
                         }
                     });
                 } catch (MqttException e) {
-                    e.printStackTrace();
+                    Log.w(TAG, "MQTT Connection failed..", e);
+                    return false;
                 }
-            }
 
-            @Override
-            public void onFailure(Call<InitResponse> call, Throwable t) {
-                Log.w(TAG, "Login failed..", t);
-                call.cancel();
-            }
-        });
+                return true;
+            } else
+                return false;
+        } catch (IOException e) {
+            Log.w(TAG, "Login failed..", e);
+            return false;
+        }
     }
 }

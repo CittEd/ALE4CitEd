@@ -19,7 +19,6 @@ package it.cnr.istc.lecture.api.messages;
 import it.cnr.istc.lecture.api.Lesson;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class NewLesson extends Message {

@@ -17,7 +17,6 @@
 package it.cnr.istc.lecture.api.model;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class NominalCondition extends Condition {

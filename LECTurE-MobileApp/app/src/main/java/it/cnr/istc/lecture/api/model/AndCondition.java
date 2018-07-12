@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class AndCondition extends Condition {

@@ -16,15 +16,15 @@
  */
 package it.cnr.istc.lecture.api;
 
-import it.cnr.istc.lecture.api.messages.Event;
-import it.cnr.istc.lecture.api.messages.Token;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import it.cnr.istc.lecture.api.messages.Event;
+import it.cnr.istc.lecture.api.messages.Token;
+
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class Lesson {

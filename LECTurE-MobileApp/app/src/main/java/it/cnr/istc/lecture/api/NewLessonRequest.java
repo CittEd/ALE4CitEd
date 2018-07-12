@@ -16,12 +16,12 @@
  */
 package it.cnr.istc.lecture.api;
 
-import it.cnr.istc.lecture.api.model.LessonModel;
 import java.util.HashMap;
 import java.util.Map;
 
+import it.cnr.istc.lecture.api.model.LessonModel;
+
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class NewLessonRequest {

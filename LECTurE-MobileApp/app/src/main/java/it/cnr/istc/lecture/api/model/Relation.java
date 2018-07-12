@@ -19,7 +19,6 @@ package it.cnr.istc.lecture.api.model;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class Relation {

@@ -17,7 +17,6 @@
 package it.cnr.istc.lecture.api;
 
 /**
- *
  * @author Riccardo De Benedictis
  */
 public class Credentials {
