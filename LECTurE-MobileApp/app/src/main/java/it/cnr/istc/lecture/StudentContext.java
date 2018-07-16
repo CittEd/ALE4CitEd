@@ -28,6 +28,10 @@ public class StudentContext {
         this.on_line = student.online;
     }
 
+    public User getStudent() {
+        return student;
+    }
+
     public boolean isOnLine() {
         return on_line;
     }

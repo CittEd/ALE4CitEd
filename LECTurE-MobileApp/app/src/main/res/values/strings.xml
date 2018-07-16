@@ -7,4 +7,8 @@
     <string name="password">Password</string>
     <string name="login">Login</string>
     <string name="create_account">No account yet? Create one</string>
+    <string name="events">Events</string>
+    <string name="lessons">Lessons</string>
+    <string name="teachers">Teachers</string>
+    <string name="students">Students</string>
 </resources>
