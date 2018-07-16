@@ -56,7 +56,7 @@ public class LearnFragment extends Fragment {
 
             @Override
             public int getCount() {
-                return 3;
+                return 2;
             }
         });
 

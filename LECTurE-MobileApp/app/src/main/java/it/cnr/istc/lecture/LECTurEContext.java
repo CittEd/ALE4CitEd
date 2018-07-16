@@ -1,7 +1,16 @@
 package it.cnr.istc.lecture;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -20,10 +29,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import it.cnr.istc.lecture.api.Credentials;
 import it.cnr.istc.lecture.api.InitResponse;
 import it.cnr.istc.lecture.api.LECTurEResource;
+import it.cnr.istc.lecture.api.Lesson;
 import it.cnr.istc.lecture.api.Parameter;
 import it.cnr.istc.lecture.api.User;
 import it.cnr.istc.lecture.api.messages.Event;
@@ -109,7 +120,7 @@ public class LECTurEContext {
                 try {
                     par_vals.clear();
                     // a user might become null as a consequence of a connection loss..
-// we broadcast the lost of a parameter..
+                    // we broadcast the lost of a parameter..
                     if (mqtt.isConnected()) for (Parameter par : par_types)
                         mqtt.publish(this.user.id + "/output", GSON.toJson(new LostParameter(par.name)).getBytes(), 1, false);
                     par_types.clear();
@@ -233,26 +244,102 @@ public class LECTurEContext {
         return user;
     }
 
-    public boolean login(@NonNull final Context ctx, @NonNull final String email, @NonNull final String password) {
-        try {
-            Response<InitResponse> response = resource.login(new Credentials(email, password)).execute();
-            if (response.isSuccessful()) {
-                Log.i(TAG, "Login successful..");
-                InitResponse init = response.body();
+    @SuppressLint("StaticFieldLeak")
+    public boolean login(@NonNull final Context ctx, @NonNull final String email, @NonNull final String password) throws ExecutionException, InterruptedException {
+        return new AsyncTask<Credentials, Integer, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Credentials... credentials) {
+                try {
+                    Response<InitResponse> response = resource.login(credentials[0]).execute();
+                    if (response.isSuccessful()) {
+                        Log.i(TAG, "Login successful..");
+                        InitResponse init = response.body();
 
-                // TODO: set parameters of init's user (these parameters will be communicated to the server..)
+                        // we set the parameters of init's user (these parameters will be communicated to the server..)
+                        Map<String, Parameter> c_par_types = new HashMap<>();
+                        Map<String, Map<String, String>> c_par_values = new HashMap<>();
 
-                setUser(init.user);
+                        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                            Parameter gps = new Parameter();
+                            gps.name = "GPS";
+                            gps.properties = new HashMap<>(2);
+                            gps.properties.put("latitude", "numeric");
+                            gps.properties.put("longitude", "numeric");
+                            c_par_types.put("GPS", gps);
 
-                // TODO: add, from init, the following lessons, teachers, available models, teaching lessons and students to this context..
+                            Map<String, String> gps_pos = new HashMap<>(2);
+                            gps_pos.put("latitude", "0");
+                            gps_pos.put("longitude", "0");
+                            c_par_values.put("GPS", gps_pos);
 
-                return true;
-            } else
-                return false;
-        } catch (IOException e) {
-            Log.w(TAG, "Login failed..", e);
-            return false;
-        }
+                            // we acquire a reference to the system Location Manager
+                            LocationManager locationManager = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
+                            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, new LocationListener() {
+                                @Override
+                                public void onLocationChanged(Location location) {
+                                    Map<String, String> gps_pos = new HashMap<>(2);
+                                    gps_pos.put("latitude", Double.toString(location.getLatitude()));
+                                    gps_pos.put("longitude", Double.toString(location.getLongitude()));
+                                    try {
+                                        mqtt.publish(user.id + "/output/GPS", GSON.toJson(gps_pos).getBytes(), 1, true);
+                                    } catch (MqttException e) {
+                                        Log.w(TAG, "GPS update MQTT communication failed..", e);
+                                    }
+                                }
+
+                                @Override
+                                public void onStatusChanged(String provider, int status, Bundle extras) {
+                                }
+
+                                @Override
+                                public void onProviderEnabled(String provider) {
+                                }
+
+                                @Override
+                                public void onProviderDisabled(String provider) {
+                                }
+                            });
+                        }
+
+                        init.user.par_types = c_par_types;
+                        init.user.par_values = c_par_values;
+
+                        setUser(init.user);
+
+                        // we add the following lessons..
+                        for (Lesson lesson : init.following_lessons)
+                            following_lessons.add(new FollowingLessonContext(lesson));
+
+                        // we add the teachers..
+                        for (User teacher : init.teachers)
+                            teachers.add(new TeacherContext(teacher));
+
+                        // we add the available models..
+                        models.addAll(init.models);
+
+                        // we add the teaching lessons..
+                        for (Lesson teaching_lesson : init.teaching_lessons) {
+                            LessonModel model = null;
+                            for (LessonModel m : init.models) {
+                                if (m.id.equals(teaching_lesson.model)) model = m;
+                                break;
+                            }
+                            teaching_lessons.add(new TeachingLessonContext(teaching_lesson, model));
+                        }
+
+                        // we add the students..
+                        for (User student : init.students)
+                            students.add(new StudentContext(student));
+
+                        return true;
+                    } else
+                        return false;
+                } catch (IOException e) {
+                    Log.w(TAG, "Login failed..", e);
+                    return false;
+                }
+            }
+        }.execute(new Credentials(email, password)).get();
     }
 
     public void logout() {

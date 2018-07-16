@@ -27,7 +27,7 @@ public class EventsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_learn, container, false);
+        View view = inflater.inflate(R.layout.fragment_events, container, false);
 
         events_recycler_view = view.findViewById(R.id.events_recycler_view);
         events_adapter = new EventAdapter();
