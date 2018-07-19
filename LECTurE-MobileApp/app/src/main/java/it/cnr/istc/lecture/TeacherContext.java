@@ -10,7 +10,7 @@ import it.cnr.istc.lecture.api.User;
 
 public class TeacherContext {
 
-    private final User student;
+    private final User teacher;
     private boolean on_line;
     /**
      * The current student's parameter types.
@@ -23,9 +23,13 @@ public class TeacherContext {
     private final Map<String, Map<String, String>> par_vals = new HashMap<>();
     private final List<TeacherListener> listeners = new ArrayList<>();
 
-    TeacherContext(User student) {
-        this.student = student;
-        this.on_line = student.online;
+    TeacherContext(User teacher) {
+        this.teacher = teacher;
+        this.on_line = teacher.online;
+    }
+
+    public User getTeacher() {
+        return teacher;
     }
 
     public boolean isOnLine() {
