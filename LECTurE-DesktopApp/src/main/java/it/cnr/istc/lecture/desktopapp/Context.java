@@ -158,7 +158,7 @@ public class Context {
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-        this.target = client.target("http://" + properties.getProperty("lecture-host", "localhost") + ":" + properties.getProperty("service-port", "8080")).path("LECTurE-WebApp-1.0").path("LECTurE");
+        this.target = client.target("http://" + properties.getProperty("lecture-host", "localhost") + ":" + properties.getProperty("service-port", "8080")).path("LECTurE").path("resources");
         user.addListener((ObservableValue<? extends User> observable, User oldValue, User newValue) -> {
             if (oldValue != null) {
                 // we clear the current data..
@@ -206,7 +206,7 @@ public class Context {
             if (newValue != null) {
                 // we set up a new user..
                 try {
-                    mqtt = new MqttClient("tcp://" + properties.getProperty("lecture-host", "localhost") + ":" + properties.getProperty("mqtt-port", "1883"), String.valueOf(newValue.id), new MemoryPersistence());
+                    mqtt = new MqttClient("tcp://" + properties.getProperty("lecture-host", "localhost") + ":" + properties.getProperty("mqtt-port", "1884"), String.valueOf(newValue.id), new MemoryPersistence());
                     mqtt.setCallback(new MqttCallback() {
                         @Override
                         public void connectionLost(Throwable cause) {

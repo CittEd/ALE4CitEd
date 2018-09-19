@@ -26,7 +26,7 @@ import javax.ws.rs.core.Application;
  *
  * @author Riccardo De Benedictis
  */
-@ApplicationPath("LECTurE")
+@ApplicationPath("resources")
 public class LECTurEApplication extends Application {
 
     @Override
