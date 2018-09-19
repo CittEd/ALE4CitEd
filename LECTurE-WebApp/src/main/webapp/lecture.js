@@ -78,7 +78,7 @@ $(document).ready(function () {
 
     console.log("retrieving lessons..");
     $.ajax({
-        url: "http://localhost:8080/LECTurE-WebApp-1.0/LECTurE/lessons"
+        url: "http://localhost:8080/LECTurE/resources/lessons"
     }).then(function (lessons) {
         console.log("found " + lessons.length + " lessons..");
         document.getElementById("lessons_count").textContent = lessons.length;
@@ -121,7 +121,7 @@ $(document).ready(function () {
             var lesson_id = lessons[i].id;
             btn_del.onclick = function () {
                 $.ajax({
-                    url: "http://localhost:8080/LECTurE-WebApp-1.0/LECTurE/lessons/" + lesson_id,
+                    url: "http://localhost:8080/LECTurE/resources/lessons/" + lesson_id,
                     type: "DELETE"
                 }).then(function () {
                     tbdy.removeChild(tr);
